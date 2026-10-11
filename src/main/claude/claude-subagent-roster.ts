@@ -12,7 +12,10 @@
 // shared subagent tracker's rules; this module only reads Claude's frames.
 
 import type { AgentJournalTurnScope } from '../../shared/agent-session-journal-types'
-import type { StructuredAgentSessionEventSink } from '../native-chat/agent-session-wire/structured-agent-session-event-sink'
+import type {
+  StructuredAgentSessionEventSink,
+  StructuredAgentSessionSinkAdmission
+} from '../native-chat/agent-session-wire/structured-agent-session-event-sink'
 import { subagentRowSinkPort } from '../native-chat/subagent-tracker/subagent-row-sink-port'
 import { SubagentTracker } from '../native-chat/subagent-tracker/subagent-tracker'
 import type { SubagentReport } from '../native-chat/subagent-tracker/subagent-tracker-types'
@@ -190,14 +193,16 @@ export class ClaudeSubagentRoster {
     })
   }
 
-  /** Binds a Stop of this task to the run it names now: once the CLI acknowledges it, the child
-   *  reads stopped until that run's own ending, and a run started since is left alone. */
-  stopAcknowledger(taskId: string): () => void {
-    const canonical = this.ids.canonical(taskId)
-    const run = this.tracker.locate(canonical)?.tracked.run ?? null
-    return () => {
-      this.tracker.stopAcknowledged(canonical, run)
-    }
+  /** The CLI acknowledged a Stop of this task. It stops whichever run the task has, and its
+   *  acknowledgement can only precede that run's frames, so the run shown now is the stopped one:
+   *  it reads stopped until that run's own ending. */
+  stopAcknowledged(taskId: string): void {
+    this.tracker.stopAcknowledged(this.ids.canonical(taskId))
+  }
+
+  /** Rows the sink refused that no later frame rewrote. */
+  retryRefusedRows(): StructuredAgentSessionSinkAdmission {
+    return this.tracker.retryRefused()
   }
 
   /** The parent turn ended. A foreground child still working loses contact with

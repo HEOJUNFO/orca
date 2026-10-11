@@ -79,9 +79,8 @@ export async function stopClaudeBackgroundTasks(
       break
     }
     try {
-      const acknowledged = session.translator?.subagentStop?.(taskId)
       await session.connection.stopTask(taskId, { timeoutMs })
-      acknowledged?.()
+      session.translator?.subagentStopAcknowledged?.(taskId)
       session.childWork.stopAcknowledged(taskId)
       cancelled = true
     } catch (error) {

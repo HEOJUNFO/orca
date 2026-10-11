@@ -17,9 +17,10 @@ import type {
   TrackedSubagent
 } from './subagent-tracker-types'
 
-/** The change to report for this child, or null when the strip already shows it. A child an
- *  earlier provider process left is no live work of this one: that session's end settled it.
- *  `label` is the name its row shows. */
+/** The change to report for this child, or null when the strip already shows it. Each edge carries
+ *  every fact the host holds, so one the host could not admit is healed by the child's next change.
+ *  A child an earlier provider process left is no live work of this one: that session's end
+ *  settled it. `label` is the name its row shows. */
 function subagentChildWorkChange(
   id: string,
   tracked: TrackedSubagent,

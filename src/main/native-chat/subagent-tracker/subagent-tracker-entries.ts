@@ -54,6 +54,13 @@ export function startedSubagentEntry(
   }
 }
 
+/** A child the provider acknowledged a Stop of, still running or out of contact: stopped,
+ *  provisionally. Null when it already ended, or a Stop was already acknowledged. */
+export function acknowledgedStop(tracked: TrackedSubagent, now: number): TrackedSubagent | null {
+  const stopped = tracked.stopAcknowledged ? null : withSubagentState(tracked, 'stopped', now)
+  return stopped ? { ...stopped, stopAcknowledged: true } : null
+}
+
 /** Proven outcomes latch; lost contact can still receive a later verdict. Null when `state` may not
  *  replace the current one. */
 export function withSubagentState(

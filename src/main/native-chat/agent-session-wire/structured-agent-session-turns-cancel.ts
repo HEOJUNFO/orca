@@ -203,8 +203,8 @@ async function cancelAndNote(
             taskIds: agentChildWorkStopTargets(input.childWork?.(), input.taskId)
           })
         : undefined
-    // A background Stop writes no row, so a task the agent shows still running after it goes back
-    // to the client that pressed it.
+    // A background Stop writes no Stop note, so a task the agent shows still running after it goes
+    // back to the client that pressed it.
     if (background?.stillRunning) {
       return {
         ok: false,

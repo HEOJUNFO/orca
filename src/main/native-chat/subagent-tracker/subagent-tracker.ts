@@ -9,13 +9,13 @@
 // of children; the ones past it are tracked all the same, so the running-tasks strip and Stop,
 // projected from these entries (`drainChildWork`), never depend on what a row has room for.
 
-import { STRUCTURED_CHILD_WORK_MAX_LIVE } from '../../../shared/agent-status-child-work-evidence-admission'
 import type { NativeChatSubagentEntry } from '../../../shared/native-chat-types'
 import type { StructuredAgentSessionSinkAdmission } from '../agent-session-wire/structured-agent-session-event-sink'
 import { projectSubagentChildWork } from './subagent-child-work'
 import { subagentGroupRow, writeSubagentRows } from './subagent-row-writes'
 import {
   UNLABELLED_SUBAGENT,
+  acknowledgedStop,
   boundedSubagentLabel,
   rowLabel,
   startedSubagentEntry,
@@ -33,8 +33,6 @@ import type {
 
 /** Children one row lists. Bounds the row, which is rewritten on every change. */
 export const MAX_SUBAGENTS_PER_GROUP = 64
-/** Children tracked past what their rows list: beyond what the host admits live, more show nothing. */
-const MAX_UNLISTED_SUBAGENTS = STRUCTURED_CHILD_WORK_MAX_LIVE
 /** Runs one entry remembers, so a late report for one cannot pass for a new run. */
 const MAX_RUNS_PER_SUBAGENT = 16
 const ADMITTED: StructuredAgentSessionSinkAdmission = { accepted: true }
@@ -141,13 +139,17 @@ export class SubagentTracker<Placement> {
     if (!located || (run !== null && run !== located.tracked.run)) {
       return ADMITTED
     }
-    const { group, tracked } = located
-    const stopped = withSubagentState(tracked, 'stopped', this.now())
-    if (!stopped || tracked.stopAcknowledged) {
+    const stopped = acknowledgedStop(located.tracked, this.now())
+    if (!stopped) {
       return ADMITTED
     }
-    group.entries.set(id, { ...stopped, stopAcknowledged: true })
-    return this.write(group)
+    located.group.entries.set(id, stopped)
+    return this.write(located.group)
+  }
+
+  /** Rows a sink refused that no later report rewrote, written again once it drains. */
+  retryRefused(): StructuredAgentSessionSinkAdmission {
+    return this.write(...[...this.groups.values()].filter((group) => group.lastSerialized === null))
   }
 
   /** What changed for the strip since the last drain, in the order the rows were written. */
@@ -221,7 +223,7 @@ export class SubagentTracker<Placement> {
   ): StructuredAgentSessionSinkAdmission {
     const group = this.groups.groupFor(report.group)
     const listed = group.admittedEntries < MAX_SUBAGENTS_PER_GROUP
-    if (!listed && this.groups.unlistedCount() >= MAX_UNLISTED_SUBAGENTS) {
+    if (!listed && !this.groups.admitUnlisted()) {
       return ADMITTED
     }
     group.admittedEntries += listed ? 1 : 0

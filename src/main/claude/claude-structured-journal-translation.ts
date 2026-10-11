@@ -297,8 +297,12 @@ export function createClaudeJournalTranslator(
     flush,
     childToolOwner: childQueries.childToolOwner,
     childActivity: childQueries.childActivity,
-    retryPendingTaskRows: () => backgroundTasks.retryPendingWrites(),
-    subagentStop: (taskId) => subagents.stopAcknowledger(taskId),
+    retryPendingTaskRows: () => {
+      const tasks = backgroundTasks.retryPendingWrites()
+      const rows = subagents.retryRefusedRows()
+      return tasks.accepted ? rows : tasks
+    },
+    subagentStopAcknowledged: (taskId) => subagents.stopAcknowledged(taskId),
     get pendingStreamedBlocks() {
       return streamedText.pending + streamedThinking.pending
     },

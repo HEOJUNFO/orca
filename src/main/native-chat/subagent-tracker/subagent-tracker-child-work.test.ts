@@ -84,12 +84,39 @@ describe('SubagentTracker running-tasks projection', () => {
     expect(h.strip()).toEqual([])
   })
 
-  it('bounds unlisted children by what the host admits live', () => {
+  it('bounds unlisted children by what the host admits live, making room from settled ones', () => {
     const h = harness()
     for (const id of many(MAX_SUBAGENTS_PER_GROUP + 300)) {
       h.report('turn-1', { id, backgrounded: true })
     }
-    expect(h.strip()).toHaveLength(MAX_SUBAGENTS_PER_GROUP + 256)
+    const unlisted = many(256, MAX_SUBAGENTS_PER_GROUP)
+    expect(h.tracker.locate(unlisted.at(-1) ?? '')).not.toBeNull()
+    expect(h.tracker.locate(`c${MAX_SUBAGENTS_PER_GROUP + 256}`)).toBeNull()
+    // Lost contact keeps a child correctable until room is needed, then it goes first.
+    h.report('turn-1', { id: unlisted[0], state: 'unverifiable' })
+    h.report('turn-1', { id: 'late', backgrounded: true })
+    expect(h.tracker.locate(unlisted[0])).toBeNull()
+    expect(h.tracker.has(unlisted[0])).toBe(true)
+    expect(h.tracker.locate('late')).not.toBeNull()
+  })
+
+  it("keeps an unlisted child's lost contact or acknowledged Stop correctable by its own ending", () => {
+    const h = harness()
+    for (const id of many(MAX_SUBAGENTS_PER_GROUP + 2)) {
+      h.report('turn-1', { id, run: `${id}-r1`, label: 'X', backgrounded: true })
+    }
+    const [stopped, lost] = [`c${MAX_SUBAGENTS_PER_GROUP}`, `c${MAX_SUBAGENTS_PER_GROUP + 1}`]
+    h.tracker.stopAcknowledged(stopped)
+    h.report('turn-1', { id: lost, state: 'unverifiable' })
+    h.strip()
+    h.report('turn-1', { id: stopped, state: 'completed' })
+    h.report('turn-1', { id: lost, state: 'failed' })
+    expect(h.strip().filter((change) => change.state !== 'working')).toEqual([
+      { id: stopped, state: 'completed' },
+      { id: lost, state: 'failed' }
+    ])
+    expect(h.tracker.locate(stopped)).toBeNull()
+    expect(h.tracker.locate(lost)).toBeNull()
   })
 
   it('reports a change only once the row that made it was accepted', () => {
@@ -100,8 +127,24 @@ describe('SubagentTracker running-tasks projection', () => {
     h.refuse(false)
     h.report('turn-1', { id: 'a', tokens: 5 })
     expect(h.strip()).toEqual([{ id: 'a', state: 'working' }])
+  })
+
+  it('does not report an unchanged child again', () => {
+    const h = harness()
+    h.report('turn-1', { id: 'a', run: 'r1', label: 'Audit', tokens: 5 })
+    h.strip()
     h.report('turn-1', { id: 'a', tokens: 5 })
     expect(h.strip()).toEqual([])
+  })
+
+  it('writes a refused row again when asked, once the sink drains', () => {
+    const h = harness()
+    h.report('turn-1', { id: 'a', run: 'r1', label: 'Audit' })
+    h.refuse(true)
+    h.tracker.stopAcknowledged('a')
+    h.refuse(false)
+    expect(h.tracker.retryRefused()).toEqual({ accepted: true })
+    expect(h.writes.at(-1)?.agents?.[0]).toMatchObject({ state: 'stopped' })
   })
 
   it('reports a new run of an ended child as a restart', () => {

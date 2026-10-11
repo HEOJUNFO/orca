@@ -2,7 +2,11 @@
 // the session journaled, inherited one at a time as this run's own reports reach them. Every lookup
 // is read from the rows themselves, so no second index can disagree with what a row lists.
 
-import { isTerminalSubagentState } from '../../../shared/native-chat-subagent-summary'
+import {
+  isSubagentVerdict,
+  isTerminalSubagentState
+} from '../../../shared/native-chat-subagent-summary'
+import { STRUCTURED_CHILD_WORK_MAX_LIVE } from '../../../shared/agent-status-child-work-evidence-admission'
 import { SubagentRosterRetention } from '../subagent-roster-retention'
 import { subagentGroupJournalBody } from '../agent-session-journal/journal-subagent-group-body'
 import { UNLABELLED_SUBAGENT } from './subagent-tracker-entries'
@@ -16,6 +20,9 @@ import type {
 /** Settled history target; groups with unfinished children remain owned. */
 export const MAX_SUBAGENT_GROUPS = 32
 const MAX_SETTLED_IDENTITIES = 2048
+/** Children tracked past what their rows list. Bounds memory at the host's own live bound per
+ *  session, which also counts every other kind of child work, so it may still refuse some. */
+const MAX_UNLISTED_SUBAGENTS = STRUCTURED_CHILD_WORK_MAX_LIVE
 
 export type LocatedSubagent<Placement> = {
   group: SubagentGroup<Placement>
@@ -93,30 +100,45 @@ export class SubagentTrackerGroups<Placement> {
     return this.retention.hasSettled(settledIdentity(id, run))
   }
 
-  /** A settled child its row does not list is let go: only its identities keep it from being
-   *  tracked anew. */
+  /** A child its row does not list is let go once it reported its own ending: only its identities
+   *  keep it from being tracked anew. Lost contact or an acknowledged Stop can still be corrected,
+   *  so those stay until room is needed. */
   releaseSettledUnlisted(group: SubagentGroup<Placement>): void {
     for (const [id, tracked] of group.entries) {
-      if (tracked.listed || !isTerminalSubagentState(tracked.entry.state)) {
-        continue
+      if (!tracked.listed && isSubagentVerdict(tracked.entry.state) && !tracked.stopAcknowledged) {
+        this.release(group, id, tracked)
       }
-      this.retention.rememberSettled(settledIdentity(id, null))
-      for (const run of tracked.runs) {
-        this.retention.rememberSettled(settledIdentity(id, run))
-      }
-      group.entries.delete(id)
     }
   }
 
-  /** Children tracked beyond what their rows list. */
-  unlistedCount(): number {
-    let count = 0
+  /** Whether one more unlisted child fits, letting the oldest settled ones go to make room. */
+  admitUnlisted(): boolean {
+    let unlisted = 0
+    const settled: { group: SubagentGroup<Placement>; id: string; tracked: TrackedSubagent }[] = []
     for (const group of this.groups.values()) {
-      for (const tracked of group.entries.values()) {
-        count += tracked.listed ? 0 : 1
+      for (const [id, tracked] of group.entries) {
+        unlisted += tracked.listed ? 0 : 1
+        if (!tracked.listed && isTerminalSubagentState(tracked.entry.state)) {
+          settled.push({ group, id, tracked })
+        }
       }
     }
-    return count
+    for (const { group, id, tracked } of settled.slice(
+      0,
+      Math.max(0, unlisted - MAX_UNLISTED_SUBAGENTS + 1)
+    )) {
+      this.release(group, id, tracked)
+      unlisted -= 1
+    }
+    return unlisted < MAX_UNLISTED_SUBAGENTS
+  }
+
+  private release(group: SubagentGroup<Placement>, id: string, tracked: TrackedSubagent): void {
+    this.retention.rememberSettled(settledIdentity(id, null))
+    for (const run of tracked.runs) {
+      this.retention.rememberSettled(settledIdentity(id, run))
+    }
+    group.entries.delete(id)
   }
 
   /** A run an entry no longer remembers is settled for good. */
