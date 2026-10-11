@@ -88,7 +88,9 @@ function outcomeOf(state: NativeChatSubagentState): AgentChildWorkOutcome {
       return 'cancelled'
     case 'unverifiable':
       return 'unknown'
-    default:
+    case 'completed':
+    case 'idle':
+    case 'working':
       return 'succeeded'
   }
 }
