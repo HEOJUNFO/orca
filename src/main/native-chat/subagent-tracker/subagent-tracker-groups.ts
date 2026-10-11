@@ -51,6 +51,8 @@ export class SubagentTrackerGroups<Placement> {
        *  later child would rewrite it from empty. */
       outsideTurn: (groupId: string) => boolean
       onEvict?: (group: SubagentGroup<Placement>) => void
+      /** The strip reads each child's changes, so one goes only once its ending was reported. */
+      projectsChildWork?: boolean
     }
   ) {}
 
@@ -111,14 +113,16 @@ export class SubagentTrackerGroups<Placement> {
     }
   }
 
-  /** Whether one more unlisted child fits, letting the oldest settled ones go to make room. */
+  /** Whether one more unlisted child fits, letting the earliest-created settled ones go to make
+   *  room: only once the strip was told how each ended, or it would show it working for good. */
   admitUnlisted(): boolean {
     let unlisted = 0
     const settled: { group: SubagentGroup<Placement>; id: string; tracked: TrackedSubagent }[] = []
     for (const group of this.groups.values()) {
       for (const [id, tracked] of group.entries) {
         unlisted += tracked.listed ? 0 : 1
-        if (!tracked.listed && isTerminalSubagentState(tracked.entry.state)) {
+        const reported = !this.deps.projectsChildWork || tracked.published?.ended === true
+        if (!tracked.listed && isTerminalSubagentState(tracked.entry.state) && reported) {
           settled.push({ group, id, tracked })
         }
       }

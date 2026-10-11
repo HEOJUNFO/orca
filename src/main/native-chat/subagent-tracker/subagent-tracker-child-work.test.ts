@@ -100,6 +100,21 @@ describe('SubagentTracker running-tasks projection', () => {
     expect(h.tracker.locate('late')).not.toBeNull()
   })
 
+  it('never makes room with a settled child whose ending the strip was not told yet', () => {
+    const h = harness()
+    for (const id of many(MAX_SUBAGENTS_PER_GROUP + 256)) {
+      h.report('turn-1', { id, backgrounded: true })
+    }
+    h.strip()
+    const first = `c${MAX_SUBAGENTS_PER_GROUP}`
+    h.tracker.batch(() => {
+      h.report('turn-1', { id: first, state: 'unverifiable' })
+      h.report('turn-1', { id: 'late', backgrounded: true })
+    })
+    expect(h.strip()).toEqual([{ id: first, state: 'unverifiable' }])
+    expect(h.tracker.locate('late')).toBeNull()
+  })
+
   it("keeps an unlisted child's lost contact or acknowledged Stop correctable by its own ending", () => {
     const h = harness()
     for (const id of many(MAX_SUBAGENTS_PER_GROUP + 2)) {

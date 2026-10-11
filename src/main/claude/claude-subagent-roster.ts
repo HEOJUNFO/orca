@@ -193,8 +193,8 @@ export class ClaudeSubagentRoster {
     })
   }
 
-  /** The CLI acknowledged a Stop of this task. It stops whichever run the task has, and its
-   *  acknowledgement can only precede that run's frames, so the run shown now is the stopped one:
+  /** The CLI acknowledged a Stop of this task. It stops whichever run the task has, so the run shown
+   *  when the acknowledgement lands is taken as the stopped one, as the strip's own record takes it:
    *  it reads stopped until that run's own ending. */
   stopAcknowledged(taskId: string): void {
     this.tracker.stopAcknowledged(this.ids.canonical(taskId))
