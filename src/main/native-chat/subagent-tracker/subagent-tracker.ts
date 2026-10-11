@@ -5,21 +5,26 @@
 // child, its name, how its state may change, what a turn's or the session's end means for it, and
 // how the row is written. A child keeps one entry, in the row of the turn that first spawned it;
 // a later run reopens that entry. A child is released only when it settles (bounded settled
-// history) or the chat ends — never by count while it may still run.
+// history) or the chat ends — never by count while it may still run. A row lists a bounded number
+// of children; the ones past it are tracked all the same, so the running-tasks strip and Stop,
+// projected from these entries (`drainChildWork`), never depend on what a row has room for.
 
+import { STRUCTURED_CHILD_WORK_MAX_LIVE } from '../../../shared/agent-status-child-work-evidence-admission'
 import type { NativeChatSubagentEntry } from '../../../shared/native-chat-types'
 import type { StructuredAgentSessionSinkAdmission } from '../agent-session-wire/structured-agent-session-event-sink'
-import { writeSubagentRows } from './subagent-row-writes'
+import { projectSubagentChildWork } from './subagent-child-work'
+import { subagentGroupRow, writeSubagentRows } from './subagent-row-writes'
 import {
   UNLABELLED_SUBAGENT,
   boundedSubagentLabel,
-  claimSubagentLabel,
+  rowLabel,
   startedSubagentEntry,
   withSubagentState
 } from './subagent-tracker-entries'
 import { SubagentTrackerGroups, type LocatedSubagent } from './subagent-tracker-groups'
 import type {
   JournaledSubagentSource,
+  SubagentChildWorkChange,
   SubagentGroup,
   SubagentReport,
   SubagentRowPort,
@@ -28,6 +33,8 @@ import type {
 
 /** Children one row lists. Bounds the row, which is rewritten on every change. */
 export const MAX_SUBAGENTS_PER_GROUP = 64
+/** Children tracked past what their rows list: beyond what the host admits live, more show nothing. */
+const MAX_UNLISTED_SUBAGENTS = STRUCTURED_CHILD_WORK_MAX_LIVE
 /** Runs one entry remembers, so a late report for one cannot pass for a new run. */
 const MAX_RUNS_PER_SUBAGENT = 16
 const ADMITTED: StructuredAgentSessionSinkAdmission = { accepted: true }
@@ -37,6 +44,8 @@ export class SubagentTracker<Placement> {
   /** Groups changed inside `batch`, written once when it ends. */
   private pending: Set<SubagentGroup<Placement>> | null = null
   private readonly now: () => number
+  /** Changes for the strip since the last drain; kept only for an agent that reads them. */
+  private readonly childWork: SubagentChildWorkChange[] = []
 
   constructor(
     private readonly deps: {
@@ -46,6 +55,8 @@ export class SubagentTracker<Placement> {
       outsideTurn: (groupId: string) => boolean
       onEvict?: (group: SubagentGroup<Placement>) => void
       now?: () => number
+      /** The agent drains `drainChildWork` for its running-tasks strip. */
+      projectsChildWork?: boolean
     }
   ) {
     this.now = deps.now ?? (() => Date.now())
@@ -122,6 +133,28 @@ export class SubagentTracker<Placement> {
     return this.groups.locate(id)?.tracked.attempt ?? 1
   }
 
+  /** The provider acknowledged a Stop of this child's `run` (null: whichever is current). It shows
+   *  stopped at once; the acknowledgement can precede the run's own ending, which still replaces it,
+   *  and nothing else can. An acknowledgement for a run since superseded changes nothing. */
+  stopAcknowledged(id: string, run: string | null = null): StructuredAgentSessionSinkAdmission {
+    const located = this.groups.locate(id)
+    if (!located || (run !== null && run !== located.tracked.run)) {
+      return ADMITTED
+    }
+    const { group, tracked } = located
+    const stopped = withSubagentState(tracked, 'stopped', this.now())
+    if (!stopped || tracked.stopAcknowledged) {
+      return ADMITTED
+    }
+    group.entries.set(id, { ...stopped, stopAcknowledged: true })
+    return this.write(group)
+  }
+
+  /** What changed for the strip since the last drain, in the order the rows were written. */
+  drainChildWork(): SubagentChildWorkChange[] {
+    return this.childWork.splice(0)
+  }
+
   /** Keeps a group a child's own traffic just reached, whatever retention would release. */
   retain(group: SubagentGroup<Placement>): void {
     this.groups.trim([group], group.groupId)
@@ -187,15 +220,16 @@ export class SubagentTracker<Placement> {
     run: string | null
   ): StructuredAgentSessionSinkAdmission {
     const group = this.groups.groupFor(report.group)
-    if (group.admittedEntries >= MAX_SUBAGENTS_PER_GROUP) {
+    const listed = group.admittedEntries < MAX_SUBAGENTS_PER_GROUP
+    if (!listed && this.groups.unlistedCount() >= MAX_UNLISTED_SUBAGENTS) {
       return ADMITTED
     }
-    group.admittedEntries += 1
+    group.admittedEntries += listed ? 1 : 0
     const label = boundedSubagentLabel(report.label)
     group.entries.set(report.id, {
       entry: startedSubagentEntry(
         report,
-        claimSubagentLabel(group, label ?? UNLABELLED_SUBAGENT),
+        rowLabel(group, listed, label ?? UNLABELLED_SUBAGENT),
         this.now()
       ),
       run,
@@ -205,7 +239,9 @@ export class SubagentTracker<Placement> {
       backgrounded: report.backgrounded ?? false,
       labelBase: label ?? UNLABELLED_SUBAGENT,
       provisional: label === null,
-      inherited: false
+      inherited: false,
+      listed,
+      stopAcknowledged: false
     })
     return this.write(group)
   }
@@ -227,7 +263,7 @@ export class SubagentTracker<Placement> {
     group.entries.set(report.id, {
       entry: startedSubagentEntry(
         report,
-        named ? claimSubagentLabel(group, label) : tracked.entry.label,
+        named ? rowLabel(group, tracked.listed, label) : tracked.entry.label,
         this.now(),
         tracked.entry
       ),
@@ -238,7 +274,10 @@ export class SubagentTracker<Placement> {
       backgrounded: report.backgrounded ?? false,
       labelBase: named ? label : tracked.labelBase,
       provisional: tracked.provisional && !named,
-      inherited: false
+      inherited: false,
+      listed: tracked.listed,
+      stopAcknowledged: false,
+      ...(tracked.published ? { published: tracked.published } : {})
     })
     return this.write(group)
   }
@@ -258,7 +297,7 @@ export class SubagentTracker<Placement> {
     if (label !== null && tracked.provisional && label !== UNLABELLED_SUBAGENT) {
       next.provisional = false
       next.labelBase = label
-      next.entry.label = claimSubagentLabel(group, label)
+      next.entry.label = rowLabel(group, tracked.listed, label)
     }
     if (typeof report.tokens === 'number') {
       next.entry.tokens = report.tokens
@@ -301,8 +340,26 @@ export class SubagentTracker<Placement> {
 
   private flush(groups: Iterable<SubagentGroup<Placement>>): StructuredAgentSessionSinkAdmission {
     const written = [...groups]
+    const before = written.map((group) => group.lastSerialized)
     const refused = writeSubagentRows(written, this.deps.port)
+    written.forEach((group, index) => {
+      // A refused row is written again by the group's next write, which reports its children then.
+      if (group.lastSerialized !== null) {
+        this.settleWritten(group, before[index] === group.lastSerialized)
+      }
+    })
     this.groups.trim(written)
     return refused ?? ADMITTED
+  }
+
+  /** Reports what the accepted row changed, and lets go of a settled child no row lists. */
+  private settleWritten(group: SubagentGroup<Placement>, unchanged: boolean): void {
+    const projected = this.deps.projectsChildWork
+      ? projectSubagentChildWork(group, this.childWork)
+      : 0
+    this.groups.releaseSettledUnlisted(group)
+    if (unchanged && projected > 0) {
+      this.deps.port.restate?.(group, subagentGroupRow(group))
+    }
   }
 }

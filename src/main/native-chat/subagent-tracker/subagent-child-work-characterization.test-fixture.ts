@@ -27,7 +27,11 @@ export function withStableUuids<T>(value: T, seen = new Map<string, string>()): 
   )
 }
 
-function rowBlocks(rows: readonly AgentJournalItemBody[]) {
+type CharacterizedRow =
+  | { group: string; agents: { id: string; label: string; state: string; tokens: number | null }[] }
+  | { task: string; kind: string; label: string; state: string; tokens: number | null }
+
+function rowBlocks(rows: readonly AgentJournalItemBody[]): CharacterizedRow[] {
   // Group keys embed per-file frame counters and minted turn ids; their order is what matters.
   const groups = new Map<string, string>()
   const groupRef = (groupId: string) => {
@@ -38,7 +42,7 @@ function rowBlocks(rows: readonly AgentJournalItemBody[]) {
   return rows.flatMap((body) =>
     body.kind !== 'message'
       ? []
-      : body.blocks.flatMap((block) => {
+      : body.blocks.flatMap((block): CharacterizedRow[] => {
           if (isSubagentGroupBlock(block)) {
             return [
               {

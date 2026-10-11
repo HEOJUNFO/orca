@@ -46,6 +46,28 @@ export type TrackedSubagent = {
   provisional: boolean
   /** Listed by an earlier provider run and not run again here: a verdict says how it ended, not when. */
   inherited: boolean
+  /** Its group's row lists it. A row lists the first children it admits, up to its bound; the rest
+   *  are tracked all the same and released once they settle. */
+  listed: boolean
+  /** Shown stopped because the provider acknowledged a Stop of this run. Provisional: only the
+   *  run's own ending, which can precede the acknowledgement, may still replace it. */
+  stopAcknowledged: boolean
+  /** The child-work change last drained for it, so an unchanged child is not reported again. */
+  published?: { key: string; ended: boolean }
+}
+
+/** A child as the running-tasks strip should now show it, drained after the row write that
+ *  changed it was accepted. */
+export type SubagentChildWorkChange = {
+  id: string
+  run: string | null
+  label: string
+  state: NativeChatSubagentState
+  tokens?: number
+  backgrounded: boolean
+  stopAcknowledged: boolean
+  /** A new run of a child the strip last showed ended. */
+  restart: boolean
 }
 
 export type SubagentGroup<Placement> = {
@@ -53,7 +75,8 @@ export type SubagentGroup<Placement> = {
   placement: Placement
   /** Insertion order is the display order. */
   entries: Map<string, TrackedSubagent>
-  /** Lifetime admissions: bounds the labels a row retains even after removals. */
+  /** Lifetime listings: bounds the children a row lists, and the labels it retains, even after
+   *  removals. */
   admittedEntries: number
   /** Labels stay reserved after removal or renaming, so an ordinal is never reused. */
   claimedLabels: Set<string>
@@ -67,6 +90,9 @@ export type SubagentRowPort<Placement> = {
     group: SubagentGroup<Placement>,
     body: SubagentRowBody
   ) => StructuredAgentSessionSinkAdmission
+  /** For a port whose rows carry the strip's changes: the row is restated unchanged when only
+   *  children it does not list changed. */
+  restate?: (group: SubagentGroup<Placement>, body: SubagentRowBody) => void
 }
 
 export type SubagentRowBody = {

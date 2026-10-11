@@ -2,6 +2,7 @@
 // the session journaled, inherited one at a time as this run's own reports reach them. Every lookup
 // is read from the rows themselves, so no second index can disagree with what a row lists.
 
+import { isTerminalSubagentState } from '../../../shared/native-chat-subagent-summary'
 import { SubagentRosterRetention } from '../subagent-roster-retention'
 import { subagentGroupJournalBody } from '../agent-session-journal/journal-subagent-group-body'
 import { UNLABELLED_SUBAGENT } from './subagent-tracker-entries'
@@ -92,6 +93,32 @@ export class SubagentTrackerGroups<Placement> {
     return this.retention.hasSettled(settledIdentity(id, run))
   }
 
+  /** A settled child its row does not list is let go: only its identities keep it from being
+   *  tracked anew. */
+  releaseSettledUnlisted(group: SubagentGroup<Placement>): void {
+    for (const [id, tracked] of group.entries) {
+      if (tracked.listed || !isTerminalSubagentState(tracked.entry.state)) {
+        continue
+      }
+      this.retention.rememberSettled(settledIdentity(id, null))
+      for (const run of tracked.runs) {
+        this.retention.rememberSettled(settledIdentity(id, run))
+      }
+      group.entries.delete(id)
+    }
+  }
+
+  /** Children tracked beyond what their rows list. */
+  unlistedCount(): number {
+    let count = 0
+    for (const group of this.groups.values()) {
+      for (const tracked of group.entries.values()) {
+        count += tracked.listed ? 0 : 1
+      }
+    }
+    return count
+  }
+
   /** A run an entry no longer remembers is settled for good. */
   rememberSettledRun(id: string, run: string): void {
     this.retention.rememberSettled(settledIdentity(id, run))
@@ -152,7 +179,9 @@ export class SubagentTrackerGroups<Placement> {
         backgrounded: true,
         labelBase: entry.label,
         provisional: entry.label === UNLABELLED_SUBAGENT,
-        inherited: true
+        inherited: true,
+        listed: true,
+        stopAcknowledged: false
       })
     }
     this.groups.set(groupId, group)

@@ -1,11 +1,11 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`ACP subagent timeline rows (characterization) > a group past 64 children drops the rest 1`] = `
+exports[`ACP subagent timeline rows (characterization) > a group past 64 children lists 64 and tracks the rest 1`] = `
 {
   "events": 1,
   "has": [
     true,
-    false,
+    true,
   ],
   "lastLabels": "l":"X 60","state":"working","startedAt":1010},{"id":"c60","label":"X 61","state":"working","startedAt":1010},{"id":"c61","label":"X 62","state":"working","startedAt":1010},{"id":"c62","label":"X 63","state":"working","startedAt":1010},{"id":"c63","label":"X 64","state":"working","startedAt":1010}]}]",
 }
@@ -60,11 +60,43 @@ exports[`ACP subagent timeline rows (characterization) > children sharing a labe
         "thread": "parent",
         "turn": "turn-1",
       },
-      "subagentIdentities": [
-        "a1",
-        "a2",
-        "a3",
-        "a4",
+      "subagentChildWork": [
+        {
+          "backgrounded": true,
+          "id": "a1",
+          "label": "Audit",
+          "restart": false,
+          "run": null,
+          "state": "working",
+          "stopAcknowledged": false,
+        },
+        {
+          "backgrounded": true,
+          "id": "a2",
+          "label": "Audit 2",
+          "restart": false,
+          "run": null,
+          "state": "working",
+          "stopAcknowledged": false,
+        },
+        {
+          "backgrounded": true,
+          "id": "a3",
+          "label": "Audit 2 2",
+          "restart": false,
+          "run": null,
+          "state": "working",
+          "stopAcknowledged": false,
+        },
+        {
+          "backgrounded": true,
+          "id": "a4",
+          "label": "subagent",
+          "restart": false,
+          "run": null,
+          "state": "working",
+          "stopAcknowledged": false,
+        },
       ],
       "type": "item.update",
     },
@@ -119,11 +151,34 @@ exports[`ACP subagent timeline rows (characterization) > children sharing a labe
         "thread": "parent",
         "turn": "turn-1",
       },
-      "subagentIdentities": [
-        "a1",
-        "a2",
-        "a3",
-        "a4",
+      "subagentChildWork": [
+        {
+          "backgrounded": true,
+          "id": "a1",
+          "label": "Audit",
+          "restart": false,
+          "run": null,
+          "state": "stopped",
+          "stopAcknowledged": false,
+        },
+        {
+          "backgrounded": true,
+          "id": "a2",
+          "label": "Audit 2",
+          "restart": false,
+          "run": null,
+          "state": "completed",
+          "stopAcknowledged": false,
+        },
+        {
+          "backgrounded": true,
+          "id": "a3",
+          "label": "Audit 2 2",
+          "restart": false,
+          "run": null,
+          "state": "failed",
+          "stopAcknowledged": false,
+        },
       ],
       "type": "item.update",
     },
@@ -191,8 +246,16 @@ exports[`ACP subagent timeline rows (characterization) > knownOnly updates, turn
           "thread": "parent",
           "turn": "turn-0",
         },
-        "subagentIdentities": [
-          "a1",
+        "subagentChildWork": [
+          {
+            "backgrounded": true,
+            "id": "a1",
+            "label": "Spawned",
+            "restart": false,
+            "run": null,
+            "state": "working",
+            "stopAcknowledged": false,
+          },
         ],
         "type": "item.update",
       },
@@ -225,8 +288,16 @@ exports[`ACP subagent timeline rows (characterization) > knownOnly updates, turn
         "join": {
           "thread": "parent",
         },
-        "subagentIdentities": [
-          "a2",
+        "subagentChildWork": [
+          {
+            "backgrounded": true,
+            "id": "a2",
+            "label": "Loose",
+            "restart": false,
+            "run": null,
+            "state": "working",
+            "stopAcknowledged": false,
+          },
         ],
         "type": "item.update",
       },
@@ -261,8 +332,16 @@ exports[`ACP subagent timeline rows (characterization) > knownOnly updates, turn
           "thread": "parent",
           "turn": "turn-0",
         },
-        "subagentIdentities": [
-          "a1",
+        "subagentChildWork": [
+          {
+            "backgrounded": true,
+            "id": "a1",
+            "label": "Spawned",
+            "restart": false,
+            "run": null,
+            "state": "stopped",
+            "stopAcknowledged": false,
+          },
         ],
         "type": "item.update",
       },
@@ -308,8 +387,16 @@ exports[`ACP subagent timeline rows (characterization) > more than 32 settled gr
           "thread": "parent",
           "turn": "turn-live",
         },
-        "subagentIdentities": [
-          "live",
+        "subagentChildWork": [
+          {
+            "backgrounded": true,
+            "id": "live",
+            "label": "Live",
+            "restart": false,
+            "run": null,
+            "state": "working",
+            "stopAcknowledged": false,
+          },
         ],
         "type": "item.update",
       },
@@ -351,8 +438,16 @@ exports[`ACP subagent timeline rows (characterization) > one child: working, tok
         "thread": "parent",
         "turn": "turn-1",
       },
-      "subagentIdentities": [
-        "a1",
+      "subagentChildWork": [
+        {
+          "backgrounded": true,
+          "id": "a1",
+          "label": "Explore",
+          "restart": false,
+          "run": null,
+          "state": "working",
+          "stopAcknowledged": false,
+        },
       ],
       "type": "item.update",
     },
@@ -387,8 +482,17 @@ exports[`ACP subagent timeline rows (characterization) > one child: working, tok
         "thread": "parent",
         "turn": "turn-1",
       },
-      "subagentIdentities": [
-        "a1",
+      "subagentChildWork": [
+        {
+          "backgrounded": true,
+          "id": "a1",
+          "label": "Explore",
+          "restart": false,
+          "run": null,
+          "state": "working",
+          "stopAcknowledged": false,
+          "tokens": 0,
+        },
       ],
       "type": "item.update",
     },
@@ -423,8 +527,17 @@ exports[`ACP subagent timeline rows (characterization) > one child: working, tok
         "thread": "parent",
         "turn": "turn-1",
       },
-      "subagentIdentities": [
-        "a1",
+      "subagentChildWork": [
+        {
+          "backgrounded": true,
+          "id": "a1",
+          "label": "Explore",
+          "restart": false,
+          "run": null,
+          "state": "working",
+          "stopAcknowledged": false,
+          "tokens": 200,
+        },
       ],
       "type": "item.update",
     },
@@ -460,8 +573,17 @@ exports[`ACP subagent timeline rows (characterization) > one child: working, tok
         "thread": "parent",
         "turn": "turn-1",
       },
-      "subagentIdentities": [
-        "a1",
+      "subagentChildWork": [
+        {
+          "backgrounded": true,
+          "id": "a1",
+          "label": "Explore",
+          "restart": false,
+          "run": null,
+          "state": "completed",
+          "stopAcknowledged": false,
+          "tokens": 200,
+        },
       ],
       "type": "item.update",
     },
@@ -526,8 +648,16 @@ exports[`ACP subagent timeline rows (characterization) > writes nothing after di
           "thread": "parent",
           "turn": "turn-1",
         },
-        "subagentIdentities": [
-          "a1",
+        "subagentChildWork": [
+          {
+            "backgrounded": true,
+            "id": "a1",
+            "label": "A",
+            "restart": false,
+            "run": null,
+            "state": "working",
+            "stopAcknowledged": false,
+          },
         ],
         "type": "item.update",
       },

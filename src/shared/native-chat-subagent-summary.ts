@@ -68,6 +68,11 @@ const LATCHED_SUBAGENT_STATES: ReadonlySet<string> = new Set([
   'stopped'
 ])
 
+/** A state the child reported about itself, as opposed to one recording lost contact. */
+export function isSubagentVerdict(state: string): boolean {
+  return LATCHED_SUBAGENT_STATES.has(normalizeSubagentState(state))
+}
+
 /** Whether `next` may replace `current`.
  *
  *  A child that reported its own outcome keeps it. A child we merely lost sight
@@ -85,7 +90,7 @@ export function canReplaceSubagentState(current: string, next: string): boolean 
     return false
   }
   // `from` is `unverifiable`: only a real verdict may land.
-  return LATCHED_SUBAGENT_STATES.has(normalizeSubagentState(next))
+  return isSubagentVerdict(next)
 }
 
 export type NativeChatSubagentSummary = {

@@ -7,8 +7,8 @@ import {
   providerTurnItemId,
   refusingSink
 } from '../native-chat/agent-session-timeline/provider-timeline-assembler-test-support'
-import type { ProviderTimelineEvent } from '../native-chat/agent-session-timeline/provider-timeline-event'
 import { AcpStructuredLane } from './acp-structured-lane'
+import type { AcpTimelineEvent } from './acp-timeline-event'
 import { GROK_ACP_DIALECT } from './acp-dialects/grok-dialect'
 import { createDeferredStructuredAgentSessionEventSink } from '../native-chat/agent-session-wire/structured-agent-session-event-sink'
 import { providerTimelineSink } from '../native-chat/agent-session-timeline/provider-timeline-plan'
@@ -27,13 +27,25 @@ afterEach(async () => {
   await closeProviderTimelineRigs()
 })
 
-function roster(state: 'working' | 'completed'): ProviderTimelineEvent {
+/** A roster row as the subagent timeline writes it: the tracker's change for the strip rides it. */
+function roster(state: 'working' | 'completed'): AcpTimelineEvent {
   return {
     type: 'item.update',
     item: 'subagents:turn',
     body: subagentGroupJournalBody('turn', [
       { id: 'child', label: 'Exact label', state, startedAt: 1 }
-    ])
+    ]),
+    subagentChildWork: [
+      {
+        id: 'child',
+        run: null,
+        label: 'Exact label',
+        state,
+        backgrounded: true,
+        stopAcknowledged: false,
+        restart: false
+      }
+    ]
   }
 }
 

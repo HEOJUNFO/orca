@@ -33,6 +33,8 @@ export type ClaudeJournalTranslator = {
   childToolOwner?: ClaudeChildToolQueries['childToolOwner']
   childActivity?: ClaudeChildToolQueries['childActivity']
   retryPendingTaskRows?: () => StructuredAgentSessionSinkAdmission
+  /** Orca is about to ask Claude to stop this task: what to record once the CLI acknowledges it. */
+  subagentStop?: (taskId: string) => () => void
   /** Streamed blocks still awaiting a final frame. A settled turn leaves none. */
   readonly pendingStreamedBlocks: number
   /** Moves with the main conversation and each accepted send; a context report

@@ -68,7 +68,7 @@ describe('ACP subagent timeline rows (characterization)', () => {
     }).toMatchSnapshot()
   })
 
-  it('a group past 64 children drops the rest', () => {
+  it('a group past 64 children lists 64 and tracks the rest', () => {
     const h = harness()
     h.send(
       Array.from({ length: 66 }, (_, index): AcpSubagentUpdate => ({

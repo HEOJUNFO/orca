@@ -89,6 +89,9 @@ async function stopAcpSubagent(
   const result = control.response(value, id)
   if (result.state && result.state !== 'working') {
     session.lane.apply(session.lane.translator.reconcileSubagent(id, result.state, at()))
+  } else if (result.cancelled) {
+    // Reads stopped now; Grok's own ending of the subagent still says how it really ended.
+    session.lane.apply(session.lane.translator.subagents.stopAcknowledged(id, at()))
   }
   return { cancelled: result.cancelled }
 }

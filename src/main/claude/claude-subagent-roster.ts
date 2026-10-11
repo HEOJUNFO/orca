@@ -190,6 +190,16 @@ export class ClaudeSubagentRoster {
     })
   }
 
+  /** Binds a Stop of this task to the run it names now: once the CLI acknowledges it, the child
+   *  reads stopped until that run's own ending, and a run started since is left alone. */
+  stopAcknowledger(taskId: string): () => void {
+    const canonical = this.ids.canonical(taskId)
+    const run = this.tracker.locate(canonical)?.tracked.run ?? null
+    return () => {
+      this.tracker.stopAcknowledged(canonical, run)
+    }
+  }
+
   /** The parent turn ended. A foreground child still working loses contact with
    *  it; a backgrounded one was told to outlive the turn. Only the group this key
    *  names: `OUTSIDE_TURN` belongs to no turn, so no turn's end says anything about it. */

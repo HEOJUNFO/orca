@@ -1191,7 +1191,7 @@ exports[`Claude subagent child work (characterization) > e. a per-subagent Stop 
           {
             "id": "agent-1",
             "label": "Audit the build",
-            "state": "working",
+            "state": "stopped",
             "tokens": null,
           },
         ],
@@ -1353,7 +1353,7 @@ exports[`Claude subagent child work (characterization) > e. a per-subagent Stop 
           {
             "id": "agent-1",
             "label": "Audit the build",
-            "state": "working",
+            "state": "stopped",
             "tokens": null,
           },
         ],
@@ -1550,7 +1550,7 @@ exports[`Claude subagent child work (characterization) > e. a per-subagent Stop 
           {
             "id": "agent-1",
             "label": "Audit the build",
-            "state": "working",
+            "state": "stopped",
             "tokens": null,
           },
         ],
@@ -1747,7 +1747,7 @@ exports[`Claude subagent child work (characterization) > e. a per-subagent Stop 
           {
             "id": "agent-1",
             "label": "Audit the build",
-            "state": "working",
+            "state": "stopped",
             "tokens": null,
           },
         ],

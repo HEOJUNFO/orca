@@ -178,7 +178,7 @@ describe('Grok roster evidence through the existing host child store', () => {
     expect(await f.strip()).toBeNull()
   })
 
-  it('uses the targeted extension for one owned child and awaits its finish without cancelling parent or sibling', async () => {
+  it('uses the targeted extension for one owned child, reads it stopped on the acknowledgement, and leaves parent and sibling running', async () => {
     const f = await fixture()
     await f.spawn('first')
     await f.spawn('sibling')
@@ -189,8 +189,14 @@ describe('Grok roster evidence through the existing host child store', () => {
       })
     })
     expect(await f.targetedStop('first')).toMatchObject({ ok: true, value: { cancelled: true } })
-    expect(f.childWork.views().every((view) => view.membership === 'live')).toBe(true)
+    await f.rows()
+    expect((await f.roster())[0].state).toBe('stopped')
+    expect(f.childWork.views()).toMatchObject([
+      { providerId: 'first', membership: 'settled', outcome: 'cancelled' },
+      { providerId: 'sibling', membership: 'live' }
+    ])
     expect(f.agent.frames.filter((frame) => frame.method === 'session/cancel')).toEqual([])
+    // Grok's own ending confirms the Stop.
     await f.finish('first', 'cancelled')
     expect((await f.roster())[0].state).toBe('stopped')
     expect(f.childWork.views()).toMatchObject([

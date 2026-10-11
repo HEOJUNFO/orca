@@ -3,6 +3,7 @@
 import {
   MAX_SUBAGENT_FIELD_CHARS,
   canReplaceSubagentState,
+  isSubagentVerdict,
   isTerminalSubagentState
 } from '../../../shared/native-chat-subagent-summary'
 import type { NativeChatSubagentEntry } from '../../../shared/native-chat-types'
@@ -27,6 +28,11 @@ export function claimSubagentLabel(group: SubagentGroup<unknown>, base: string):
   }
   group.claimedLabels.add(candidate)
   return candidate
+}
+
+/** Only a listed child claims its label: an ordinal is the row's way to tell its children apart. */
+export function rowLabel(group: SubagentGroup<unknown>, listed: boolean, base: string): string {
+  return listed ? claimSubagentLabel(group, base) : base
 }
 
 /** A run starting now. A new run keeps the token count its child already showed. */
@@ -55,6 +61,13 @@ export function withSubagentState(
   state: NativeChatSubagentEntry['state'],
   now: number
 ): TrackedSubagent | null {
+  if (tracked.stopAcknowledged) {
+    // The run's own verdict confirms or corrects an acknowledged Stop, keeping when it ended;
+    // nothing else may move it.
+    return isSubagentVerdict(state)
+      ? { ...tracked, stopAcknowledged: false, entry: { ...tracked.entry, state } }
+      : null
+  }
   if (tracked.entry.state === state || !canReplaceSubagentState(tracked.entry.state, state)) {
     return null
   }

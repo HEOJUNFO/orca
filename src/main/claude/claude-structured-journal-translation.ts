@@ -298,6 +298,7 @@ export function createClaudeJournalTranslator(
     childToolOwner: childQueries.childToolOwner,
     childActivity: childQueries.childActivity,
     retryPendingTaskRows: () => backgroundTasks.retryPendingWrites(),
+    subagentStop: (taskId) => subagents.stopAcknowledger(taskId),
     get pendingStreamedBlocks() {
       return streamedText.pending + streamedThinking.pending
     },

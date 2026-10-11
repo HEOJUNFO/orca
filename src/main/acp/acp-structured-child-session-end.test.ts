@@ -87,7 +87,7 @@ describe('owned Grok child-session completion', () => {
         type: 'item.update',
         item: 'subagents:prompt:parent',
         join: { turn: f.promptId },
-        subagentIdentities: ['child']
+        subagentChildWork: [expect.objectContaining({ id: 'child', state: 'completed' })]
       }
     ])
     expect(f.end('cancelled')).toEqual([])
