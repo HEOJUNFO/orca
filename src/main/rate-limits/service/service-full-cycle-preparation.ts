@@ -75,7 +75,7 @@ export abstract class RateLimitServiceFullCyclePreparation extends RateLimitServ
     const previousState = this.state
     // Why: a skipped Codex poll must not stop the other providers' cycle, so gate
     // only the Codex slot instead of returning early (#STA-4422).
-    const codexHome = this.resolveCodexHome(codexTarget)
+    const codexHome = await this.resolveCodexHome(codexTarget)
     const codexFetchGated = codexHome.skip
     const codexHomePath = codexHome.homePath
     const codexStateBeforeFetch =

@@ -10,6 +10,27 @@ let retryAfterMs = 0
 let failureStreak = 0
 type RunningDistroObservation = { distros: string[]; confirmed: boolean }
 let inFlightProbe: Promise<RunningDistroObservation> | null = null
+const confirmedObservationListeners = new Set<(distros: readonly string[]) => void>()
+
+/** Notified with every confirmed (successful) probe result; never with a fallback list. */
+export function onConfirmedRunningWslDistros(
+  listener: (distros: readonly string[]) => void
+): () => void {
+  confirmedObservationListeners.add(listener)
+  return () => {
+    confirmedObservationListeners.delete(listener)
+  }
+}
+
+function notifyConfirmedObservation(distros: readonly string[]): void {
+  for (const listener of confirmedObservationListeners) {
+    try {
+      listener(distros)
+    } catch (error) {
+      console.warn('[wsl] running-distro listener failed', error)
+    }
+  }
+}
 
 function armRetryAfterFailure(): void {
   const now = Date.now()
@@ -54,6 +75,7 @@ function observeRunningWslDistros(
       cache = distros
       retryAfterMs = 0
       failureStreak = 0
+      notifyConfirmedObservation(distros)
       return { distros, confirmed: true }
     })
     .catch((error: unknown) => {
