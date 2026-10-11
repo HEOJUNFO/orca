@@ -1,0 +1,950 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`Grok subagent child work (characterization) > a. one subagent starts, reports tokens and completes 1`] = `
+[
+  {
+    "records": [
+      {
+        "inView": true,
+        "kind": "agent",
+        "label": "Count note lines",
+        "membership": "live",
+        "outcome": null,
+        "outcomeBasis": null,
+        "owner": null,
+        "providerId": "sub-1",
+        "ref": "#1",
+        "residency": "background",
+        "run": "sub-1@1",
+        "state": "working",
+        "stoppable": true,
+        "tokens": null,
+      },
+    ],
+    "rows": [
+      {
+        "agents": [
+          {
+            "id": "sub-1",
+            "label": "Count note lines",
+            "state": "working",
+            "tokens": null,
+          },
+        ],
+        "group": "group-1",
+      },
+    ],
+    "step": "spawned",
+    "stopTargets": [
+      "sub-1",
+    ],
+  },
+  {
+    "records": [
+      {
+        "inView": true,
+        "kind": "agent",
+        "label": "Count note lines",
+        "membership": "live",
+        "outcome": null,
+        "outcomeBasis": null,
+        "owner": null,
+        "providerId": "sub-1",
+        "ref": "#1",
+        "residency": "background",
+        "run": "sub-1@1",
+        "state": "working",
+        "stoppable": true,
+        "tokens": 1200,
+      },
+    ],
+    "rows": [
+      {
+        "agents": [
+          {
+            "id": "sub-1",
+            "label": "Count note lines",
+            "state": "working",
+            "tokens": 1200,
+          },
+        ],
+        "group": "group-1",
+      },
+    ],
+    "step": "tokens",
+    "stopTargets": [
+      "sub-1",
+    ],
+  },
+  {
+    "records": [
+      {
+        "inView": true,
+        "kind": "agent",
+        "label": "Count note lines",
+        "membership": "settled",
+        "outcome": "succeeded",
+        "outcomeBasis": null,
+        "owner": null,
+        "providerId": "sub-1",
+        "ref": "#1",
+        "residency": "background",
+        "run": "sub-1@1",
+        "state": "done",
+        "stoppable": false,
+        "tokens": 1500,
+      },
+    ],
+    "rows": [
+      {
+        "agents": [
+          {
+            "id": "sub-1",
+            "label": "Count note lines",
+            "state": "completed",
+            "tokens": 1500,
+          },
+        ],
+        "group": "group-1",
+      },
+    ],
+    "step": "completed",
+    "stopTargets": [],
+  },
+  {
+    "records": [
+      {
+        "inView": true,
+        "kind": "agent",
+        "label": "Count note lines",
+        "membership": "settled",
+        "outcome": "succeeded",
+        "outcomeBasis": null,
+        "owner": null,
+        "providerId": "sub-1",
+        "ref": "#1",
+        "residency": "background",
+        "run": "sub-1@1",
+        "state": "done",
+        "stoppable": false,
+        "tokens": 1500,
+      },
+    ],
+    "rows": [
+      {
+        "agents": [
+          {
+            "id": "sub-1",
+            "label": "Count note lines",
+            "state": "completed",
+            "tokens": 1500,
+          },
+        ],
+        "group": "group-1",
+      },
+    ],
+    "step": "turn ended",
+    "stopTargets": [],
+  },
+]
+`;
+
+exports[`Grok subagent child work (characterization) > b. two subagents with the same label, one fails 1`] = `
+[
+  {
+    "records": [
+      {
+        "inView": true,
+        "kind": "agent",
+        "label": "Audit",
+        "membership": "live",
+        "outcome": null,
+        "outcomeBasis": null,
+        "owner": null,
+        "providerId": "sub-1",
+        "ref": "#1",
+        "residency": "background",
+        "run": "sub-1@1",
+        "state": "working",
+        "stoppable": true,
+        "tokens": null,
+      },
+      {
+        "inView": true,
+        "kind": "agent",
+        "label": "Audit 2",
+        "membership": "live",
+        "outcome": null,
+        "outcomeBasis": null,
+        "owner": null,
+        "providerId": "sub-2",
+        "ref": "#2",
+        "residency": "background",
+        "run": "sub-2@1",
+        "state": "working",
+        "stoppable": true,
+        "tokens": null,
+      },
+    ],
+    "rows": [
+      {
+        "agents": [
+          {
+            "id": "sub-1",
+            "label": "Audit",
+            "state": "working",
+            "tokens": null,
+          },
+          {
+            "id": "sub-2",
+            "label": "Audit 2",
+            "state": "working",
+            "tokens": null,
+          },
+        ],
+        "group": "group-1",
+      },
+    ],
+    "step": "both spawned",
+    "stopTargets": [
+      "sub-1",
+      "sub-2",
+    ],
+  },
+  {
+    "records": [
+      {
+        "inView": true,
+        "kind": "agent",
+        "label": "Audit",
+        "membership": "live",
+        "outcome": null,
+        "outcomeBasis": null,
+        "owner": null,
+        "providerId": "sub-1",
+        "ref": "#1",
+        "residency": "background",
+        "run": "sub-1@1",
+        "state": "working",
+        "stoppable": true,
+        "tokens": 100,
+      },
+      {
+        "inView": true,
+        "kind": "agent",
+        "label": "Audit 2",
+        "membership": "live",
+        "outcome": null,
+        "outcomeBasis": null,
+        "owner": null,
+        "providerId": "sub-2",
+        "ref": "#2",
+        "residency": "background",
+        "run": "sub-2@1",
+        "state": "working",
+        "stoppable": true,
+        "tokens": 200,
+      },
+    ],
+    "rows": [
+      {
+        "agents": [
+          {
+            "id": "sub-1",
+            "label": "Audit",
+            "state": "working",
+            "tokens": 100,
+          },
+          {
+            "id": "sub-2",
+            "label": "Audit 2",
+            "state": "working",
+            "tokens": 200,
+          },
+        ],
+        "group": "group-1",
+      },
+    ],
+    "step": "tokens",
+    "stopTargets": [
+      "sub-1",
+      "sub-2",
+    ],
+  },
+  {
+    "records": [
+      {
+        "inView": true,
+        "kind": "agent",
+        "label": "Audit",
+        "membership": "settled",
+        "outcome": "failed",
+        "outcomeBasis": null,
+        "owner": null,
+        "providerId": "sub-1",
+        "ref": "#1",
+        "residency": "background",
+        "run": "sub-1@1",
+        "state": "done",
+        "stoppable": false,
+        "tokens": 100,
+      },
+      {
+        "inView": true,
+        "kind": "agent",
+        "label": "Audit 2",
+        "membership": "live",
+        "outcome": null,
+        "outcomeBasis": null,
+        "owner": null,
+        "providerId": "sub-2",
+        "ref": "#2",
+        "residency": "background",
+        "run": "sub-2@1",
+        "state": "working",
+        "stoppable": true,
+        "tokens": 200,
+      },
+    ],
+    "rows": [
+      {
+        "agents": [
+          {
+            "id": "sub-1",
+            "label": "Audit",
+            "state": "failed",
+            "tokens": 100,
+          },
+          {
+            "id": "sub-2",
+            "label": "Audit 2",
+            "state": "working",
+            "tokens": 200,
+          },
+        ],
+        "group": "group-1",
+      },
+    ],
+    "step": "first fails",
+    "stopTargets": [
+      "sub-2",
+    ],
+  },
+  {
+    "records": [
+      {
+        "inView": true,
+        "kind": "agent",
+        "label": "Audit",
+        "membership": "settled",
+        "outcome": "failed",
+        "outcomeBasis": null,
+        "owner": null,
+        "providerId": "sub-1",
+        "ref": "#1",
+        "residency": "background",
+        "run": "sub-1@1",
+        "state": "done",
+        "stoppable": false,
+        "tokens": 100,
+      },
+      {
+        "inView": true,
+        "kind": "agent",
+        "label": "Audit 2",
+        "membership": "settled",
+        "outcome": "succeeded",
+        "outcomeBasis": null,
+        "owner": null,
+        "providerId": "sub-2",
+        "ref": "#2",
+        "residency": "background",
+        "run": "sub-2@1",
+        "state": "done",
+        "stoppable": false,
+        "tokens": 200,
+      },
+    ],
+    "rows": [
+      {
+        "agents": [
+          {
+            "id": "sub-1",
+            "label": "Audit",
+            "state": "failed",
+            "tokens": 100,
+          },
+          {
+            "id": "sub-2",
+            "label": "Audit 2",
+            "state": "completed",
+            "tokens": 200,
+          },
+        ],
+        "group": "group-1",
+      },
+    ],
+    "step": "second completes",
+    "stopTargets": [],
+  },
+]
+`;
+
+exports[`Grok subagent child work (characterization) > c. a subagent outlives the parent turn that spawned it 1`] = `
+[
+  {
+    "records": [
+      {
+        "inView": true,
+        "kind": "agent",
+        "label": "List folder files",
+        "membership": "live",
+        "outcome": null,
+        "outcomeBasis": null,
+        "owner": null,
+        "providerId": "sub-1",
+        "ref": "#1",
+        "residency": "background",
+        "run": "sub-1@1",
+        "state": "working",
+        "stoppable": true,
+        "tokens": null,
+      },
+    ],
+    "rows": [
+      {
+        "agents": [
+          {
+            "id": "sub-1",
+            "label": "List folder files",
+            "state": "working",
+            "tokens": null,
+          },
+        ],
+        "group": "group-1",
+      },
+    ],
+    "step": "spawned",
+    "stopTargets": [
+      "sub-1",
+    ],
+  },
+  {
+    "records": [
+      {
+        "inView": true,
+        "kind": "agent",
+        "label": "List folder files",
+        "membership": "live",
+        "outcome": null,
+        "outcomeBasis": null,
+        "owner": null,
+        "providerId": "sub-1",
+        "ref": "#1",
+        "residency": "background",
+        "run": "sub-1@1",
+        "state": "working",
+        "stoppable": true,
+        "tokens": null,
+      },
+    ],
+    "rows": [
+      {
+        "agents": [
+          {
+            "id": "sub-1",
+            "label": "List folder files",
+            "state": "working",
+            "tokens": null,
+          },
+        ],
+        "group": "group-1",
+      },
+    ],
+    "step": "parent turn ended",
+    "stopTargets": [
+      "sub-1",
+    ],
+  },
+  {
+    "records": [
+      {
+        "inView": true,
+        "kind": "agent",
+        "label": "List folder files",
+        "membership": "live",
+        "outcome": null,
+        "outcomeBasis": null,
+        "owner": null,
+        "providerId": "sub-1",
+        "ref": "#1",
+        "residency": "background",
+        "run": "sub-1@1",
+        "state": "working",
+        "stoppable": true,
+        "tokens": 900,
+      },
+    ],
+    "rows": [
+      {
+        "agents": [
+          {
+            "id": "sub-1",
+            "label": "List folder files",
+            "state": "working",
+            "tokens": 900,
+          },
+        ],
+        "group": "group-1",
+      },
+    ],
+    "step": "tokens after turn",
+    "stopTargets": [
+      "sub-1",
+    ],
+  },
+  {
+    "records": [
+      {
+        "inView": true,
+        "kind": "agent",
+        "label": "List folder files",
+        "membership": "settled",
+        "outcome": "succeeded",
+        "outcomeBasis": null,
+        "owner": null,
+        "providerId": "sub-1",
+        "ref": "#1",
+        "residency": "background",
+        "run": "sub-1@1",
+        "state": "done",
+        "stoppable": false,
+        "tokens": 900,
+      },
+    ],
+    "rows": [
+      {
+        "agents": [
+          {
+            "id": "sub-1",
+            "label": "List folder files",
+            "state": "completed",
+            "tokens": 900,
+          },
+        ],
+        "group": "group-1",
+      },
+    ],
+    "step": "completed later",
+    "stopTargets": [],
+  },
+]
+`;
+
+exports[`Grok subagent child work (characterization) > e. a per-subagent Stop Grok answers > already_finished with a status 1`] = `
+[
+  {
+    "records": [
+      {
+        "inView": true,
+        "kind": "agent",
+        "label": "Audit",
+        "membership": "live",
+        "outcome": null,
+        "outcomeBasis": null,
+        "owner": null,
+        "providerId": "sub-1",
+        "ref": "#1",
+        "residency": "background",
+        "run": "sub-1@1",
+        "state": "working",
+        "stoppable": true,
+        "tokens": null,
+      },
+    ],
+    "rows": [
+      {
+        "agents": [
+          {
+            "id": "sub-1",
+            "label": "Audit",
+            "state": "working",
+            "tokens": null,
+          },
+        ],
+        "group": "group-1",
+      },
+    ],
+    "step": "spawned",
+    "stopTargets": [
+      "sub-1",
+    ],
+  },
+  {
+    "outcome": {
+      "cancelled": false,
+      "turnId": "background-tasks",
+    },
+    "records": [
+      {
+        "inView": true,
+        "kind": "agent",
+        "label": "Audit",
+        "membership": "settled",
+        "outcome": "succeeded",
+        "outcomeBasis": null,
+        "owner": null,
+        "providerId": "sub-1",
+        "ref": "#1",
+        "residency": "background",
+        "run": "sub-1@1",
+        "state": "done",
+        "stoppable": false,
+        "tokens": null,
+      },
+    ],
+    "rows": [
+      {
+        "agents": [
+          {
+            "id": "sub-1",
+            "label": "Audit",
+            "state": "completed",
+            "tokens": null,
+          },
+        ],
+        "group": "group-1",
+      },
+    ],
+    "step": "stop sub-1",
+    "stopTargets": [],
+  },
+]
+`;
+
+exports[`Grok subagent child work (characterization) > e. a per-subagent Stop Grok answers > cancelled, then subagent_finished cancelled 1`] = `
+[
+  {
+    "records": [
+      {
+        "inView": true,
+        "kind": "agent",
+        "label": "Audit",
+        "membership": "live",
+        "outcome": null,
+        "outcomeBasis": null,
+        "owner": null,
+        "providerId": "sub-1",
+        "ref": "#1",
+        "residency": "background",
+        "run": "sub-1@1",
+        "state": "working",
+        "stoppable": true,
+        "tokens": null,
+      },
+      {
+        "inView": true,
+        "kind": "agent",
+        "label": "Audit 2",
+        "membership": "live",
+        "outcome": null,
+        "outcomeBasis": null,
+        "owner": null,
+        "providerId": "sub-2",
+        "ref": "#2",
+        "residency": "background",
+        "run": "sub-2@1",
+        "state": "working",
+        "stoppable": true,
+        "tokens": null,
+      },
+    ],
+    "rows": [
+      {
+        "agents": [
+          {
+            "id": "sub-1",
+            "label": "Audit",
+            "state": "working",
+            "tokens": null,
+          },
+          {
+            "id": "sub-2",
+            "label": "Audit 2",
+            "state": "working",
+            "tokens": null,
+          },
+        ],
+        "group": "group-1",
+      },
+    ],
+    "step": "both spawned",
+    "stopTargets": [
+      "sub-1",
+      "sub-2",
+    ],
+  },
+  {
+    "outcome": {
+      "cancelled": true,
+      "turnId": "background-tasks",
+    },
+    "records": [
+      {
+        "inView": true,
+        "kind": "agent",
+        "label": "Audit",
+        "membership": "live",
+        "outcome": null,
+        "outcomeBasis": null,
+        "owner": null,
+        "providerId": "sub-1",
+        "ref": "#1",
+        "residency": "background",
+        "run": "sub-1@1",
+        "state": "working",
+        "stoppable": true,
+        "tokens": null,
+      },
+      {
+        "inView": true,
+        "kind": "agent",
+        "label": "Audit 2",
+        "membership": "live",
+        "outcome": null,
+        "outcomeBasis": null,
+        "owner": null,
+        "providerId": "sub-2",
+        "ref": "#2",
+        "residency": "background",
+        "run": "sub-2@1",
+        "state": "working",
+        "stoppable": true,
+        "tokens": null,
+      },
+    ],
+    "rows": [
+      {
+        "agents": [
+          {
+            "id": "sub-1",
+            "label": "Audit",
+            "state": "working",
+            "tokens": null,
+          },
+          {
+            "id": "sub-2",
+            "label": "Audit 2",
+            "state": "working",
+            "tokens": null,
+          },
+        ],
+        "group": "group-1",
+      },
+    ],
+    "step": "stop sub-1",
+    "stopTargets": [
+      "sub-1",
+      "sub-2",
+    ],
+  },
+  {
+    "records": [
+      {
+        "inView": true,
+        "kind": "agent",
+        "label": "Audit",
+        "membership": "settled",
+        "outcome": "cancelled",
+        "outcomeBasis": null,
+        "owner": null,
+        "providerId": "sub-1",
+        "ref": "#1",
+        "residency": "background",
+        "run": "sub-1@1",
+        "state": "done",
+        "stoppable": false,
+        "tokens": null,
+      },
+      {
+        "inView": true,
+        "kind": "agent",
+        "label": "Audit 2",
+        "membership": "live",
+        "outcome": null,
+        "outcomeBasis": null,
+        "owner": null,
+        "providerId": "sub-2",
+        "ref": "#2",
+        "residency": "background",
+        "run": "sub-2@1",
+        "state": "working",
+        "stoppable": true,
+        "tokens": null,
+      },
+    ],
+    "rows": [
+      {
+        "agents": [
+          {
+            "id": "sub-1",
+            "label": "Audit",
+            "state": "stopped",
+            "tokens": null,
+          },
+          {
+            "id": "sub-2",
+            "label": "Audit 2",
+            "state": "working",
+            "tokens": null,
+          },
+        ],
+        "group": "group-1",
+      },
+    ],
+    "step": "finished cancelled",
+    "stopTargets": [
+      "sub-2",
+    ],
+  },
+]
+`;
+
+exports[`Grok subagent child work (characterization) > f. the provider session ends with a subagent still working 1`] = `
+[
+  {
+    "records": [
+      {
+        "inView": true,
+        "kind": "agent",
+        "label": "Audit",
+        "membership": "live",
+        "outcome": null,
+        "outcomeBasis": null,
+        "owner": null,
+        "providerId": "sub-1",
+        "ref": "#1",
+        "residency": "background",
+        "run": "sub-1@1",
+        "state": "working",
+        "stoppable": true,
+        "tokens": null,
+      },
+    ],
+    "rows": [
+      {
+        "agents": [
+          {
+            "id": "sub-1",
+            "label": "Audit",
+            "state": "working",
+            "tokens": null,
+          },
+        ],
+        "group": "group-1",
+      },
+    ],
+    "step": "spawned",
+    "stopTargets": [
+      "sub-1",
+    ],
+  },
+  {
+    "records": [
+      {
+        "inView": true,
+        "kind": "agent",
+        "label": "Audit",
+        "membership": "settled",
+        "outcome": "unknown",
+        "outcomeBasis": null,
+        "owner": null,
+        "providerId": "sub-1",
+        "ref": "#1",
+        "residency": "background",
+        "run": "sub-1@1",
+        "state": "done",
+        "stoppable": false,
+        "tokens": null,
+      },
+    ],
+    "rows": [
+      {
+        "agents": [
+          {
+            "id": "sub-1",
+            "label": "Audit",
+            "state": "unverifiable",
+            "tokens": null,
+          },
+        ],
+        "group": "group-1",
+      },
+    ],
+    "step": "provider exited",
+    "stopTargets": [],
+  },
+]
+`;
+
+exports[`Grok subagent child work (characterization) > g. 66 subagents spawned in one turn 1`] = `
+{
+  "lastRecords": [
+    {
+      "inView": true,
+      "kind": "agent",
+      "label": "Worker 63",
+      "membership": "live",
+      "outcome": null,
+      "outcomeBasis": null,
+      "owner": null,
+      "providerId": "sub-63",
+      "ref": "#63",
+      "residency": "background",
+      "run": "sub-63@1",
+      "state": "working",
+      "stoppable": true,
+      "tokens": null,
+    },
+    {
+      "inView": true,
+      "kind": "agent",
+      "label": "Worker 64",
+      "membership": "live",
+      "outcome": null,
+      "outcomeBasis": null,
+      "owner": null,
+      "providerId": "sub-64",
+      "ref": "#64",
+      "residency": "background",
+      "run": "sub-64@1",
+      "state": "working",
+      "stoppable": true,
+      "tokens": null,
+    },
+  ],
+  "lastRowAgents": [
+    {
+      "id": "sub-63",
+      "label": "Worker 63",
+      "state": "working",
+      "tokens": null,
+    },
+    {
+      "id": "sub-64",
+      "label": "Worker 64",
+      "state": "working",
+      "tokens": null,
+    },
+  ],
+  "lastStopTargets": [
+    "sub-63",
+    "sub-64",
+  ],
+  "liveRecords": 64,
+  "records": 64,
+  "rowAgents": 64,
+  "rowGroups": 1,
+  "stopTargets": 64,
+}
+`;

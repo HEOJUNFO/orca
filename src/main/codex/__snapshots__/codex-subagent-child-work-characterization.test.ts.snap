@@ -1,0 +1,968 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`Codex subagent child work (characterization) > a. one subagent starts, reports tokens and completes 1`] = `
+[
+  {
+    "records": [],
+    "rows": [],
+    "step": "parent turn",
+    "stopTargets": [],
+  },
+  {
+    "records": [
+      {
+        "inView": true,
+        "kind": "agent",
+        "label": "review",
+        "membership": "live",
+        "outcome": null,
+        "outcomeBasis": null,
+        "owner": null,
+        "providerId": "thread-a",
+        "ref": "#1",
+        "residency": "background",
+        "run": "a1@1",
+        "state": "working",
+        "stoppable": true,
+        "tokens": null,
+      },
+    ],
+    "rows": [
+      {
+        "agents": [
+          {
+            "id": "thread-a",
+            "label": "review",
+            "state": "working",
+            "tokens": null,
+          },
+        ],
+        "group": "group-1",
+      },
+    ],
+    "step": "spawned",
+    "stopTargets": [
+      "thread-a",
+    ],
+  },
+  {
+    "records": [
+      {
+        "inView": true,
+        "kind": "agent",
+        "label": "review",
+        "membership": "live",
+        "outcome": null,
+        "outcomeBasis": null,
+        "owner": null,
+        "providerId": "thread-a",
+        "ref": "#1",
+        "residency": "background",
+        "run": "a1@1",
+        "state": "working",
+        "stoppable": true,
+        "tokens": 1200,
+      },
+    ],
+    "rows": [
+      {
+        "agents": [
+          {
+            "id": "thread-a",
+            "label": "review",
+            "state": "working",
+            "tokens": 1200,
+          },
+        ],
+        "group": "group-1",
+      },
+    ],
+    "step": "tokens",
+    "stopTargets": [
+      "thread-a",
+    ],
+  },
+  {
+    "records": [
+      {
+        "inView": true,
+        "kind": "agent",
+        "label": "review",
+        "membership": "live",
+        "outcome": null,
+        "outcomeBasis": null,
+        "owner": null,
+        "providerId": "thread-a",
+        "ref": "#1",
+        "residency": "background",
+        "run": "a1@1",
+        "state": "working",
+        "stoppable": true,
+        "tokens": 1200,
+      },
+    ],
+    "rows": [
+      {
+        "agents": [
+          {
+            "id": "thread-a",
+            "label": "review",
+            "state": "working",
+            "tokens": 1200,
+          },
+        ],
+        "group": "group-1",
+      },
+    ],
+    "step": "replied",
+    "stopTargets": [
+      "thread-a",
+    ],
+  },
+  {
+    "records": [
+      {
+        "inView": true,
+        "kind": "agent",
+        "label": "review",
+        "membership": "settled",
+        "outcome": "succeeded",
+        "outcomeBasis": null,
+        "owner": null,
+        "providerId": "thread-a",
+        "ref": "#1",
+        "residency": "background",
+        "run": "a1@1",
+        "state": "done",
+        "stoppable": false,
+        "tokens": 1200,
+      },
+    ],
+    "rows": [
+      {
+        "agents": [
+          {
+            "id": "thread-a",
+            "label": "review",
+            "state": "completed",
+            "tokens": 1200,
+          },
+        ],
+        "group": "group-1",
+      },
+    ],
+    "step": "completed",
+    "stopTargets": [],
+  },
+  {
+    "records": [
+      {
+        "inView": true,
+        "kind": "agent",
+        "label": "review",
+        "membership": "settled",
+        "outcome": "succeeded",
+        "outcomeBasis": null,
+        "owner": null,
+        "providerId": "thread-a",
+        "ref": "#1",
+        "residency": "background",
+        "run": "a1@1",
+        "state": "done",
+        "stoppable": false,
+        "tokens": 1200,
+      },
+    ],
+    "rows": [
+      {
+        "agents": [
+          {
+            "id": "thread-a",
+            "label": "review",
+            "state": "completed",
+            "tokens": 1200,
+          },
+        ],
+        "group": "group-1",
+      },
+    ],
+    "step": "parent turn ended",
+    "stopTargets": [],
+  },
+]
+`;
+
+exports[`Codex subagent child work (characterization) > b. two subagents with the same label, one fails 1`] = `
+[
+  {
+    "records": [],
+    "rows": [],
+    "step": "parent turn",
+    "stopTargets": [],
+  },
+  {
+    "records": [
+      {
+        "inView": true,
+        "kind": "agent",
+        "label": "audit",
+        "membership": "live",
+        "outcome": null,
+        "outcomeBasis": null,
+        "owner": null,
+        "providerId": "thread-a",
+        "ref": "#1",
+        "residency": "background",
+        "run": "a1@1",
+        "state": "working",
+        "stoppable": true,
+        "tokens": null,
+      },
+      {
+        "inView": true,
+        "kind": "agent",
+        "label": "audit",
+        "membership": "live",
+        "outcome": null,
+        "outcomeBasis": null,
+        "owner": null,
+        "providerId": "thread-b",
+        "ref": "#2",
+        "residency": "background",
+        "run": "b1@1",
+        "state": "working",
+        "stoppable": true,
+        "tokens": null,
+      },
+    ],
+    "rows": [
+      {
+        "agents": [
+          {
+            "id": "thread-a",
+            "label": "audit",
+            "state": "working",
+            "tokens": null,
+          },
+          {
+            "id": "thread-b",
+            "label": "audit 2",
+            "state": "working",
+            "tokens": null,
+          },
+        ],
+        "group": "group-1",
+      },
+    ],
+    "step": "both spawned",
+    "stopTargets": [
+      "thread-a",
+      "thread-b",
+    ],
+  },
+  {
+    "records": [
+      {
+        "inView": true,
+        "kind": "agent",
+        "label": "audit",
+        "membership": "live",
+        "outcome": null,
+        "outcomeBasis": null,
+        "owner": null,
+        "providerId": "thread-a",
+        "ref": "#1",
+        "residency": "background",
+        "run": "a1@1",
+        "state": "working",
+        "stoppable": true,
+        "tokens": 100,
+      },
+      {
+        "inView": true,
+        "kind": "agent",
+        "label": "audit",
+        "membership": "live",
+        "outcome": null,
+        "outcomeBasis": null,
+        "owner": null,
+        "providerId": "thread-b",
+        "ref": "#2",
+        "residency": "background",
+        "run": "b1@1",
+        "state": "working",
+        "stoppable": true,
+        "tokens": 200,
+      },
+    ],
+    "rows": [
+      {
+        "agents": [
+          {
+            "id": "thread-a",
+            "label": "audit",
+            "state": "working",
+            "tokens": 100,
+          },
+          {
+            "id": "thread-b",
+            "label": "audit 2",
+            "state": "working",
+            "tokens": 200,
+          },
+        ],
+        "group": "group-1",
+      },
+    ],
+    "step": "tokens",
+    "stopTargets": [
+      "thread-a",
+      "thread-b",
+    ],
+  },
+  {
+    "records": [
+      {
+        "inView": true,
+        "kind": "agent",
+        "label": "audit",
+        "membership": "settled",
+        "outcome": "failed",
+        "outcomeBasis": null,
+        "owner": null,
+        "providerId": "thread-a",
+        "ref": "#1",
+        "residency": "background",
+        "run": "a1@1",
+        "state": "done",
+        "stoppable": false,
+        "tokens": 100,
+      },
+      {
+        "inView": true,
+        "kind": "agent",
+        "label": "audit",
+        "membership": "live",
+        "outcome": null,
+        "outcomeBasis": null,
+        "owner": null,
+        "providerId": "thread-b",
+        "ref": "#2",
+        "residency": "background",
+        "run": "b1@1",
+        "state": "working",
+        "stoppable": true,
+        "tokens": 200,
+      },
+    ],
+    "rows": [
+      {
+        "agents": [
+          {
+            "id": "thread-a",
+            "label": "audit",
+            "state": "failed",
+            "tokens": 100,
+          },
+          {
+            "id": "thread-b",
+            "label": "audit 2",
+            "state": "working",
+            "tokens": 200,
+          },
+        ],
+        "group": "group-1",
+      },
+    ],
+    "step": "first fails",
+    "stopTargets": [
+      "thread-b",
+    ],
+  },
+  {
+    "records": [
+      {
+        "inView": true,
+        "kind": "agent",
+        "label": "audit",
+        "membership": "settled",
+        "outcome": "failed",
+        "outcomeBasis": null,
+        "owner": null,
+        "providerId": "thread-a",
+        "ref": "#1",
+        "residency": "background",
+        "run": "a1@1",
+        "state": "done",
+        "stoppable": false,
+        "tokens": 100,
+      },
+      {
+        "inView": true,
+        "kind": "agent",
+        "label": "audit",
+        "membership": "settled",
+        "outcome": "succeeded",
+        "outcomeBasis": null,
+        "owner": null,
+        "providerId": "thread-b",
+        "ref": "#2",
+        "residency": "background",
+        "run": "b1@1",
+        "state": "done",
+        "stoppable": false,
+        "tokens": 200,
+      },
+    ],
+    "rows": [
+      {
+        "agents": [
+          {
+            "id": "thread-a",
+            "label": "audit",
+            "state": "failed",
+            "tokens": 100,
+          },
+          {
+            "id": "thread-b",
+            "label": "audit 2",
+            "state": "completed",
+            "tokens": 200,
+          },
+        ],
+        "group": "group-1",
+      },
+    ],
+    "step": "second completes",
+    "stopTargets": [],
+  },
+  {
+    "records": [
+      {
+        "inView": true,
+        "kind": "agent",
+        "label": "audit",
+        "membership": "settled",
+        "outcome": "failed",
+        "outcomeBasis": null,
+        "owner": null,
+        "providerId": "thread-a",
+        "ref": "#1",
+        "residency": "background",
+        "run": "a1@1",
+        "state": "done",
+        "stoppable": false,
+        "tokens": 100,
+      },
+      {
+        "inView": true,
+        "kind": "agent",
+        "label": "audit",
+        "membership": "settled",
+        "outcome": "succeeded",
+        "outcomeBasis": null,
+        "owner": null,
+        "providerId": "thread-b",
+        "ref": "#2",
+        "residency": "background",
+        "run": "b1@1",
+        "state": "done",
+        "stoppable": false,
+        "tokens": 200,
+      },
+    ],
+    "rows": [
+      {
+        "agents": [
+          {
+            "id": "thread-a",
+            "label": "audit",
+            "state": "failed",
+            "tokens": 100,
+          },
+          {
+            "id": "thread-b",
+            "label": "audit 2",
+            "state": "completed",
+            "tokens": 200,
+          },
+        ],
+        "group": "group-1",
+      },
+    ],
+    "step": "parent turn ended",
+    "stopTargets": [],
+  },
+]
+`;
+
+exports[`Codex subagent child work (characterization) > c. a subagent outlives the parent turn that spawned it 1`] = `
+[
+  {
+    "records": [],
+    "rows": [],
+    "step": "parent turn",
+    "stopTargets": [],
+  },
+  {
+    "records": [
+      {
+        "inView": true,
+        "kind": "agent",
+        "label": "review",
+        "membership": "live",
+        "outcome": null,
+        "outcomeBasis": null,
+        "owner": null,
+        "providerId": "thread-a",
+        "ref": "#1",
+        "residency": "background",
+        "run": "a1@1",
+        "state": "working",
+        "stoppable": true,
+        "tokens": null,
+      },
+    ],
+    "rows": [
+      {
+        "agents": [
+          {
+            "id": "thread-a",
+            "label": "review",
+            "state": "working",
+            "tokens": null,
+          },
+        ],
+        "group": "group-1",
+      },
+    ],
+    "step": "spawned",
+    "stopTargets": [
+      "thread-a",
+    ],
+  },
+  {
+    "records": [
+      {
+        "inView": true,
+        "kind": "agent",
+        "label": "review",
+        "membership": "live",
+        "outcome": null,
+        "outcomeBasis": null,
+        "owner": null,
+        "providerId": "thread-a",
+        "ref": "#1",
+        "residency": "background",
+        "run": "a1@1",
+        "state": "working",
+        "stoppable": true,
+        "tokens": null,
+      },
+    ],
+    "rows": [
+      {
+        "agents": [
+          {
+            "id": "thread-a",
+            "label": "review",
+            "state": "working",
+            "tokens": null,
+          },
+        ],
+        "group": "group-1",
+      },
+    ],
+    "step": "parent turn ended",
+    "stopTargets": [
+      "thread-a",
+    ],
+  },
+  {
+    "records": [
+      {
+        "inView": true,
+        "kind": "agent",
+        "label": "review",
+        "membership": "live",
+        "outcome": null,
+        "outcomeBasis": null,
+        "owner": null,
+        "providerId": "thread-a",
+        "ref": "#1",
+        "residency": "background",
+        "run": "a1@1",
+        "state": "working",
+        "stoppable": true,
+        "tokens": 900,
+      },
+    ],
+    "rows": [
+      {
+        "agents": [
+          {
+            "id": "thread-a",
+            "label": "review",
+            "state": "working",
+            "tokens": 900,
+          },
+        ],
+        "group": "group-1",
+      },
+    ],
+    "step": "tokens after turn",
+    "stopTargets": [
+      "thread-a",
+    ],
+  },
+  {
+    "records": [
+      {
+        "inView": true,
+        "kind": "agent",
+        "label": "review",
+        "membership": "settled",
+        "outcome": "succeeded",
+        "outcomeBasis": null,
+        "owner": null,
+        "providerId": "thread-a",
+        "ref": "#1",
+        "residency": "background",
+        "run": "a1@1",
+        "state": "done",
+        "stoppable": false,
+        "tokens": 900,
+      },
+    ],
+    "rows": [
+      {
+        "agents": [
+          {
+            "id": "thread-a",
+            "label": "review",
+            "state": "completed",
+            "tokens": 900,
+          },
+        ],
+        "group": "group-1",
+      },
+    ],
+    "step": "completed later",
+    "stopTargets": [],
+  },
+]
+`;
+
+exports[`Codex subagent child work (characterization) > e. a per-subagent Stop: turn/interrupt answered, then the child turn ends interrupted 1`] = `
+[
+  {
+    "records": [],
+    "rows": [],
+    "step": "parent turn",
+    "stopTargets": [],
+  },
+  {
+    "records": [
+      {
+        "inView": true,
+        "kind": "agent",
+        "label": "review",
+        "membership": "live",
+        "outcome": null,
+        "outcomeBasis": null,
+        "owner": null,
+        "providerId": "thread-a",
+        "ref": "#1",
+        "residency": "background",
+        "run": "a1@1",
+        "state": "working",
+        "stoppable": true,
+        "tokens": null,
+      },
+    ],
+    "rows": [
+      {
+        "agents": [
+          {
+            "id": "thread-a",
+            "label": "review",
+            "state": "working",
+            "tokens": null,
+          },
+        ],
+        "group": "group-1",
+      },
+    ],
+    "step": "spawned",
+    "stopTargets": [
+      "thread-a",
+    ],
+  },
+  {
+    "records": [
+      {
+        "inView": true,
+        "kind": "agent",
+        "label": "review",
+        "membership": "live",
+        "outcome": null,
+        "outcomeBasis": null,
+        "owner": null,
+        "providerId": "thread-a",
+        "ref": "#1",
+        "residency": "background",
+        "run": "a1@1",
+        "state": "working",
+        "stoppable": true,
+        "tokens": null,
+      },
+    ],
+    "rows": [
+      {
+        "agents": [
+          {
+            "id": "thread-a",
+            "label": "review",
+            "state": "working",
+            "tokens": null,
+          },
+        ],
+        "group": "group-1",
+      },
+    ],
+    "step": "parent turn ended",
+    "stopTargets": [
+      "thread-a",
+    ],
+  },
+  {
+    "calls": [
+      {
+        "method": "turn/interrupt",
+        "params": {
+          "threadId": "thread-a",
+          "turnId": "a1",
+        },
+      },
+    ],
+    "outcome": {
+      "cancelled": true,
+    },
+    "records": [
+      {
+        "inView": true,
+        "kind": "agent",
+        "label": "review",
+        "membership": "live",
+        "outcome": null,
+        "outcomeBasis": null,
+        "owner": null,
+        "providerId": "thread-a",
+        "ref": "#1",
+        "residency": "background",
+        "run": "a1@1",
+        "state": "working",
+        "stoppable": true,
+        "tokens": null,
+      },
+    ],
+    "rows": [
+      {
+        "agents": [
+          {
+            "id": "thread-a",
+            "label": "review",
+            "state": "working",
+            "tokens": null,
+          },
+        ],
+        "group": "group-1",
+      },
+    ],
+    "step": "stop thread-a",
+    "stopTargets": [
+      "thread-a",
+    ],
+  },
+  {
+    "records": [
+      {
+        "inView": true,
+        "kind": "agent",
+        "label": "review",
+        "membership": "settled",
+        "outcome": "cancelled",
+        "outcomeBasis": null,
+        "owner": null,
+        "providerId": "thread-a",
+        "ref": "#1",
+        "residency": "background",
+        "run": "a1@1",
+        "state": "done",
+        "stoppable": false,
+        "tokens": null,
+      },
+    ],
+    "rows": [
+      {
+        "agents": [
+          {
+            "id": "thread-a",
+            "label": "review",
+            "state": "stopped",
+            "tokens": null,
+          },
+        ],
+        "group": "group-1",
+      },
+    ],
+    "step": "child turn interrupted",
+    "stopTargets": [],
+  },
+]
+`;
+
+exports[`Codex subagent child work (characterization) > f. the provider session ends with a subagent still working 1`] = `
+[
+  {
+    "records": [],
+    "rows": [],
+    "step": "parent turn",
+    "stopTargets": [],
+  },
+  {
+    "records": [
+      {
+        "inView": true,
+        "kind": "agent",
+        "label": "review",
+        "membership": "live",
+        "outcome": null,
+        "outcomeBasis": null,
+        "owner": null,
+        "providerId": "thread-a",
+        "ref": "#1",
+        "residency": "background",
+        "run": "a1@1",
+        "state": "working",
+        "stoppable": true,
+        "tokens": null,
+      },
+    ],
+    "rows": [
+      {
+        "agents": [
+          {
+            "id": "thread-a",
+            "label": "review",
+            "state": "working",
+            "tokens": null,
+          },
+        ],
+        "group": "group-1",
+      },
+    ],
+    "step": "spawned",
+    "stopTargets": [
+      "thread-a",
+    ],
+  },
+  {
+    "records": [
+      {
+        "inView": true,
+        "kind": "agent",
+        "label": "review",
+        "membership": "settled",
+        "outcome": "unknown",
+        "outcomeBasis": null,
+        "owner": null,
+        "providerId": "thread-a",
+        "ref": "#1",
+        "residency": "background",
+        "run": "a1@1",
+        "state": "done",
+        "stoppable": false,
+        "tokens": null,
+      },
+    ],
+    "rows": [
+      {
+        "agents": [
+          {
+            "id": "thread-a",
+            "label": "review",
+            "state": "unverifiable",
+            "tokens": null,
+          },
+        ],
+        "group": "group-1",
+      },
+    ],
+    "step": "provider exited",
+    "stopTargets": [],
+  },
+]
+`;
+
+exports[`Codex subagent child work (characterization) > g. 66 subagents spawned in one turn 1`] = `
+{
+  "lastRecords": [
+    {
+      "inView": true,
+      "kind": "agent",
+      "label": "worker-65",
+      "membership": "live",
+      "outcome": null,
+      "outcomeBasis": null,
+      "owner": null,
+      "providerId": "thread-65",
+      "ref": "#65",
+      "residency": "background",
+      "run": "t65@1",
+      "state": "working",
+      "stoppable": true,
+      "tokens": null,
+    },
+    {
+      "inView": true,
+      "kind": "agent",
+      "label": "worker-66",
+      "membership": "live",
+      "outcome": null,
+      "outcomeBasis": null,
+      "owner": null,
+      "providerId": "thread-66",
+      "ref": "#66",
+      "residency": "background",
+      "run": "t66@1",
+      "state": "working",
+      "stoppable": true,
+      "tokens": null,
+    },
+  ],
+  "lastRowAgents": [
+    {
+      "id": "thread-63",
+      "label": "worker-63",
+      "state": "working",
+      "tokens": null,
+    },
+    {
+      "id": "thread-64",
+      "label": "worker-64",
+      "state": "working",
+      "tokens": null,
+    },
+  ],
+  "lastStopTargets": [
+    "thread-65",
+    "thread-66",
+  ],
+  "liveRecords": 66,
+  "records": 66,
+  "rowAgents": 64,
+  "rowGroups": 1,
+  "stopTargets": 66,
+}
+`;

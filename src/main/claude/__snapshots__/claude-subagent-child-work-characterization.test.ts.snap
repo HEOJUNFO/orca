@@ -1,0 +1,2014 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`Claude subagent child work (characterization) > a. one subagent starts, reports tokens and completes 1`] = `
+[
+  {
+    "records": [
+      {
+        "inView": true,
+        "kind": "agent",
+        "label": "Find flaky tests",
+        "membership": "live",
+        "outcome": null,
+        "outcomeBasis": null,
+        "owner": null,
+        "providerId": "agent-1",
+        "ref": "#1",
+        "residency": "foreground",
+        "run": "toolu_1@1",
+        "state": "working",
+        "stoppable": false,
+        "tokens": null,
+      },
+    ],
+    "rows": [
+      {
+        "agents": [
+          {
+            "id": "agent-1",
+            "label": "Find flaky tests",
+            "state": "working",
+            "tokens": null,
+          },
+        ],
+        "group": "group-1",
+      },
+    ],
+    "step": "spawned",
+    "stopTargets": [],
+  },
+  {
+    "records": [
+      {
+        "inView": true,
+        "kind": "agent",
+        "label": "Find flaky tests",
+        "membership": "live",
+        "outcome": null,
+        "outcomeBasis": null,
+        "owner": null,
+        "providerId": "agent-1",
+        "ref": "#1",
+        "residency": "foreground",
+        "run": "toolu_1@1",
+        "state": "working",
+        "stoppable": false,
+        "tokens": 1200,
+      },
+    ],
+    "rows": [
+      {
+        "agents": [
+          {
+            "id": "agent-1",
+            "label": "Find flaky tests",
+            "state": "working",
+            "tokens": null,
+          },
+        ],
+        "group": "group-1",
+      },
+    ],
+    "step": "tokens",
+    "stopTargets": [],
+  },
+  {
+    "records": [
+      {
+        "inView": true,
+        "kind": "agent",
+        "label": "Find flaky tests",
+        "membership": "live",
+        "outcome": null,
+        "outcomeBasis": null,
+        "owner": null,
+        "providerId": "agent-1",
+        "ref": "#1",
+        "residency": "foreground",
+        "run": "toolu_1@1",
+        "state": "working",
+        "stoppable": false,
+        "tokens": 1200,
+      },
+    ],
+    "rows": [
+      {
+        "agents": [
+          {
+            "id": "agent-1",
+            "label": "Find flaky tests",
+            "state": "completed",
+            "tokens": null,
+          },
+        ],
+        "group": "group-1",
+      },
+    ],
+    "step": "spawn result",
+    "stopTargets": [],
+  },
+  {
+    "records": [
+      {
+        "inView": true,
+        "kind": "agent",
+        "label": "Find flaky tests",
+        "membership": "settled",
+        "outcome": "succeeded",
+        "outcomeBasis": null,
+        "owner": null,
+        "providerId": "agent-1",
+        "ref": "#1",
+        "residency": "foreground",
+        "run": "toolu_1@1",
+        "state": "done",
+        "stoppable": false,
+        "tokens": 1200,
+      },
+    ],
+    "rows": [
+      {
+        "agents": [
+          {
+            "id": "agent-1",
+            "label": "Find flaky tests",
+            "state": "completed",
+            "tokens": null,
+          },
+        ],
+        "group": "group-1",
+      },
+    ],
+    "step": "completed",
+    "stopTargets": [],
+  },
+  {
+    "records": [
+      {
+        "inView": true,
+        "kind": "agent",
+        "label": "Find flaky tests",
+        "membership": "settled",
+        "outcome": "succeeded",
+        "outcomeBasis": null,
+        "owner": null,
+        "providerId": "agent-1",
+        "ref": "#1",
+        "residency": "foreground",
+        "run": "toolu_1@1",
+        "state": "done",
+        "stoppable": false,
+        "tokens": 1200,
+      },
+    ],
+    "rows": [
+      {
+        "agents": [
+          {
+            "id": "agent-1",
+            "label": "Find flaky tests",
+            "state": "completed",
+            "tokens": null,
+          },
+        ],
+        "group": "group-1",
+      },
+    ],
+    "step": "turn ended",
+    "stopTargets": [],
+  },
+]
+`;
+
+exports[`Claude subagent child work (characterization) > b. two subagents with the same label, one fails 1`] = `
+[
+  {
+    "records": [
+      {
+        "inView": true,
+        "kind": "agent",
+        "label": "Audit",
+        "membership": "live",
+        "outcome": null,
+        "outcomeBasis": null,
+        "owner": null,
+        "providerId": "agent-1",
+        "ref": "#1",
+        "residency": "foreground",
+        "run": "toolu_1@1",
+        "state": "working",
+        "stoppable": false,
+        "tokens": null,
+      },
+      {
+        "inView": true,
+        "kind": "agent",
+        "label": "Audit",
+        "membership": "live",
+        "outcome": null,
+        "outcomeBasis": null,
+        "owner": null,
+        "providerId": "agent-2",
+        "ref": "#2",
+        "residency": "foreground",
+        "run": "toolu_2@1",
+        "state": "working",
+        "stoppable": false,
+        "tokens": null,
+      },
+    ],
+    "rows": [
+      {
+        "agents": [
+          {
+            "id": "agent-1",
+            "label": "Audit",
+            "state": "working",
+            "tokens": null,
+          },
+          {
+            "id": "agent-2",
+            "label": "Audit 2",
+            "state": "working",
+            "tokens": null,
+          },
+        ],
+        "group": "group-1",
+      },
+    ],
+    "step": "both spawned",
+    "stopTargets": [],
+  },
+  {
+    "records": [
+      {
+        "inView": true,
+        "kind": "agent",
+        "label": "Audit",
+        "membership": "live",
+        "outcome": null,
+        "outcomeBasis": null,
+        "owner": null,
+        "providerId": "agent-1",
+        "ref": "#1",
+        "residency": "foreground",
+        "run": "toolu_1@1",
+        "state": "working",
+        "stoppable": false,
+        "tokens": 100,
+      },
+      {
+        "inView": true,
+        "kind": "agent",
+        "label": "Audit",
+        "membership": "live",
+        "outcome": null,
+        "outcomeBasis": null,
+        "owner": null,
+        "providerId": "agent-2",
+        "ref": "#2",
+        "residency": "foreground",
+        "run": "toolu_2@1",
+        "state": "working",
+        "stoppable": false,
+        "tokens": 200,
+      },
+    ],
+    "rows": [
+      {
+        "agents": [
+          {
+            "id": "agent-1",
+            "label": "Audit",
+            "state": "working",
+            "tokens": null,
+          },
+          {
+            "id": "agent-2",
+            "label": "Audit 2",
+            "state": "working",
+            "tokens": null,
+          },
+        ],
+        "group": "group-1",
+      },
+    ],
+    "step": "tokens",
+    "stopTargets": [],
+  },
+  {
+    "records": [
+      {
+        "inView": true,
+        "kind": "agent",
+        "label": "Audit",
+        "membership": "settled",
+        "outcome": "failed",
+        "outcomeBasis": null,
+        "owner": null,
+        "providerId": "agent-1",
+        "ref": "#1",
+        "residency": "foreground",
+        "run": "toolu_1@1",
+        "state": "done",
+        "stoppable": false,
+        "tokens": 100,
+      },
+      {
+        "inView": true,
+        "kind": "agent",
+        "label": "Audit",
+        "membership": "live",
+        "outcome": null,
+        "outcomeBasis": null,
+        "owner": null,
+        "providerId": "agent-2",
+        "ref": "#2",
+        "residency": "foreground",
+        "run": "toolu_2@1",
+        "state": "working",
+        "stoppable": false,
+        "tokens": 200,
+      },
+    ],
+    "rows": [
+      {
+        "agents": [
+          {
+            "id": "agent-1",
+            "label": "Audit",
+            "state": "failed",
+            "tokens": null,
+          },
+          {
+            "id": "agent-2",
+            "label": "Audit 2",
+            "state": "working",
+            "tokens": null,
+          },
+        ],
+        "group": "group-1",
+      },
+    ],
+    "step": "first fails",
+    "stopTargets": [],
+  },
+  {
+    "records": [
+      {
+        "inView": true,
+        "kind": "agent",
+        "label": "Audit",
+        "membership": "settled",
+        "outcome": "failed",
+        "outcomeBasis": null,
+        "owner": null,
+        "providerId": "agent-1",
+        "ref": "#1",
+        "residency": "foreground",
+        "run": "toolu_1@1",
+        "state": "done",
+        "stoppable": false,
+        "tokens": 100,
+      },
+      {
+        "inView": true,
+        "kind": "agent",
+        "label": "Audit",
+        "membership": "settled",
+        "outcome": "succeeded",
+        "outcomeBasis": null,
+        "owner": null,
+        "providerId": "agent-2",
+        "ref": "#2",
+        "residency": "foreground",
+        "run": "toolu_2@1",
+        "state": "done",
+        "stoppable": false,
+        "tokens": 200,
+      },
+    ],
+    "rows": [
+      {
+        "agents": [
+          {
+            "id": "agent-1",
+            "label": "Audit",
+            "state": "failed",
+            "tokens": null,
+          },
+          {
+            "id": "agent-2",
+            "label": "Audit 2",
+            "state": "completed",
+            "tokens": null,
+          },
+        ],
+        "group": "group-1",
+      },
+    ],
+    "step": "second completes",
+    "stopTargets": [],
+  },
+  {
+    "records": [
+      {
+        "inView": true,
+        "kind": "agent",
+        "label": "Audit",
+        "membership": "settled",
+        "outcome": "failed",
+        "outcomeBasis": null,
+        "owner": null,
+        "providerId": "agent-1",
+        "ref": "#1",
+        "residency": "foreground",
+        "run": "toolu_1@1",
+        "state": "done",
+        "stoppable": false,
+        "tokens": 100,
+      },
+      {
+        "inView": true,
+        "kind": "agent",
+        "label": "Audit",
+        "membership": "settled",
+        "outcome": "succeeded",
+        "outcomeBasis": null,
+        "owner": null,
+        "providerId": "agent-2",
+        "ref": "#2",
+        "residency": "foreground",
+        "run": "toolu_2@1",
+        "state": "done",
+        "stoppable": false,
+        "tokens": 200,
+      },
+    ],
+    "rows": [
+      {
+        "agents": [
+          {
+            "id": "agent-1",
+            "label": "Audit",
+            "state": "failed",
+            "tokens": null,
+          },
+          {
+            "id": "agent-2",
+            "label": "Audit 2",
+            "state": "completed",
+            "tokens": null,
+          },
+        ],
+        "group": "group-1",
+      },
+    ],
+    "step": "spawn results",
+    "stopTargets": [],
+  },
+  {
+    "records": [
+      {
+        "inView": true,
+        "kind": "agent",
+        "label": "Audit",
+        "membership": "settled",
+        "outcome": "failed",
+        "outcomeBasis": null,
+        "owner": null,
+        "providerId": "agent-1",
+        "ref": "#1",
+        "residency": "foreground",
+        "run": "toolu_1@1",
+        "state": "done",
+        "stoppable": false,
+        "tokens": 100,
+      },
+      {
+        "inView": true,
+        "kind": "agent",
+        "label": "Audit",
+        "membership": "settled",
+        "outcome": "succeeded",
+        "outcomeBasis": null,
+        "owner": null,
+        "providerId": "agent-2",
+        "ref": "#2",
+        "residency": "foreground",
+        "run": "toolu_2@1",
+        "state": "done",
+        "stoppable": false,
+        "tokens": 200,
+      },
+    ],
+    "rows": [
+      {
+        "agents": [
+          {
+            "id": "agent-1",
+            "label": "Audit",
+            "state": "failed",
+            "tokens": null,
+          },
+          {
+            "id": "agent-2",
+            "label": "Audit 2",
+            "state": "completed",
+            "tokens": null,
+          },
+        ],
+        "group": "group-1",
+      },
+    ],
+    "step": "turn ended",
+    "stopTargets": [],
+  },
+]
+`;
+
+exports[`Claude subagent child work (characterization) > c. a background subagent outlives the turn that spawned it 1`] = `
+[
+  {
+    "records": [
+      {
+        "inView": true,
+        "kind": "agent",
+        "label": "Audit the build",
+        "membership": "live",
+        "outcome": null,
+        "outcomeBasis": null,
+        "owner": null,
+        "providerId": "agent-1",
+        "ref": "#1",
+        "residency": "background",
+        "run": "toolu_1@1",
+        "state": "working",
+        "stoppable": true,
+        "tokens": null,
+      },
+    ],
+    "rows": [
+      {
+        "agents": [
+          {
+            "id": "agent-1",
+            "label": "Audit the build",
+            "state": "working",
+            "tokens": null,
+          },
+        ],
+        "group": "group-1",
+      },
+    ],
+    "step": "spawned in background",
+    "stopTargets": [
+      "agent-1",
+    ],
+  },
+  {
+    "records": [
+      {
+        "inView": true,
+        "kind": "agent",
+        "label": "Audit the build",
+        "membership": "live",
+        "outcome": null,
+        "outcomeBasis": null,
+        "owner": null,
+        "providerId": "agent-1",
+        "ref": "#1",
+        "residency": "background",
+        "run": "toolu_1@1",
+        "state": "working",
+        "stoppable": true,
+        "tokens": null,
+      },
+    ],
+    "rows": [
+      {
+        "agents": [
+          {
+            "id": "agent-1",
+            "label": "Audit the build",
+            "state": "working",
+            "tokens": null,
+          },
+        ],
+        "group": "group-1",
+      },
+    ],
+    "step": "launch result",
+    "stopTargets": [
+      "agent-1",
+    ],
+  },
+  {
+    "records": [
+      {
+        "inView": true,
+        "kind": "agent",
+        "label": "Audit the build",
+        "membership": "live",
+        "outcome": null,
+        "outcomeBasis": null,
+        "owner": null,
+        "providerId": "agent-1",
+        "ref": "#1",
+        "residency": "background",
+        "run": "toolu_1@1",
+        "state": "working",
+        "stoppable": true,
+        "tokens": null,
+      },
+    ],
+    "rows": [
+      {
+        "agents": [
+          {
+            "id": "agent-1",
+            "label": "Audit the build",
+            "state": "working",
+            "tokens": null,
+          },
+        ],
+        "group": "group-1",
+      },
+    ],
+    "step": "roster lists it",
+    "stopTargets": [
+      "agent-1",
+    ],
+  },
+  {
+    "records": [
+      {
+        "inView": true,
+        "kind": "agent",
+        "label": "Audit the build",
+        "membership": "live",
+        "outcome": null,
+        "outcomeBasis": null,
+        "owner": null,
+        "providerId": "agent-1",
+        "ref": "#1",
+        "residency": "background",
+        "run": "toolu_1@1",
+        "state": "working",
+        "stoppable": true,
+        "tokens": null,
+      },
+    ],
+    "rows": [
+      {
+        "agents": [
+          {
+            "id": "agent-1",
+            "label": "Audit the build",
+            "state": "working",
+            "tokens": null,
+          },
+        ],
+        "group": "group-1",
+      },
+    ],
+    "step": "parent turn ended",
+    "stopTargets": [
+      "agent-1",
+    ],
+  },
+  {
+    "records": [
+      {
+        "inView": true,
+        "kind": "agent",
+        "label": "Audit the build",
+        "membership": "live",
+        "outcome": null,
+        "outcomeBasis": null,
+        "owner": null,
+        "providerId": "agent-1",
+        "ref": "#1",
+        "residency": "background",
+        "run": "toolu_1@1",
+        "state": "working",
+        "stoppable": true,
+        "tokens": 900,
+      },
+    ],
+    "rows": [
+      {
+        "agents": [
+          {
+            "id": "agent-1",
+            "label": "Audit the build",
+            "state": "working",
+            "tokens": null,
+          },
+        ],
+        "group": "group-1",
+      },
+    ],
+    "step": "tokens after turn",
+    "stopTargets": [
+      "agent-1",
+    ],
+  },
+  {
+    "records": [
+      {
+        "inView": true,
+        "kind": "agent",
+        "label": "Audit the build",
+        "membership": "settled",
+        "outcome": "succeeded",
+        "outcomeBasis": null,
+        "owner": null,
+        "providerId": "agent-1",
+        "ref": "#1",
+        "residency": "background",
+        "run": "toolu_1@1",
+        "state": "done",
+        "stoppable": false,
+        "tokens": 900,
+      },
+    ],
+    "rows": [
+      {
+        "agents": [
+          {
+            "id": "agent-1",
+            "label": "Audit the build",
+            "state": "completed",
+            "tokens": null,
+          },
+        ],
+        "group": "group-1",
+      },
+    ],
+    "step": "completed later",
+    "stopTargets": [],
+  },
+  {
+    "records": [
+      {
+        "inView": true,
+        "kind": "agent",
+        "label": "Audit the build",
+        "membership": "settled",
+        "outcome": "succeeded",
+        "outcomeBasis": null,
+        "owner": null,
+        "providerId": "agent-1",
+        "ref": "#1",
+        "residency": "background",
+        "run": "toolu_1@1",
+        "state": "done",
+        "stoppable": false,
+        "tokens": 900,
+      },
+    ],
+    "rows": [
+      {
+        "agents": [
+          {
+            "id": "agent-1",
+            "label": "Audit the build",
+            "state": "completed",
+            "tokens": null,
+          },
+        ],
+        "group": "group-1",
+      },
+    ],
+    "step": "roster drops it",
+    "stopTargets": [],
+  },
+]
+`;
+
+exports[`Claude subagent child work (characterization) > d1. a foreground subagent whose parent turn ends with no ending of its own 1`] = `
+[
+  {
+    "records": [
+      {
+        "inView": true,
+        "kind": "agent",
+        "label": "Find flaky tests",
+        "membership": "live",
+        "outcome": null,
+        "outcomeBasis": null,
+        "owner": null,
+        "providerId": "agent-1",
+        "ref": "#1",
+        "residency": "foreground",
+        "run": "toolu_1@1",
+        "state": "working",
+        "stoppable": false,
+        "tokens": null,
+      },
+    ],
+    "rows": [
+      {
+        "agents": [
+          {
+            "id": "agent-1",
+            "label": "Find flaky tests",
+            "state": "working",
+            "tokens": null,
+          },
+        ],
+        "group": "group-1",
+      },
+    ],
+    "step": "spawned",
+    "stopTargets": [],
+  },
+  {
+    "records": [
+      {
+        "inView": true,
+        "kind": "agent",
+        "label": "Find flaky tests",
+        "membership": "live",
+        "outcome": null,
+        "outcomeBasis": null,
+        "owner": null,
+        "providerId": "agent-1",
+        "ref": "#1",
+        "residency": "foreground",
+        "run": "toolu_1@1",
+        "state": "working",
+        "stoppable": false,
+        "tokens": 400,
+      },
+    ],
+    "rows": [
+      {
+        "agents": [
+          {
+            "id": "agent-1",
+            "label": "Find flaky tests",
+            "state": "working",
+            "tokens": null,
+          },
+        ],
+        "group": "group-1",
+      },
+    ],
+    "step": "tokens",
+    "stopTargets": [],
+  },
+  {
+    "records": [
+      {
+        "inView": true,
+        "kind": "agent",
+        "label": "Find flaky tests",
+        "membership": "live",
+        "outcome": null,
+        "outcomeBasis": null,
+        "owner": null,
+        "providerId": "agent-1",
+        "ref": "#1",
+        "residency": "foreground",
+        "run": "toolu_1@1",
+        "state": "working",
+        "stoppable": false,
+        "tokens": 400,
+      },
+    ],
+    "rows": [
+      {
+        "agents": [
+          {
+            "id": "agent-1",
+            "label": "Find flaky tests",
+            "state": "unverifiable",
+            "tokens": null,
+          },
+        ],
+        "group": "group-1",
+      },
+    ],
+    "step": "parent turn ended",
+    "stopTargets": [],
+  },
+]
+`;
+
+exports[`Claude subagent child work (characterization) > d2. a foreground spawn result arrives before its task_notification 1`] = `
+[
+  {
+    "records": [
+      {
+        "inView": true,
+        "kind": "agent",
+        "label": "Find flaky tests",
+        "membership": "live",
+        "outcome": null,
+        "outcomeBasis": null,
+        "owner": null,
+        "providerId": "agent-1",
+        "ref": "#1",
+        "residency": "foreground",
+        "run": "toolu_1@1",
+        "state": "working",
+        "stoppable": false,
+        "tokens": null,
+      },
+    ],
+    "rows": [
+      {
+        "agents": [
+          {
+            "id": "agent-1",
+            "label": "Find flaky tests",
+            "state": "working",
+            "tokens": null,
+          },
+        ],
+        "group": "group-1",
+      },
+    ],
+    "step": "spawned",
+    "stopTargets": [],
+  },
+  {
+    "records": [
+      {
+        "inView": true,
+        "kind": "agent",
+        "label": "Find flaky tests",
+        "membership": "live",
+        "outcome": null,
+        "outcomeBasis": null,
+        "owner": null,
+        "providerId": "agent-1",
+        "ref": "#1",
+        "residency": "foreground",
+        "run": "toolu_1@1",
+        "state": "working",
+        "stoppable": false,
+        "tokens": null,
+      },
+    ],
+    "rows": [
+      {
+        "agents": [
+          {
+            "id": "agent-1",
+            "label": "Find flaky tests",
+            "state": "completed",
+            "tokens": null,
+          },
+        ],
+        "group": "group-1",
+      },
+    ],
+    "step": "spawn result first",
+    "stopTargets": [],
+  },
+  {
+    "records": [
+      {
+        "inView": true,
+        "kind": "agent",
+        "label": "Find flaky tests",
+        "membership": "settled",
+        "outcome": "succeeded",
+        "outcomeBasis": null,
+        "owner": null,
+        "providerId": "agent-1",
+        "ref": "#1",
+        "residency": "foreground",
+        "run": "toolu_1@1",
+        "state": "done",
+        "stoppable": false,
+        "tokens": null,
+      },
+    ],
+    "rows": [
+      {
+        "agents": [
+          {
+            "id": "agent-1",
+            "label": "Find flaky tests",
+            "state": "completed",
+            "tokens": null,
+          },
+        ],
+        "group": "group-1",
+      },
+    ],
+    "step": "notification after",
+    "stopTargets": [],
+  },
+  {
+    "records": [
+      {
+        "inView": true,
+        "kind": "agent",
+        "label": "Find flaky tests",
+        "membership": "settled",
+        "outcome": "succeeded",
+        "outcomeBasis": null,
+        "owner": null,
+        "providerId": "agent-1",
+        "ref": "#1",
+        "residency": "foreground",
+        "run": "toolu_1@1",
+        "state": "done",
+        "stoppable": false,
+        "tokens": null,
+      },
+    ],
+    "rows": [
+      {
+        "agents": [
+          {
+            "id": "agent-1",
+            "label": "Find flaky tests",
+            "state": "completed",
+            "tokens": null,
+          },
+        ],
+        "group": "group-1",
+      },
+    ],
+    "step": "turn ended",
+    "stopTargets": [],
+  },
+]
+`;
+
+exports[`Claude subagent child work (characterization) > e. a per-subagent Stop the CLI acknowledges > i. and then no further frame 1`] = `
+[
+  {
+    "records": [
+      {
+        "inView": true,
+        "kind": "agent",
+        "label": "Audit the build",
+        "membership": "live",
+        "outcome": null,
+        "outcomeBasis": null,
+        "owner": null,
+        "providerId": "agent-1",
+        "ref": "#1",
+        "residency": "background",
+        "run": "toolu_1@1",
+        "state": "working",
+        "stoppable": true,
+        "tokens": null,
+      },
+    ],
+    "rows": [
+      {
+        "agents": [
+          {
+            "id": "agent-1",
+            "label": "Audit the build",
+            "state": "working",
+            "tokens": null,
+          },
+        ],
+        "group": "group-1",
+      },
+    ],
+    "step": "spawned in background",
+    "stopTargets": [
+      "agent-1",
+    ],
+  },
+  {
+    "records": [
+      {
+        "inView": true,
+        "kind": "agent",
+        "label": "Audit the build",
+        "membership": "live",
+        "outcome": null,
+        "outcomeBasis": null,
+        "owner": null,
+        "providerId": "agent-1",
+        "ref": "#1",
+        "residency": "background",
+        "run": "toolu_1@1",
+        "state": "working",
+        "stoppable": true,
+        "tokens": null,
+      },
+    ],
+    "rows": [
+      {
+        "agents": [
+          {
+            "id": "agent-1",
+            "label": "Audit the build",
+            "state": "working",
+            "tokens": null,
+          },
+        ],
+        "group": "group-1",
+      },
+    ],
+    "step": "launch result",
+    "stopTargets": [
+      "agent-1",
+    ],
+  },
+  {
+    "records": [
+      {
+        "inView": true,
+        "kind": "agent",
+        "label": "Audit the build",
+        "membership": "live",
+        "outcome": null,
+        "outcomeBasis": null,
+        "owner": null,
+        "providerId": "agent-1",
+        "ref": "#1",
+        "residency": "background",
+        "run": "toolu_1@1",
+        "state": "working",
+        "stoppable": true,
+        "tokens": null,
+      },
+    ],
+    "rows": [
+      {
+        "agents": [
+          {
+            "id": "agent-1",
+            "label": "Audit the build",
+            "state": "working",
+            "tokens": null,
+          },
+        ],
+        "group": "group-1",
+      },
+    ],
+    "step": "parent turn ended",
+    "stopTargets": [
+      "agent-1",
+    ],
+  },
+  {
+    "calls": [
+      {
+        "params": {
+          "taskId": "agent-1",
+        },
+        "subtype": "stop_task",
+      },
+    ],
+    "outcome": {
+      "cancelled": true,
+    },
+    "records": [
+      {
+        "inView": true,
+        "kind": "agent",
+        "label": "Audit the build",
+        "membership": "settled",
+        "outcome": "cancelled",
+        "outcomeBasis": "stop-acknowledged",
+        "owner": null,
+        "providerId": "agent-1",
+        "ref": "#1",
+        "residency": "background",
+        "run": "toolu_1@1",
+        "state": "done",
+        "stoppable": false,
+        "tokens": null,
+      },
+    ],
+    "rows": [
+      {
+        "agents": [
+          {
+            "id": "agent-1",
+            "label": "Audit the build",
+            "state": "working",
+            "tokens": null,
+          },
+        ],
+        "group": "group-1",
+      },
+    ],
+    "step": "stop agent-1",
+    "stopTargets": [],
+  },
+]
+`;
+
+exports[`Claude subagent child work (characterization) > e. a per-subagent Stop the CLI acknowledges > ii. then a task_notification killed 1`] = `
+[
+  {
+    "records": [
+      {
+        "inView": true,
+        "kind": "agent",
+        "label": "Audit the build",
+        "membership": "live",
+        "outcome": null,
+        "outcomeBasis": null,
+        "owner": null,
+        "providerId": "agent-1",
+        "ref": "#1",
+        "residency": "background",
+        "run": "toolu_1@1",
+        "state": "working",
+        "stoppable": true,
+        "tokens": null,
+      },
+    ],
+    "rows": [
+      {
+        "agents": [
+          {
+            "id": "agent-1",
+            "label": "Audit the build",
+            "state": "working",
+            "tokens": null,
+          },
+        ],
+        "group": "group-1",
+      },
+    ],
+    "step": "spawned in background",
+    "stopTargets": [
+      "agent-1",
+    ],
+  },
+  {
+    "records": [
+      {
+        "inView": true,
+        "kind": "agent",
+        "label": "Audit the build",
+        "membership": "live",
+        "outcome": null,
+        "outcomeBasis": null,
+        "owner": null,
+        "providerId": "agent-1",
+        "ref": "#1",
+        "residency": "background",
+        "run": "toolu_1@1",
+        "state": "working",
+        "stoppable": true,
+        "tokens": null,
+      },
+    ],
+    "rows": [
+      {
+        "agents": [
+          {
+            "id": "agent-1",
+            "label": "Audit the build",
+            "state": "working",
+            "tokens": null,
+          },
+        ],
+        "group": "group-1",
+      },
+    ],
+    "step": "launch result",
+    "stopTargets": [
+      "agent-1",
+    ],
+  },
+  {
+    "records": [
+      {
+        "inView": true,
+        "kind": "agent",
+        "label": "Audit the build",
+        "membership": "live",
+        "outcome": null,
+        "outcomeBasis": null,
+        "owner": null,
+        "providerId": "agent-1",
+        "ref": "#1",
+        "residency": "background",
+        "run": "toolu_1@1",
+        "state": "working",
+        "stoppable": true,
+        "tokens": null,
+      },
+    ],
+    "rows": [
+      {
+        "agents": [
+          {
+            "id": "agent-1",
+            "label": "Audit the build",
+            "state": "working",
+            "tokens": null,
+          },
+        ],
+        "group": "group-1",
+      },
+    ],
+    "step": "parent turn ended",
+    "stopTargets": [
+      "agent-1",
+    ],
+  },
+  {
+    "calls": [
+      {
+        "params": {
+          "taskId": "agent-1",
+        },
+        "subtype": "stop_task",
+      },
+    ],
+    "outcome": {
+      "cancelled": true,
+    },
+    "records": [
+      {
+        "inView": true,
+        "kind": "agent",
+        "label": "Audit the build",
+        "membership": "settled",
+        "outcome": "cancelled",
+        "outcomeBasis": "stop-acknowledged",
+        "owner": null,
+        "providerId": "agent-1",
+        "ref": "#1",
+        "residency": "background",
+        "run": "toolu_1@1",
+        "state": "done",
+        "stoppable": false,
+        "tokens": null,
+      },
+    ],
+    "rows": [
+      {
+        "agents": [
+          {
+            "id": "agent-1",
+            "label": "Audit the build",
+            "state": "working",
+            "tokens": null,
+          },
+        ],
+        "group": "group-1",
+      },
+    ],
+    "step": "stop agent-1",
+    "stopTargets": [],
+  },
+  {
+    "records": [
+      {
+        "inView": true,
+        "kind": "agent",
+        "label": "Audit the build",
+        "membership": "settled",
+        "outcome": "cancelled",
+        "outcomeBasis": null,
+        "owner": null,
+        "providerId": "agent-1",
+        "ref": "#1",
+        "residency": "background",
+        "run": "toolu_1@1",
+        "state": "done",
+        "stoppable": false,
+        "tokens": null,
+      },
+    ],
+    "rows": [
+      {
+        "agents": [
+          {
+            "id": "agent-1",
+            "label": "Audit the build",
+            "state": "stopped",
+            "tokens": null,
+          },
+        ],
+        "group": "group-1",
+      },
+    ],
+    "step": "notification killed",
+    "stopTargets": [],
+  },
+]
+`;
+
+exports[`Claude subagent child work (characterization) > e. a per-subagent Stop the CLI acknowledges > ii. then a task_notification stopped 1`] = `
+[
+  {
+    "records": [
+      {
+        "inView": true,
+        "kind": "agent",
+        "label": "Audit the build",
+        "membership": "live",
+        "outcome": null,
+        "outcomeBasis": null,
+        "owner": null,
+        "providerId": "agent-1",
+        "ref": "#1",
+        "residency": "background",
+        "run": "toolu_1@1",
+        "state": "working",
+        "stoppable": true,
+        "tokens": null,
+      },
+    ],
+    "rows": [
+      {
+        "agents": [
+          {
+            "id": "agent-1",
+            "label": "Audit the build",
+            "state": "working",
+            "tokens": null,
+          },
+        ],
+        "group": "group-1",
+      },
+    ],
+    "step": "spawned in background",
+    "stopTargets": [
+      "agent-1",
+    ],
+  },
+  {
+    "records": [
+      {
+        "inView": true,
+        "kind": "agent",
+        "label": "Audit the build",
+        "membership": "live",
+        "outcome": null,
+        "outcomeBasis": null,
+        "owner": null,
+        "providerId": "agent-1",
+        "ref": "#1",
+        "residency": "background",
+        "run": "toolu_1@1",
+        "state": "working",
+        "stoppable": true,
+        "tokens": null,
+      },
+    ],
+    "rows": [
+      {
+        "agents": [
+          {
+            "id": "agent-1",
+            "label": "Audit the build",
+            "state": "working",
+            "tokens": null,
+          },
+        ],
+        "group": "group-1",
+      },
+    ],
+    "step": "launch result",
+    "stopTargets": [
+      "agent-1",
+    ],
+  },
+  {
+    "records": [
+      {
+        "inView": true,
+        "kind": "agent",
+        "label": "Audit the build",
+        "membership": "live",
+        "outcome": null,
+        "outcomeBasis": null,
+        "owner": null,
+        "providerId": "agent-1",
+        "ref": "#1",
+        "residency": "background",
+        "run": "toolu_1@1",
+        "state": "working",
+        "stoppable": true,
+        "tokens": null,
+      },
+    ],
+    "rows": [
+      {
+        "agents": [
+          {
+            "id": "agent-1",
+            "label": "Audit the build",
+            "state": "working",
+            "tokens": null,
+          },
+        ],
+        "group": "group-1",
+      },
+    ],
+    "step": "parent turn ended",
+    "stopTargets": [
+      "agent-1",
+    ],
+  },
+  {
+    "calls": [
+      {
+        "params": {
+          "taskId": "agent-1",
+        },
+        "subtype": "stop_task",
+      },
+    ],
+    "outcome": {
+      "cancelled": true,
+    },
+    "records": [
+      {
+        "inView": true,
+        "kind": "agent",
+        "label": "Audit the build",
+        "membership": "settled",
+        "outcome": "cancelled",
+        "outcomeBasis": "stop-acknowledged",
+        "owner": null,
+        "providerId": "agent-1",
+        "ref": "#1",
+        "residency": "background",
+        "run": "toolu_1@1",
+        "state": "done",
+        "stoppable": false,
+        "tokens": null,
+      },
+    ],
+    "rows": [
+      {
+        "agents": [
+          {
+            "id": "agent-1",
+            "label": "Audit the build",
+            "state": "working",
+            "tokens": null,
+          },
+        ],
+        "group": "group-1",
+      },
+    ],
+    "step": "stop agent-1",
+    "stopTargets": [],
+  },
+  {
+    "records": [
+      {
+        "inView": true,
+        "kind": "agent",
+        "label": "Audit the build",
+        "membership": "settled",
+        "outcome": "cancelled",
+        "outcomeBasis": null,
+        "owner": null,
+        "providerId": "agent-1",
+        "ref": "#1",
+        "residency": "background",
+        "run": "toolu_1@1",
+        "state": "done",
+        "stoppable": false,
+        "tokens": null,
+      },
+    ],
+    "rows": [
+      {
+        "agents": [
+          {
+            "id": "agent-1",
+            "label": "Audit the build",
+            "state": "stopped",
+            "tokens": null,
+          },
+        ],
+        "group": "group-1",
+      },
+    ],
+    "step": "notification stopped",
+    "stopTargets": [],
+  },
+]
+`;
+
+exports[`Claude subagent child work (characterization) > e. a per-subagent Stop the CLI acknowledges > iii. then a completed task_notification the CLI wrote before its ack 1`] = `
+[
+  {
+    "records": [
+      {
+        "inView": true,
+        "kind": "agent",
+        "label": "Audit the build",
+        "membership": "live",
+        "outcome": null,
+        "outcomeBasis": null,
+        "owner": null,
+        "providerId": "agent-1",
+        "ref": "#1",
+        "residency": "background",
+        "run": "toolu_1@1",
+        "state": "working",
+        "stoppable": true,
+        "tokens": null,
+      },
+    ],
+    "rows": [
+      {
+        "agents": [
+          {
+            "id": "agent-1",
+            "label": "Audit the build",
+            "state": "working",
+            "tokens": null,
+          },
+        ],
+        "group": "group-1",
+      },
+    ],
+    "step": "spawned in background",
+    "stopTargets": [
+      "agent-1",
+    ],
+  },
+  {
+    "records": [
+      {
+        "inView": true,
+        "kind": "agent",
+        "label": "Audit the build",
+        "membership": "live",
+        "outcome": null,
+        "outcomeBasis": null,
+        "owner": null,
+        "providerId": "agent-1",
+        "ref": "#1",
+        "residency": "background",
+        "run": "toolu_1@1",
+        "state": "working",
+        "stoppable": true,
+        "tokens": null,
+      },
+    ],
+    "rows": [
+      {
+        "agents": [
+          {
+            "id": "agent-1",
+            "label": "Audit the build",
+            "state": "working",
+            "tokens": null,
+          },
+        ],
+        "group": "group-1",
+      },
+    ],
+    "step": "launch result",
+    "stopTargets": [
+      "agent-1",
+    ],
+  },
+  {
+    "records": [
+      {
+        "inView": true,
+        "kind": "agent",
+        "label": "Audit the build",
+        "membership": "live",
+        "outcome": null,
+        "outcomeBasis": null,
+        "owner": null,
+        "providerId": "agent-1",
+        "ref": "#1",
+        "residency": "background",
+        "run": "toolu_1@1",
+        "state": "working",
+        "stoppable": true,
+        "tokens": null,
+      },
+    ],
+    "rows": [
+      {
+        "agents": [
+          {
+            "id": "agent-1",
+            "label": "Audit the build",
+            "state": "working",
+            "tokens": null,
+          },
+        ],
+        "group": "group-1",
+      },
+    ],
+    "step": "parent turn ended",
+    "stopTargets": [
+      "agent-1",
+    ],
+  },
+  {
+    "calls": [
+      {
+        "params": {
+          "taskId": "agent-1",
+        },
+        "subtype": "stop_task",
+      },
+    ],
+    "outcome": {
+      "cancelled": true,
+    },
+    "records": [
+      {
+        "inView": true,
+        "kind": "agent",
+        "label": "Audit the build",
+        "membership": "settled",
+        "outcome": "cancelled",
+        "outcomeBasis": "stop-acknowledged",
+        "owner": null,
+        "providerId": "agent-1",
+        "ref": "#1",
+        "residency": "background",
+        "run": "toolu_1@1",
+        "state": "done",
+        "stoppable": false,
+        "tokens": null,
+      },
+    ],
+    "rows": [
+      {
+        "agents": [
+          {
+            "id": "agent-1",
+            "label": "Audit the build",
+            "state": "working",
+            "tokens": null,
+          },
+        ],
+        "group": "group-1",
+      },
+    ],
+    "step": "stop agent-1",
+    "stopTargets": [],
+  },
+  {
+    "records": [
+      {
+        "inView": true,
+        "kind": "agent",
+        "label": "Audit the build",
+        "membership": "settled",
+        "outcome": "succeeded",
+        "outcomeBasis": null,
+        "owner": null,
+        "providerId": "agent-1",
+        "ref": "#1",
+        "residency": "background",
+        "run": "toolu_1@1",
+        "state": "done",
+        "stoppable": false,
+        "tokens": null,
+      },
+    ],
+    "rows": [
+      {
+        "agents": [
+          {
+            "id": "agent-1",
+            "label": "Audit the build",
+            "state": "completed",
+            "tokens": null,
+          },
+        ],
+        "group": "group-1",
+      },
+    ],
+    "step": "late completion",
+    "stopTargets": [],
+  },
+]
+`;
+
+exports[`Claude subagent child work (characterization) > f. the provider session ends with a subagent still working 1`] = `
+[
+  {
+    "records": [
+      {
+        "inView": true,
+        "kind": "agent",
+        "label": "Find flaky tests",
+        "membership": "live",
+        "outcome": null,
+        "outcomeBasis": null,
+        "owner": null,
+        "providerId": "agent-1",
+        "ref": "#1",
+        "residency": "foreground",
+        "run": "toolu_1@1",
+        "state": "working",
+        "stoppable": false,
+        "tokens": null,
+      },
+    ],
+    "rows": [
+      {
+        "agents": [
+          {
+            "id": "agent-1",
+            "label": "Find flaky tests",
+            "state": "working",
+            "tokens": null,
+          },
+        ],
+        "group": "group-1",
+      },
+    ],
+    "step": "foreground spawned",
+    "stopTargets": [],
+  },
+  {
+    "records": [
+      {
+        "inView": true,
+        "kind": "agent",
+        "label": "Find flaky tests",
+        "membership": "live",
+        "outcome": null,
+        "outcomeBasis": null,
+        "owner": null,
+        "providerId": "agent-1",
+        "ref": "#1",
+        "residency": "foreground",
+        "run": "toolu_1@1",
+        "state": "working",
+        "stoppable": false,
+        "tokens": null,
+      },
+      {
+        "inView": true,
+        "kind": "agent",
+        "label": "Audit the build",
+        "membership": "live",
+        "outcome": null,
+        "outcomeBasis": null,
+        "owner": null,
+        "providerId": "agent-2",
+        "ref": "#2",
+        "residency": "background",
+        "run": "toolu_2@1",
+        "state": "working",
+        "stoppable": true,
+        "tokens": null,
+      },
+    ],
+    "rows": [
+      {
+        "agents": [
+          {
+            "id": "agent-1",
+            "label": "Find flaky tests",
+            "state": "working",
+            "tokens": null,
+          },
+          {
+            "id": "agent-2",
+            "label": "Audit the build",
+            "state": "working",
+            "tokens": null,
+          },
+        ],
+        "group": "group-1",
+      },
+    ],
+    "step": "background spawned",
+    "stopTargets": [
+      "agent-2",
+    ],
+  },
+  {
+    "records": [
+      {
+        "inView": true,
+        "kind": "agent",
+        "label": "Find flaky tests",
+        "membership": "settled",
+        "outcome": "unknown",
+        "outcomeBasis": null,
+        "owner": null,
+        "providerId": "agent-1",
+        "ref": "#1",
+        "residency": "foreground",
+        "run": "toolu_1@1",
+        "state": "done",
+        "stoppable": false,
+        "tokens": null,
+      },
+      {
+        "inView": true,
+        "kind": "agent",
+        "label": "Audit the build",
+        "membership": "settled",
+        "outcome": "unknown",
+        "outcomeBasis": null,
+        "owner": null,
+        "providerId": "agent-2",
+        "ref": "#2",
+        "residency": "background",
+        "run": "toolu_2@1",
+        "state": "done",
+        "stoppable": false,
+        "tokens": null,
+      },
+    ],
+    "rows": [
+      {
+        "agents": [
+          {
+            "id": "agent-1",
+            "label": "Find flaky tests",
+            "state": "unverifiable",
+            "tokens": null,
+          },
+          {
+            "id": "agent-2",
+            "label": "Audit the build",
+            "state": "unverifiable",
+            "tokens": null,
+          },
+        ],
+        "group": "group-1",
+      },
+    ],
+    "step": "session ended",
+    "stopTargets": [],
+  },
+]
+`;
+
+exports[`Claude subagent child work (characterization) > g. 66 subagents spawned in one turn 1`] = `
+{
+  "lastRecords": [
+    {
+      "inView": true,
+      "kind": "agent",
+      "label": "Worker 65",
+      "membership": "live",
+      "outcome": null,
+      "outcomeBasis": null,
+      "owner": null,
+      "providerId": "agent-65",
+      "ref": "#65",
+      "residency": "background",
+      "run": "toolu_65@1",
+      "state": "working",
+      "stoppable": true,
+      "tokens": null,
+    },
+    {
+      "inView": true,
+      "kind": "agent",
+      "label": "Worker 66",
+      "membership": "live",
+      "outcome": null,
+      "outcomeBasis": null,
+      "owner": null,
+      "providerId": "agent-66",
+      "ref": "#66",
+      "residency": "background",
+      "run": "toolu_66@1",
+      "state": "working",
+      "stoppable": true,
+      "tokens": null,
+    },
+  ],
+  "lastRowAgents": [
+    {
+      "id": "agent-63",
+      "label": "Worker 63",
+      "state": "working",
+      "tokens": null,
+    },
+    {
+      "id": "agent-64",
+      "label": "Worker 64",
+      "state": "working",
+      "tokens": null,
+    },
+  ],
+  "lastStopTargets": [
+    "agent-65",
+    "agent-66",
+  ],
+  "liveRecords": 66,
+  "records": 66,
+  "rowAgents": 64,
+  "rowGroups": 1,
+  "stopTargets": 66,
+}
+`;
