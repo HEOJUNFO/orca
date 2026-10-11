@@ -2,6 +2,7 @@ import React, { useEffect, useId, useState } from 'react'
 import type mermaidNamespace from 'mermaid'
 import DOMPurify from 'dompurify'
 import { getMermaidConfig } from './mermaid-config'
+import { readMermaidThemeColors } from './mermaid-theme-colors'
 import { translate } from '@/i18n/i18n'
 
 type MermaidApi = typeof mermaidNamespace
@@ -76,7 +77,9 @@ export default function MermaidBlock({
         // MermaidBlock cannot overwrite htmlLabels/theme between initialize()
         // and render(), which would make markdown preview fall back to the
         // broken foreignObject label path again.
-        mermaid.initialize(getMermaidConfig(isDark, htmlLabels))
+        mermaid.initialize(
+          getMermaidConfig(isDark, htmlLabels, isDark ? readMermaidThemeColors() : undefined)
+        )
         const { svg } = await mermaid.render(`mermaid-${id}`, content)
         if (!cancelled) {
           // Why: although mermaid uses DOMPurify internally, we add an explicit

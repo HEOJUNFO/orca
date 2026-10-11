@@ -31,6 +31,7 @@ import {
 } from './agent-availability-settings'
 import { AgentAvailabilityControl } from './AgentCatalogRow'
 import { AgentLaunchSettingsSection } from './AgentLaunchSettingsSection'
+import type { SettingsHostScope } from './settings-host-scope'
 
 export {
   buildAgentAvailabilitySettingsUpdate,
@@ -39,9 +40,14 @@ export {
   AgentAvailabilityControl
 }
 
-type AgentsPaneProps = {
+type AgentSettingProps = {
   settings: GlobalSettings
   updateSettings: (updates: Partial<GlobalSettings>) => void | Promise<void>
+}
+
+type AgentsPaneProps = AgentSettingProps & {
+  /** Host whose agent launch settings and detected agents the pane shows. */
+  hostScope: SettingsHostScope
   wslSupportedPlatform?: boolean
   wslAvailable?: boolean
   wslDistros?: string[]
@@ -124,6 +130,7 @@ export function AgentPermissionsSetting({
 export function AgentsPane({
   settings,
   updateSettings,
+  hostScope,
   wslSupportedPlatform,
   wslAvailable,
   wslDistros,
@@ -135,6 +142,7 @@ export function AgentsPane({
       <AgentLaunchSettingsSection
         settings={settings}
         updateSettings={updateSettings}
+        hostScope={hostScope}
         renderPermissions={renderAgentPermissions}
       />
       <section className="space-y-8">
@@ -175,7 +183,7 @@ function renderAgentPermissions(
   return <AgentPermissionsSetting mode={mode} onChange={onChange} />
 }
 
-export function AgentStatusHooksSetting({ settings, updateSettings }: AgentsPaneProps) {
+export function AgentStatusHooksSetting({ settings, updateSettings }: AgentSettingProps) {
   const enabled = settings.agentStatusHooksEnabled !== false
   return (
     <section className="space-y-3">
@@ -190,7 +198,7 @@ export function AgentStatusHooksSetting({ settings, updateSettings }: AgentsPane
   )
 }
 
-export function AgentWorkspaceTrustSetting({ settings, updateSettings }: AgentsPaneProps) {
+export function AgentWorkspaceTrustSetting({ settings, updateSettings }: AgentSettingProps) {
   const enabled = settings.agentWorkspaceTrustEnabled !== false
   return (
     <section className="space-y-3">
@@ -205,7 +213,7 @@ export function AgentWorkspaceTrustSetting({ settings, updateSettings }: AgentsP
   )
 }
 
-export function AgentGeneratedTabTitlesSetting({ settings, updateSettings }: AgentsPaneProps) {
+export function AgentGeneratedTabTitlesSetting({ settings, updateSettings }: AgentSettingProps) {
   const enabled = settings.tabAutoGenerateTitle === true
   return (
     <section className="space-y-3">

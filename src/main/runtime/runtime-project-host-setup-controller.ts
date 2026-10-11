@@ -22,6 +22,7 @@ import {
 import { getProjectIdForProviderIdentity } from '../../shared/project-host-setup-projection'
 import { getProjectHostSetupForRepo } from '../../shared/project-host-setup-lookup'
 import { invalidateAuthorizedRootsCache } from '../ipc/filesystem-auth'
+import { runWorktreeChangeInvalidators } from '../ipc/worktree-change-invalidators'
 import { prepareLocalWorktreeRootForRepo } from '../worktree-root-preparation'
 import type { RuntimeStore } from './runtime-store-contract'
 import { readAllWorktreeMetaForRepo } from '../persistence/host-qualified-worktree-meta'
@@ -95,6 +96,7 @@ export class RuntimeProjectHostSetupController {
     if (!result) {
       throw new Error(`Project not found: ${args.projectId}`)
     }
+    this.deps.notifyReposChanged()
     return result
   }
 
@@ -121,6 +123,19 @@ export class RuntimeProjectHostSetupController {
     return this.completeSetup(args, repo, !knownRepoIds.has(repo.id))
   }
 
+  /** Registers an existing folder on one of this host's SSH targets as a new project. */
+  addSshRepo(args: {
+    connectionId: string
+    remotePath: string
+    displayName?: string
+    kind?: 'folder' | 'git'
+  }): Promise<Repo> {
+    if (!this.deps.getStore()) {
+      throw new Error('runtime_unavailable')
+    }
+    return this.deps.addRemoteRepo({ ...args, kind: args.kind === 'folder' ? 'folder' : 'git' })
+  }
+
   async setupClone(args: ProjectHostSetupCloneArgs): Promise<ProjectHostSetupResult> {
     assertCloneHostIsSupported(args.hostId)
     const knownRepoIds = new Set(this.deps.listRepos().map((repo) => repo.id))
@@ -145,6 +160,11 @@ export class RuntimeProjectHostSetupController {
       void prepareLocalWorktreeRootForRepo(store, result.repo)
       invalidateAuthorizedRootsCache()
     }
+    if (result.repo && ('path' in args.updates || 'kind' in args.updates)) {
+      this.retireRepoCatalog(result.repo.id)
+    }
+    this.deps.invalidateResolvedWorktrees()
+    this.deps.notifyReposChanged()
     return result
   }
 
@@ -160,7 +180,18 @@ export class RuntimeProjectHostSetupController {
     if (!result) {
       throw new Error(`Project host setup not found: ${args.setupId}`)
     }
+    if (result.repo) {
+      this.retireRepoCatalog(result.repo.id)
+    }
+    this.deps.invalidateResolvedWorktrees()
+    this.deps.notifyReposChanged()
     return result
+  }
+
+  // Why the shared invalidators: desktop and runtime scan caches key on repo id, not path or kind.
+  private retireRepoCatalog(repoId: string): void {
+    runWorktreeChangeInvalidators(repoId)
+    invalidateAuthorizedRootsCache()
   }
 
   // Why only for an explicit `force: false`: older clients omit it and must keep their delete.

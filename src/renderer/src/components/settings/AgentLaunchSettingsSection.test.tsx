@@ -1,43 +1,21 @@
 // @vitest-environment happy-dom
 import { cleanup, render, screen } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import type { WorktreeRuntimeOwnerState } from '@/lib/worktree-runtime-owner'
 import { createGlobalSettingsFixture } from '../../../../shared/global-settings-test-fixture'
 import { AgentLaunchSettingsSection } from './AgentLaunchSettingsSection'
+import type { SettingsHostScope } from './settings-host-scope'
 
-const state = vi.hoisted(() => {
-  const workspace: WorktreeRuntimeOwnerState = {}
-  return {
-    workspace,
-    runtimeEnvironments: [{ id: 'ssh-host', name: 'SSH host', createdAt: 1, pairingRevision: 17 }],
-    remote: vi.fn(),
-    local: vi.fn()
-  }
-})
+const state = vi.hoisted(() => ({
+  runtimeEnvironments: [{ id: 'ssh-host', name: 'SSH host', createdAt: 1, pairingRevision: 17 }],
+  remote: vi.fn(),
+  local: vi.fn()
+}))
 vi.mock('@/store', () => ({
   useAppStore: Object.assign(
-    (
-      selector: (
-        value: typeof state.workspace & { runtimeEnvironments: typeof state.runtimeEnvironments }
-      ) => unknown
-    ) => selector({ ...state.workspace, runtimeEnvironments: state.runtimeEnvironments }),
+    (selector: (value: { runtimeEnvironments: typeof state.runtimeEnvironments }) => unknown) =>
+      selector({ runtimeEnvironments: state.runtimeEnvironments }),
     { getState: () => ({ settings: null }) }
   )
-}))
-vi.mock('../sidebar/use-sidebar-host-scope-options', () => ({
-  useSidebarHostScopeOptions: () => ({
-    hostOptions: [
-      { id: 'local', label: 'Local', kind: 'local', health: 'local', presence: 'local' },
-      {
-        id: 'runtime:ssh-host',
-        label: 'SSH host',
-        kind: 'runtime',
-        health: 'available',
-        presence: 'configured',
-        aliasHostIds: ['ssh:old-ssh']
-      }
-    ]
-  })
 }))
 vi.mock('./HostAgentLaunchSettings', async () => {
   const { useState } = await import('react')
@@ -58,29 +36,31 @@ vi.mock('./AgentLaunchSettingsCatalog', () => ({
 }))
 afterEach(cleanup)
 beforeEach(() => {
-  state.workspace = {}
   state.runtimeEnvironments = [
     { id: 'ssh-host', name: 'SSH host', createdAt: 1, pairingRevision: 17 }
   ]
   state.remote.mockClear()
   state.local.mockClear()
 })
-const renderSection = (activeRuntimeEnvironmentId: string | null = null) =>
-  render(
-    <AgentLaunchSettingsSection
-      settings={createGlobalSettingsFixture({ activeRuntimeEnvironmentId })}
-      updateSettings={vi.fn()}
-      renderPermissions={() => null}
-    />
-  )
+const SSH_HOST: SettingsHostScope = {
+  target: { kind: 'environment', environmentId: 'ssh-host' },
+  available: true
+}
+const section = (
+  hostScope: SettingsHostScope,
+  activeRuntimeEnvironmentId: string | null = null
+) => (
+  <AgentLaunchSettingsSection
+    settings={createGlobalSettingsFixture({ activeRuntimeEnvironmentId })}
+    updateSettings={vi.fn()}
+    hostScope={hostScope}
+    renderPermissions={() => null}
+  />
+)
 
-describe('launch settings host selection', () => {
-  it('targets the SSH workspace host when the global default is Local', () => {
-    state.workspace = {
-      activeWorktreeId: 'repo::wt',
-      worktreesByRepo: { repo: [{ id: 'repo::wt', repoId: 'repo', hostId: 'runtime:ssh-host' }] }
-    }
-    renderSection()
+describe('launch settings host', () => {
+  it("edits the chosen server's launch settings even when the Active Server is this computer", () => {
+    render(section(SSH_HOST))
     expect(screen.getByText('Remote launch settings mounted at 17')).toBeTruthy()
     expect(state.remote.mock.calls[0]?.[0]).toMatchObject({
       environmentId: 'ssh-host',
@@ -90,54 +70,34 @@ describe('launch settings host selection', () => {
     expect(state.local).not.toHaveBeenCalled()
   })
 
-  it('uses the same authority rule for folder workspaces', () => {
-    state.workspace = {
-      activeWorktreeId: 'folder:work',
-      folderWorkspaces: [
-        { id: 'work', projectGroupId: 'group', executionHostId: 'runtime:ssh-host' }
-      ]
-    }
-    renderSection()
-    expect(state.remote.mock.calls[0]?.[0].environmentId).toBe('ssh-host')
-    expect(state.local).not.toHaveBeenCalled()
-  })
-
-  it('resolves a managed SSH alias to its runtime without another host row', () => {
-    state.workspace = {
-      activeWorktreeId: 'repo::wt',
-      worktreesByRepo: { repo: [{ id: 'repo::wt', repoId: 'repo', hostId: 'ssh:old-ssh' }] }
-    }
-    renderSection()
-    expect(state.remote.mock.calls[0]?.[0].environmentId).toBe('ssh-host')
-    expect(screen.getByRole('combobox').textContent).toContain('SSH host')
-  })
-
-  it('opens on the Active Server without an active workspace', () => {
-    renderSection(' ssh-host ')
-    expect(state.remote.mock.calls[0]?.[0].environmentId).toBe('ssh-host')
-    expect(state.local).not.toHaveBeenCalled()
+  it('edits desktop launch settings when this computer is chosen over the Active Server', () => {
+    render(section({ target: { kind: 'local' }, available: true }, 'ssh-host'))
+    expect(screen.getByText('Local launch settings')).toBeTruthy()
+    expect(state.remote).not.toHaveBeenCalled()
   })
 
   it('remounts the host form when its host is re-paired, dropping unsaved edits', () => {
-    const { rerender } = renderSection(' ssh-host ')
+    const { rerender } = render(section(SSH_HOST))
     expect(screen.getByText('Remote launch settings mounted at 17')).toBeTruthy()
     state.runtimeEnvironments = [
       { id: 'ssh-host', name: 'SSH host', createdAt: 1, pairingRevision: 18 }
     ]
-    rerender(
-      <AgentLaunchSettingsSection
-        settings={createGlobalSettingsFixture({ activeRuntimeEnvironmentId: ' ssh-host ' })}
-        updateSettings={vi.fn()}
-        renderPermissions={() => null}
-      />
-    )
+    rerender(section(SSH_HOST))
     expect(screen.getByText('Remote launch settings mounted at 18')).toBeTruthy()
   })
 
-  it('keeps unknown workspace ownership unresolved instead of displaying desktop defaults', () => {
-    state.workspace = { activeWorktreeId: 'repo::missing' }
-    renderSection()
+  it('waits for the server list instead of displaying desktop defaults', () => {
+    state.runtimeEnvironments = []
+    render(section(SSH_HOST))
     expect(screen.getByText('Loading agent settings…')).toBeTruthy()
+    expect(state.local).not.toHaveBeenCalled()
+    expect(state.remote).not.toHaveBeenCalled()
+  })
+
+  it('says a removed server is unavailable instead of showing another host', () => {
+    state.runtimeEnvironments = []
+    render(section({ ...SSH_HOST, available: false }))
+    expect(screen.getByText(/This server is no longer saved/)).toBeTruthy()
     expect(state.local).not.toHaveBeenCalled()
     expect(state.remote).not.toHaveBeenCalled()
   })

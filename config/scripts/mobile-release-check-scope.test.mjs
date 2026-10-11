@@ -76,10 +76,14 @@ it('gates Ruby independently and retains mobile static validation', () => {
   expect(steps.indexOf(detector)).toBeGreaterThan(
     steps.findIndex((step) => step.uses === './.github/actions/install-node-dependencies')
   )
+  expect(steps.find((step) => step.name === 'Setup Bun for tests').if).toBe(
+    steps.find((step) => step.name === 'Test').if
+  )
   const gated = steps.filter(
     (step) =>
       step.if !== undefined &&
       step.name !== 'Test' &&
+      step.name !== 'Setup Bun for tests' &&
       step.name !== 'Summarize RPC recording changes'
   )
   expect(gated.map((step) => step.name)).toEqual([

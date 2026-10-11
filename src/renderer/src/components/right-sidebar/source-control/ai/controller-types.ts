@@ -6,12 +6,15 @@ import type {
 } from '../../../../../../shared/git-status-types'
 import type { GlobalSettings } from '../../../../../../shared/global-settings-types'
 import type { Repo } from '../../../../../../shared/repo-types'
+import type { RuntimeClientTarget } from '@/runtime/runtime-client-target'
 
 export type SourceControlAiStoreSnapshot = Pick<AppState, 'settings' | 'repos'> &
   WorktreeAgentInventoryState
 
 export type SourceControlAiControllerParams = {
   settings: GlobalSettings | null
+  /** The repo owner's transport; it scopes model discovery. */
+  target: RuntimeClientTarget | null
   activeRepo: Repo | null
   activeWorktreeId: string | null | undefined
   activeConnectionId: string | null | undefined

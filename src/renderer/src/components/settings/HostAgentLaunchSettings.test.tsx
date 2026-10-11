@@ -29,21 +29,6 @@ vi.mock('@/hooks/useDetectedAgents', () => ({
     }
   }
 }))
-vi.mock('../sidebar/use-sidebar-host-scope-options', () => ({
-  useSidebarHostScopeOptions: () => ({
-    hostOptions: [
-      { id: 'local', label: 'Local', kind: 'local', health: 'local', presence: 'local' },
-      {
-        id: 'runtime:ssh-host',
-        label: 'SSH host',
-        kind: 'runtime',
-        health: 'available',
-        presence: 'configured'
-      }
-    ]
-  })
-}))
-
 const host = () =>
   projectAgentLaunchSettings({
     agentDefaultArgs: { claude: '--host-marker' },
@@ -72,7 +57,7 @@ beforeEach(() => {
 })
 
 describe('host launch settings form', () => {
-  it('routes the pane to the workspace host and saves arguments without editing desktop defaults', async () => {
+  it('routes the pane to the chosen host and saves arguments without editing desktop defaults', async () => {
     const desktop = createGlobalSettingsFixture({
       activeRuntimeEnvironmentId: null,
       agentDefaultArgs: { claude: '--desktop-marker' },
@@ -80,9 +65,6 @@ describe('host launch settings form', () => {
     })
     useAppStore.setState({
       settings: desktop,
-      activeWorktreeId: 'folder:remote',
-      activeWorkspaceExecutionHostId: 'runtime:ssh-host',
-      restoredRuntimeHostIdByWorkspaceSessionKey: { 'folder:remote': 'runtime:ssh-host' },
       runtimeEnvironments: [
         {
           id: 'ssh-host',
@@ -100,7 +82,14 @@ describe('host launch settings form', () => {
     const updateDesktop = vi.fn()
     render(
       <TooltipProvider>
-        <AgentsPane settings={desktop} updateSettings={updateDesktop} />
+        <AgentsPane
+          settings={desktop}
+          updateSettings={updateDesktop}
+          hostScope={{
+            target: { kind: 'environment', environmentId: 'ssh-host' },
+            available: true
+          }}
+        />
       </TooltipProvider>
     )
     const args = await screen.findByDisplayValue('--host-marker')

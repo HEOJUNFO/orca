@@ -54,8 +54,6 @@ export class OrcaRuntimeWithPreservedBranchCleanup extends OrcaRuntimeWithTermin
 
   protected readonly getLocalProviderFn: (() => IPtyProvider) | null
 
-  protected readonly getSshProviderFn: ((connectionId: string) => IPtyProvider | undefined) | null
-
   protected readonly onPtyStopped: ((ptyId: string) => void) | null
 
   protected readonly onTerminalAgentStatus:
@@ -282,7 +280,6 @@ export class OrcaRuntimeWithPreservedBranchCleanup extends OrcaRuntimeWithTermin
       teardownFolderWorkspacePtys(
         {
           runtime: this,
-          getSshProvider: this.getSshProviderFn,
           getLocalProvider: () => this.getLocalProvider(),
           onPtyStopped: this.onPtyStopped
         },

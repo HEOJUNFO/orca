@@ -1,17 +1,10 @@
 import { ipcRenderer } from 'electron'
-import type {
-  HostRepoCatalogSnapshot,
-  ListReposForExecutionHostArgs
-} from '../../shared/host-repo-catalog-contract'
 import type { BaseRefDefaultResult, BaseRefSearchResult } from '../../shared/repo-types'
 import type { ExecutionHostId } from '../../shared/execution-host'
 import type { PreloadApi } from '../api-types'
 
 export const reposApi = {
   list: () => ipcRenderer.invoke('repos:list'),
-
-  listForExecutionHost: (args: ListReposForExecutionHostArgs): Promise<HostRepoCatalogSnapshot> =>
-    ipcRenderer.invoke('repos:listForExecutionHost', args),
 
   add: (args) => ipcRenderer.invoke('repos:add', args),
 

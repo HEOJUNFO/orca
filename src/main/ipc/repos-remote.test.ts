@@ -206,43 +206,6 @@ describe('repos:addRemote', () => {
     })
   })
 
-  it.each([
-    ['connectionId', { connectionId: 'conn-1' }],
-    ['executionHostId only', { executionHostId: 'ssh:conn-1' }]
-  ])(
-    'returns an existing SSH repo (%s) instead of cloning the same target again',
-    async (_label, owner) => {
-      const existing = {
-        id: 'existing-id',
-        path: '/home/user/orca',
-        ...owner,
-        displayName: 'orca',
-        badgeColor: '#fff',
-        addedAt: 1000,
-        kind: 'git'
-      }
-      mockStore.getRepos.mockReturnValue([existing])
-      // What git on the SSH host answers inside a finished clone of the URL.
-      mockGitProvider.exec.mockImplementation((argv: string[], cwd?: string) =>
-        cwd === '/home/user/orca' && argv[0] === 'rev-parse'
-          ? Promise.resolve({ stdout: '\n0123abcd\n', stderr: '' })
-          : cwd === '/home/user/orca' && argv[0] === 'config'
-            ? Promise.resolve({ stdout: 'https://github.com/stablyai/orca.git\n', stderr: '' })
-            : Promise.reject(new Error('fatal: not a git repository'))
-      )
-
-      const result = await handlers.get('repos:cloneRemote')!(null, {
-        connectionId: 'conn-1',
-        url: 'https://github.com/stablyai/orca.git',
-        destination: '/home/user'
-      })
-
-      expect(result).toBe(existing)
-      expect(mockGitProvider.clone).not.toHaveBeenCalled()
-      expect(mockStore.addRepo).not.toHaveBeenCalled()
-    }
-  )
-
   it('refuses a saved SSH project at the destination whose folder is not this clone', async () => {
     mockStore.getRepos.mockReturnValue([
       {

@@ -2,6 +2,7 @@ import {
   closeTestStores,
   testState,
   createStore,
+  createStoreWithSshRemotePtyLeases,
   writeDataFile,
   readDataFile,
   makeRepo,
@@ -812,7 +813,9 @@ describe('Store', () => {
   })
 
   it('reassignSshTargetId migrates session pty ids, reconnect list, leases, and host scope', async () => {
-    const store = await createStore()
+    const store = createStoreWithSshRemotePtyLeases([
+      { targetId: 'ssh-old', ptyId: 'pty-2', state: 'detached' }
+    ])
     store.addRepo(makeRepo({ id: 'r1', connectionId: 'ssh-old', executionHostId: 'ssh:ssh-old' }))
     store.setWorkspaceSession({
       activeRepoId: 'r1',
@@ -825,7 +828,6 @@ describe('Store', () => {
       remoteSessionIdsByTabId: { tab1: 'ssh:ssh-old@@pty-2' },
       activeConnectionIdsAtShutdown: ['ssh-old']
     })
-    store.upsertSshRemotePtyLease({ targetId: 'ssh-old', ptyId: 'pty-2', state: 'detached' })
     store.updateUI({
       workspaceHostScope: 'ssh:ssh-old',
       visibleWorkspaceHostIds: ['local', 'ssh:ssh-old'],
