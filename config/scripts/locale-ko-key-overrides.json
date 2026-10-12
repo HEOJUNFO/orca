@@ -4403,15 +4403,6 @@
   "auto.components.sidebar.add.repo.local.start.actions.runtimeBrowseDescription": {
     "ko": "이 호스트의 기존 Git 리포지토리 또는 폴더"
   },
-  "auto.components.sidebar.add.repo.local.start.actions.sshBrowseDescription": {
-    "ko": "이 SSH 호스트의 기존 Git 리포지토리 또는 폴더"
-  },
-  "auto.components.sidebar.add.repo.local.start.actions.sshBrowseTitle": {
-    "ko": "SSH 호스트에서 프로젝트 열기"
-  },
-  "auto.components.sidebar.add.repo.local.start.actions.sshCreateUnavailable": {
-    "ko": "아직 SSH 호스트에서는 사용할 수 없습니다."
-  },
   "auto.components.sidebar.index.b826a98b6f": {
     "ko": "사용 중"
   },

@@ -237,3 +237,25 @@ describe('PR E2E gate contract', () => {
     )
   })
 })
+
+describe('Daemon mock modified-only source routing', () => {
+  const helper = 'src/main/daemon/daemon-init-dependency-mocks.ts'
+  const verified = { allowDaemonInitTestSupport: true }
+  it('omits the real D7 route only for the proven unit-support scope', () => {
+    expect(selectPrE2eSpecs([helper])).toContain('tests/e2e/orcad-serve-mode-switch.spec.ts')
+    expect(selectPrE2eSpecs([helper], undefined, verified)).toEqual([])
+    const companion = 'src/main/codex/codex-app-server-connection.test.ts'
+    expect(selectPrE2eSpecs([helper, companion], undefined, verified)).toEqual(
+      selectPrE2eSpecs([companion])
+    )
+  })
+  it.each([
+    { files: [] },
+    { files: [helper, 'src/main/daemon/daemon-init.ts'] },
+    { files: [helper, 'package.json'] },
+    { files: [helper, 'src/main/daemon/unknown-support.ts'] },
+    { files: [helper, helper] }
+  ])('retains existing routes for an uncertain or mixed vector $files', ({ files }) => {
+    expect(selectPrE2eSpecs(files, undefined, verified)).toEqual(selectPrE2eSpecs(files))
+  })
+})

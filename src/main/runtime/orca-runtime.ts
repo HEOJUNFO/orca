@@ -15,10 +15,6 @@ import { peekOpenedAgentSessionRecordStore } from './agent-session-record-store-
 import { createAgentLaunchRecordWarmupGate } from './agent-launch-record-warmup-gate'
 import { WorkspaceLayoutStream } from './workspace-layout-stream'
 import type { RemoteLayoutSnapshot } from '../../shared/remote-layout-snapshot'
-import {
-  shouldWatchLayoutRoundTrip,
-  watchLayoutRoundTrip
-} from './workspace-layout-round-trip-watch'
 import { registerDetectedWorktreeScanInvalidation } from '../ipc/worktrees/listing/register-detected-worktree-scan-invalidation'
 import {
   listReferenceWorkspaces,
@@ -91,9 +87,6 @@ class OrcaRuntimeService extends OrcaRuntimeWithMigrationCatalog {
     // module registers the generation bump at load; a headless host never loads it.
     registerDetectedWorktreeScanInvalidation()
     registerWorktreeChangeInvalidator((repoId) => this.invalidateWorktreeCatalog(repoId))
-    if (this.store && shouldWatchLayoutRoundTrip()) {
-      watchLayoutRoundTrip(this.store)
-    }
   }
 
   /** Whether a window owns the layout and can show a launch's tab ahead of its process. */

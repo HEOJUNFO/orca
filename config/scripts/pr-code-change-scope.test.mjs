@@ -394,7 +394,9 @@ describe('per-job path classification', () => {
       expectClassification([file], {
         'cross-version-wire': true,
         package: true,
-        package_windows: true
+        package_windows: true,
+        // The session-tabs RPC publishes layout, so the layout oracle gates it too.
+        layout_oracle: file === 'src/main/runtime/rpc/methods/session-tabs.ts'
       })
     }
     expectClassification(

@@ -15,7 +15,6 @@ import {
   remoteRepo,
   reposAdd,
   reposClone,
-  reposCloneRemote,
   reposList,
   reposPickFolder,
   reposRemoveForHost,
@@ -555,58 +554,24 @@ describe('repo slice runtime routing', () => {
     })
   })
 
-  it('clones a project on an SSH host before aligning it as a host setup', async () => {
-    const project: Project = {
-      id: 'project-1',
-      displayName: 'Project',
-      badgeColor: '#000',
-      sourceRepoIds: ['ssh-repo'],
-      createdAt: 1,
-      updatedAt: 1
-    }
-    const clonedRepo = { ...sshRepo, path: '/srv/project' }
-    const setup: ProjectHostSetup = {
-      id: clonedRepo.id,
-      projectId: project.id,
-      hostId: 'ssh:ssh-1',
-      repoId: clonedRepo.id,
-      path: clonedRepo.path,
-      displayName: clonedRepo.displayName,
-      setupState: 'ready',
-      setupMethod: 'cloned',
-      createdAt: 1,
-      updatedAt: 1
-    }
-    reposCloneRemote.mockResolvedValue(clonedRepo)
-    projectsSetupExistingFolder.mockResolvedValue({ project, setup, repo: clonedRepo })
+  it('refuses to clone on an SSH host instead of cloning onto this computer', async () => {
     const store = createTestStore()
 
     await expect(
       store.getState().setupProjectClone({
-        projectId: project.id,
+        projectId: 'project-1',
         hostId: 'ssh:ssh-1',
         url: 'https://github.com/stablyai/orca.git',
         destination: '/srv',
         displayName: 'Project'
       })
-    ).resolves.toEqual({
-      project,
-      setup,
-      repo: { ...clonedRepo, executionHostId: 'ssh:ssh-1' }
-    })
+    ).resolves.toBeNull()
 
-    expect(reposCloneRemote).toHaveBeenCalledWith({
-      connectionId: 'ssh-1',
-      url: 'https://github.com/stablyai/orca.git',
-      destination: '/srv'
-    })
-    expect(projectsSetupExistingFolder).toHaveBeenCalledWith({
-      projectId: project.id,
-      hostId: 'ssh:ssh-1',
-      path: clonedRepo.path,
-      kind: 'git',
-      displayName: 'Project',
-      setupMethod: 'cloned'
+    expect(reposClone).not.toHaveBeenCalled()
+    expect(projectsSetupExistingFolder).not.toHaveBeenCalled()
+    expect(toast.error).toHaveBeenCalledWith('Failed to add project', {
+      description: 'SSH connection "ssh-1" not found or not connected',
+      duration: expect.any(Number)
     })
   })
 

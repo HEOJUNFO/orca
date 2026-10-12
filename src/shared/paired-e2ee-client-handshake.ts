@@ -1,3 +1,4 @@
+import { encodeDeviceProofMessage } from './device-key-proof'
 import type { MobileE2EETransport } from './mobile-e2ee-v2-contract'
 import type { PairedE2EEKeyPair, PairedE2EEPrimitives } from './paired-e2ee-primitives'
 import { PairedE2EEV2ClientSession } from './paired-e2ee-v2-client-session'
@@ -6,6 +7,14 @@ export type PairedE2EEFraming = 'legacy' | 'v2'
 
 // Why a union: device-key and ticket credentials (signed over the v2 transcript) join this.
 export type PairedE2EEAuthCredential = { kind: 'token'; deviceToken: string }
+
+// Signs encodeDeviceProofMessage('auth', transcriptHash) with the installation's Ed25519 key.
+// Async so a non-extractable WebCrypto key can sign; valid only inside E2EE v2.
+export type PairedE2EEDeviceKeyCredential = {
+  kind: 'device-key'
+  deviceId: string
+  sign: (message: Uint8Array) => Promise<Uint8Array>
+}
 
 export type PairedE2EEReadyVerdict =
   | 'accepted'
@@ -18,7 +27,8 @@ export type PairedE2EEReadyVerdict =
 
 export type PairedE2EEAuthReply =
   | { kind: 'authenticated' }
-  | { kind: 'rejected'; type: string | null; errorCode: string | null }
+  // errorDeviceId: the device a sealed verdict names (device_revoked); a client acts only on its own.
+  | { kind: 'rejected'; type: string | null; errorCode: string | null; errorDeviceId?: string }
   | { kind: 'invalid' }
 
 export type PairedE2EEChannel = {
@@ -48,8 +58,10 @@ export type PairedE2EEClientHandshake = {
   helloText: () => string
   acceptReadyText: (frame: string) => PairedE2EEReadyVerdict
   // Async so a WebCrypto signer can produce a device-key proof.
+  // This connection's v2 transcript hash once the ready is accepted; null for legacy framing.
+  transcriptHashB64: () => string | null
   sealAuth: (
-    credential: PairedE2EEAuthCredential,
+    credential: PairedE2EEAuthCredential | PairedE2EEDeviceKeyCredential,
     options?: { clientCapabilities?: readonly string[] }
   ) => Promise<string>
   classifyAuthReply: (plaintext: string) => PairedE2EEAuthReply
@@ -111,7 +123,11 @@ function createLegacyHandshake(args: PairedE2EEClientHandshakeArgs): PairedE2EEC
       // Why: re-checked here because another socket may have latched while this one dialed.
       return mayUseLegacy() ? 'accepted' : 'downgrade_refused'
     },
+    transcriptHashB64: () => null,
     sealAuth: async (credential, options) => {
+      if (credential.kind !== 'token') {
+        throw new Error('device-key credentials need E2EE v2')
+      }
       if (!mayUseLegacy()) {
         throw new PairedE2EEDowngradeError('auth')
       }
@@ -129,9 +145,7 @@ function createLegacyHandshake(args: PairedE2EEClientHandshakeArgs): PairedE2EEC
         return { kind: 'invalid' }
       }
       const type = readStringField(reply, 'type')
-      return type === 'e2ee_authenticated'
-        ? { kind: 'authenticated' }
-        : { kind: 'rejected', type, errorCode: readErrorCode(reply) }
+      return type === 'e2ee_authenticated' ? { kind: 'authenticated' } : rejectedReply(reply)
     }
   }
 }
@@ -173,10 +187,30 @@ function createV2Handshake(args: PairedE2EEClientHandshakeArgs): PairedE2EEClien
       }
       return session.acceptReady(ready) ? 'accepted' : 'unexpected'
     },
-    sealAuth: async (credential) =>
-      session.sealText(
-        serializeJson(pairedE2EEV2TokenAuth(session.transcriptHashB64, credential.deviceToken))
-      ),
+    transcriptHashB64: () => (session.isReady ? session.transcriptHashB64 : null),
+    sealAuth: async (credential, options) => {
+      // Why read first: throws before the ready, so nothing is signed without a transcript.
+      const transcriptHashB64 = session.transcriptHashB64
+      if (credential.kind === 'token') {
+        // Why no capabilities: v2 token auth is an exact key set on every host.
+        return session.sealText(
+          serializeJson(pairedE2EEV2TokenAuth(transcriptHashB64, credential.deviceToken))
+        )
+      }
+      const signature = await credential.sign(
+        encodeDeviceProofMessage('auth', args.primitives.decodeBase64(transcriptHashB64))
+      )
+      return session.sealText(
+        serializeJson({
+          type: 'e2ee_auth',
+          v: 2,
+          transcriptHashB64,
+          deviceId: credential.deviceId,
+          deviceProofB64: args.primitives.encodeBase64(signature),
+          ...(options?.clientCapabilities ? { clientCapabilities: options.clientCapabilities } : {})
+        })
+      )
+    },
     classifyAuthReply: (plaintext) => {
       const reply = parseJsonOrUndefined(plaintext, parseJson)
       return reply === undefined
@@ -204,9 +238,7 @@ export function classifyPairedE2EEV2AuthReply(
     reply.type === 'e2ee_authenticated' &&
     reply.v === 2 &&
     reply.transcriptHashB64 === transcriptHashB64
-  return authenticated
-    ? { kind: 'authenticated' }
-    : { kind: 'rejected', type: readStringField(reply, 'type'), errorCode: readErrorCode(reply) }
+  return authenticated ? { kind: 'authenticated' } : rejectedReply(reply)
 }
 
 function parseJsonOrUndefined(text: string, parseJson: (text: string) => unknown): unknown {
@@ -227,6 +259,16 @@ function readStringField(value: unknown, field: string): string | null {
   }
   const fieldValue = value[field]
   return typeof fieldValue === 'string' ? fieldValue : null
+}
+
+function rejectedReply(reply: unknown): PairedE2EEAuthReply {
+  const errorDeviceId = isRecord(reply) ? readStringField(reply.error, 'deviceId') : null
+  return {
+    kind: 'rejected',
+    type: readStringField(reply, 'type'),
+    errorCode: readErrorCode(reply),
+    ...(errorDeviceId ? { errorDeviceId } : {})
+  }
 }
 
 function readErrorCode(value: unknown): string | null {

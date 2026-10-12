@@ -5051,8 +5051,7 @@
         "AddProjectFromFolderDialog": {
           "7d1f51678c": "添加项目",
           "7726a16374": "取消",
-          "046751dbfb": "将此文件夹添加为单独的 Orca 项目。",
-          "e643b30398": "添加了远程项目"
+          "046751dbfb": "将此文件夹添加为单独的 Orca 项目。"
         },
         "AddRepoCreateStep": {
           "0ae45b8238": "my-project",
@@ -5070,8 +5069,7 @@
           "fe1e616c5b": "创建项目需要 Git。",
           "c234df77f7": "创建前请选择或输入服务器父文件夹。",
           "3a13f6e88b": "未选择位置",
-          "6ed14c0281": "未选择服务器文件夹",
-          "ssh_parent_manual": "输入 SSH 父路径。"
+          "6ed14c0281": "未选择服务器文件夹"
         },
         "AddRepoNestedImportStep": {
           "496f68cf8c": "扫描存储库。单击停止。",
@@ -5096,13 +5094,9 @@
           "e52454b7f6": "作为文件夹打开"
         },
         "AddRepoRemoteStep": {
-          "5b205b5281": "停止扫描",
           "6680289908": "/home/user/project",
           "ef410aa881": "远程路径",
-          "0416bde073": "在设置中添加",
-          "df6fbcf880": "未配置 SSH 目标。",
           "44637f43bd": "SSH 目标",
-          "80557be85a": "选择已连接的 SSH 目标并输入 Git 存储库的路径。",
           "serverDescription": "选择 {{server}} 连接的 SSH 主机，并输入该主机上 Git 仓库的路径。",
           "serverEmpty": "{{server}} 还没有 SSH 主机。",
           "serverAddHost": "添加 SSH 主机",
@@ -5110,10 +5104,7 @@
           "007651bdf9": "导航到目录并单击“选择”以选择它。",
           "dd3ff65486": "浏览远程文件系统",
           "36d427bb66": "添加远程项目",
-          "35831a7312": "添加...",
-          "lockedDescription": "输入 {{value0}} 上 Git 仓库的路径。",
-          "lockedDisconnected": "{{value0}} 已断开连接。",
-          "93e0221434": "连接"
+          "35831a7312": "添加..."
         },
         "AddRepoServerStartStep": {
           "ae990c86a0": "返回添加选项",
@@ -5863,12 +5854,8 @@
                   "serverSshTitle": "此服务器 SSH 主机上的项目",
                   "serverSshDescription": "从此服务器连接的 SSH 主机打开项目文件夹",
                   "serverSshUpdate": "更新此服务器后才能在其 SSH 主机上添加项目",
-                  "3d162cc76f": "远程项目",
                   "fb4fc5380e": "本地项目、Git 仓库或包含多个仓库的文件夹",
                   "2281fdc8c7": "浏览文件夹",
-                  "sshCreateUnavailable": "SSH 主机暂不可用",
-                  "sshBrowseTitle": "在 SSH 主机上打开项目",
-                  "sshBrowseDescription": "此 SSH 主机上的现有 Git 仓库或文件夹",
                   "runtimeBrowseDescription": "此主机上的现有 Git 仓库或文件夹"
                 }
               }
@@ -12382,7 +12369,7 @@
           }
         },
         "sshHostServer": {
-          "sourceChanged": "在较旧版本的 Orca 上发生了更改：会持续运行中继，直到再次迁移到其受管服务器。",
+          "sourceChanged": "较旧版本的 Orca 更改了此主机的项目。要重新连接，请将这些更改迁移到其受管服务器，或保留服务器版本。",
           "deploying": "正在设置受管的 Orca 服务器…",
           "converting": "正在将此主机的项目迁移到其受管的 Orca 服务器…",
           "connecting": "正在连接到受管的 Orca 服务器…",
@@ -17944,7 +17931,6 @@
         "imagePasteFailed": "图片粘贴失败。",
         "worktreeNotReady": "工作树未就绪 — 请稍后重试。",
         "pasteUnavailable": "无法粘贴 — 此聊天当前不接受输入。",
-        "uploadingAttachments": "正在将 {{value0}} 个文件上传到远端…",
         "model": "模型",
         "effort": "推理强度",
         "fastMode": "快速模式",

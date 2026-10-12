@@ -5051,8 +5051,7 @@
         "AddProjectFromFolderDialog": {
           "7d1f51678c": "프로젝트 추가",
           "7726a16374": "취소",
-          "046751dbfb": "이 폴더를 별도의 Orca 프로젝트로 추가합니다.",
-          "e643b30398": "원격 프로젝트가 추가되었습니다."
+          "046751dbfb": "이 폴더를 별도의 Orca 프로젝트로 추가합니다."
         },
         "AddRepoCreateStep": {
           "0ae45b8238": "my-project",
@@ -5070,8 +5069,7 @@
           "fe1e616c5b": "프로젝트를 만들려면 Git이 필요합니다.",
           "c234df77f7": "만들기 전에 서버 상위 폴더를 선택하거나 입력하세요.",
           "3a13f6e88b": "위치가 선택되지 않음",
-          "6ed14c0281": "서버 폴더가 선택되지 않음",
-          "ssh_parent_manual": "SSH 상위 경로를 입력하세요."
+          "6ed14c0281": "서버 폴더가 선택되지 않음"
         },
         "AddRepoNestedImportStep": {
           "496f68cf8c": "repos를 스캔하는 중입니다. 중지하려면 클릭하세요.",
@@ -5096,13 +5094,9 @@
           "e52454b7f6": "폴더로 열기"
         },
         "AddRepoRemoteStep": {
-          "5b205b5281": "스캔 중지",
           "6680289908": "/home/user/project",
           "ef410aa881": "원격 경로",
-          "0416bde073": "설정에 추가",
-          "df6fbcf880": "구성된 SSH 대상이 없습니다.",
           "44637f43bd": "SSH 대상",
-          "80557be85a": "연결된 SSH 대상을 선택하고 Git 리포지토리 경로를 입력하세요.",
           "serverDescription": "{{server}}이(가) 연결하는 SSH 호스트를 선택하고, 그 호스트의 Git 저장소 경로를 입력하세요.",
           "serverEmpty": "{{server}}에 아직 SSH 호스트가 없습니다.",
           "serverAddHost": "SSH 호스트 추가",
@@ -5110,10 +5104,7 @@
           "007651bdf9": "디렉터리로 이동한 후 선택을 클릭하여 선택합니다.",
           "dd3ff65486": "원격 파일 시스템 찾아보기",
           "36d427bb66": "원격 프로젝트 추가",
-          "35831a7312": "추가 중...",
-          "lockedDescription": "{{value0}}의 Git 리포지토리 경로를 입력하세요.",
-          "lockedDisconnected": "{{value0}} 연결이 끊어졌습니다.",
-          "93e0221434": "연결"
+          "35831a7312": "추가 중..."
         },
         "AddRepoServerStartStep": {
           "ae990c86a0": "옵션 추가로 돌아가기",
@@ -5863,12 +5854,8 @@
                   "serverSshTitle": "이 서버의 SSH 호스트에 있는 프로젝트",
                   "serverSshDescription": "이 서버가 연결하는 SSH 호스트의 프로젝트 폴더를 엽니다",
                   "serverSshUpdate": "SSH 호스트에 프로젝트를 추가하려면 이 서버를 업데이트하세요",
-                  "3d162cc76f": "원격 프로젝트",
                   "fb4fc5380e": "로컬 프로젝트, Git repo 또는 repos가 많은 폴더",
                   "2281fdc8c7": "폴더 찾아보기",
-                  "sshCreateUnavailable": "아직 SSH 호스트에서는 사용할 수 없습니다.",
-                  "sshBrowseTitle": "SSH 호스트에서 프로젝트 열기",
-                  "sshBrowseDescription": "이 SSH 호스트의 기존 Git 리포지토리 또는 폴더",
                   "runtimeBrowseDescription": "이 호스트의 기존 Git 리포지토리 또는 폴더"
                 }
               }
@@ -12368,7 +12355,7 @@
           }
         },
         "sshHostServer": {
-          "sourceChanged": "이전 Orca에서 변경됨: 관리형 서버로 다시 이동할 때까지 릴레이를 실행합니다.",
+          "sourceChanged": "이전 버전의 Orca가 이 호스트의 프로젝트를 변경했습니다. 다시 연결하려면 해당 변경 사항을 관리형 서버로 이동하거나 서버 버전을 유지하세요.",
           "deploying": "관리형 Orca 서버 설정 중…",
           "converting": "이 호스트의 프로젝트를 관리형 Orca 서버로 이동하는 중…",
           "connecting": "관리형 Orca 서버에 연결 중…",
@@ -17965,7 +17952,6 @@
         "imagePasteFailed": "이미지 붙여넣기 실패.",
         "worktreeNotReady": "워크트리가 준비되지 않았습니다 — 잠시 후 다시 시도하세요.",
         "pasteUnavailable": "붙여넣을 수 없습니다 — 이 채팅은 지금 입력을 받을 수 없습니다.",
-        "uploadingAttachments": "{{value0}}개 파일을 원격으로 업로드 중…",
         "model": "모델",
         "effort": "추론 수준",
         "fastMode": "빠른 모드",

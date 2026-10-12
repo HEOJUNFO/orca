@@ -43,9 +43,7 @@ describe('web runtime connection capability advertisement', () => {
       subscriptions: new Map(),
       sendAuth,
       setConnected: vi.fn(),
-      setAuthFailed: vi.fn(),
-      rejectUnauthorized: vi.fn(),
-      notifyUnauthorized: vi.fn()
+      authRejected: vi.fn()
     })
 
     expect(sendAuth).toHaveBeenCalledWith(handshake)

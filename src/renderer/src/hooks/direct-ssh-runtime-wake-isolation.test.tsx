@@ -142,16 +142,13 @@ describe('runtime and direct SSH wake isolation', () => {
         ]
       ])
     })
-    const staleAuthority = { ...currentAuthority, connectionGeneration: 6 }
-    expect(store.getState().invalidateStaleDirectSshTargetPtyBindings(staleAuthority)).toBe(0)
-    expect(store.getState().tabsByWorktree[directWorktreeId][0].ptyId).toBe(directPtyId)
     const wakePreparation = vi.fn()
     const correctedCounts: number[] = []
     const unregisterDirectWake = registerDirectSshWakeRouting({
       getConnectionStates: () => store.getState().sshConnectionStates,
       wakeAuthority: (nextAuthority) => {
         correctedCounts.push(
-          store.getState().invalidateStaleDirectSshTargetPtyBindings(nextAuthority)
+          store.getState().clearDirectSshTargetPtyBindings(nextAuthority.targetId)
         )
         wakePreparation(nextAuthority)
       },

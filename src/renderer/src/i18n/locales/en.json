@@ -519,6 +519,18 @@
             "07f788de83": "WebSocket"
           }
         }
+      },
+      "pairingSecurity": {
+        "hide": "Hide",
+        "storedCodeInsecureOrigin": "This browser keeps a reusable pairing code, because this page is plain http on another machine. Anyone who can read this browser’s storage could use it. For a safer pairing, open Orca over https, at localhost on this computer, or through an SSH tunnel, and pair again.",
+        "storedCodeNoEd25519": "This browser keeps a reusable pairing code, because it cannot create secure sign-in keys (Ed25519). Use a current browser and pair again for a safer pairing.",
+        "sessionInsecureOrigin": "This pairing lasts only while this tab is open, because this page is plain http on another machine. For a pairing this browser remembers, open Orca over https, at localhost on this computer, or through an SSH tunnel.",
+        "sessionNoEd25519": "This pairing lasts only while this tab is open, because this browser cannot create secure sign-in keys (Ed25519). Use a current browser for a pairing it remembers."
+      },
+      "runtimeAuth": {
+        "insecureOrigin": "Orca refused to pair from this page: it is plain http on another machine, so anyone on the network path could replace it and take the pairing code. Open the web client over https, at localhost on this computer, or through an SSH tunnel. To allow it anyway, the server operator can restart Orca with ORCA_ALLOW_INSECURE_WEB_PAIRING=1.",
+        "deviceDowngraded": "This Orca server no longer supports this browser’s sign-in key (it may have been downgraded). Update the server, or pair this browser again.",
+        "unauthorized": "Unauthorized. Pair this web client again."
       }
     },
     "store": {
@@ -5322,8 +5334,7 @@
         "AddProjectFromFolderDialog": {
           "7d1f51678c": "Add Project",
           "7726a16374": "Cancel",
-          "046751dbfb": "Add this folder as a separate Orca project.",
-          "e643b30398": "Project added on SSH host"
+          "046751dbfb": "Add this folder as a separate Orca project."
         },
         "AddRepoCreateStep": {
           "0ae45b8238": "my-project",
@@ -5340,7 +5351,6 @@
           "5e97f0c4b9": "Project created",
           "2c12db1511": "Project already added",
           "875dda0995": "Enter a host parent path.",
-          "ssh_parent_manual": "Enter an SSH parent path.",
           "45b7c26034": "Create project",
           "85085d74d2": "Creating…"
         },
@@ -5382,13 +5392,9 @@
           "e52454b7f6": "Open as Folder"
         },
         "AddRepoRemoteStep": {
-          "5b205b5281": "Stop scan",
           "6680289908": "/home/user/project",
           "ef410aa881": "Host path",
-          "0416bde073": "Add in Settings",
-          "df6fbcf880": "No SSH targets configured.",
           "44637f43bd": "SSH target",
-          "80557be85a": "Choose a connected SSH target and enter the path to a Git repository.",
           "serverDescription": "Choose an SSH host that {{server}} connects to, and enter the path to a Git repository on it.",
           "serverEmpty": "{{server}} has no SSH hosts yet.",
           "serverAddHost": "Add SSH host",
@@ -5396,10 +5402,7 @@
           "007651bdf9": "Navigate to a directory and click Select to choose it.",
           "dd3ff65486": "Browse remote filesystem",
           "36d427bb66": "Add project on SSH host",
-          "35831a7312": "Adding...",
-          "lockedDescription": "Enter the path to a Git repository on {{value0}}.",
-          "lockedDisconnected": "{{value0}} is disconnected.",
-          "93e0221434": "Connect"
+          "35831a7312": "Adding..."
         },
         "AddRepoServerStartStep": {
           "ae990c86a0": "Back to add options",
@@ -6131,12 +6134,8 @@
                   "serverSshTitle": "Project on this server's SSH host",
                   "serverSshDescription": "Open a project folder from an SSH host this server connects to",
                   "serverSshUpdate": "Update this server to add projects on its SSH hosts",
-                  "sshCreateUnavailable": "Not available for SSH hosts yet",
-                  "3d162cc76f": "Project on SSH host",
                   "fb4fc5380e": "Local project, Git repo, or folder with many repos",
                   "2281fdc8c7": "Browse folder",
-                  "sshBrowseTitle": "Open project on SSH host",
-                  "sshBrowseDescription": "Existing Git repository or folder on this SSH host",
                   "runtimeBrowseDescription": "Existing Git repository or folder on this host"
                 }
               }
@@ -12583,7 +12582,7 @@
           }
         },
         "sshHostServer": {
-          "sourceChanged": "Changed on an older Orca: runs the relay until it is moved to its managed server again.",
+          "sourceChanged": "An older version of Orca changed this host’s projects. Move those changes to its managed server, or keep the server’s version, to connect again.",
           "deploying": "Setting up a managed Orca server…",
           "converting": "Moving this host’s projects to its managed Orca server…",
           "connecting": "Connecting to the managed Orca server…",
@@ -18283,7 +18282,6 @@
         "imageSaving": "Saving pasted image…",
         "worktreeNotReady": "Worktree not ready — try again in a moment.",
         "pasteUnavailable": "Can't paste — this chat isn't accepting input right now.",
-        "uploadingAttachments": "Uploading {{value0}} file(s) to remote…",
         "model": "Model",
         "effort": "Effort",
         "fastMode": "Fast mode",

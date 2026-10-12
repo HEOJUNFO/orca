@@ -784,7 +784,7 @@ describe('Store', () => {
 
   it('reassignSshTargetId re-points a repo that only carries connectionId (no executionHostId)', async () => {
     const store = await createStore()
-    // SSH repos created via addRemoteRepoFromPath leave executionHostId unset.
+    // Legacy SSH repo rows carry only connectionId and leave executionHostId unset.
     store.addRepo(makeRepo({ id: 'r1', connectionId: 'ssh-old' }))
 
     const repoIds = store.reassignSshTargetId('ssh-old', 'ssh-new')

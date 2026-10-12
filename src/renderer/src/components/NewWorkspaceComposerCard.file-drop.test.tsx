@@ -136,7 +136,6 @@ describe('new workspace card file drop ownership', () => {
             selectedRepo: { id: 'source-repo' },
             selectedRepoPath: source,
             selectedRepoExecutionHostId: 'ssh:ssh-a',
-            selectedRepoSettings: {},
             connectionId: 'ssh-a'
           })
           const dropState = useAttachmentDropState({
@@ -146,7 +145,7 @@ describe('new workspace card file drop ownership', () => {
             promptTextareaRef: createRef<HTMLTextAreaElement>(),
             connectionId: target.connectionId,
             selectedRepoPath: target.path ?? undefined,
-            selectedRepoSettings: target.settings,
+            selectedRepoRuntimeEnvironmentId: target.runtimeEnvironmentId,
             selectedWorktreeId: target.worktreeId,
             setAgentPrompt: () => {},
             setAttachmentPaths: attach

@@ -5176,8 +5176,7 @@
         "AddProjectFromFolderDialog": {
           "7d1f51678c": "Ajouter un projet",
           "7726a16374": "Annuler",
-          "046751dbfb": "Ajoutez ce dossier comme projet Orca distinct.",
-          "e643b30398": "Projet ajouté sur l'hôte SSH"
+          "046751dbfb": "Ajoutez ce dossier comme projet Orca distinct."
         },
         "AddRepoCreateStep": {
           "0ae45b8238": "my-project",
@@ -5194,7 +5193,6 @@
           "5e97f0c4b9": "Projet créé",
           "2c12db1511": "Projet déjà ajouté",
           "875dda0995": "Saisissez un chemin parent sur l'hôte.",
-          "ssh_parent_manual": "Saisissez un chemin parent SSH.",
           "45b7c26034": "Créer le projet",
           "85085d74d2": "Création…"
         },
@@ -5236,13 +5234,9 @@
           "e52454b7f6": "Ouvrir comme dossier"
         },
         "AddRepoRemoteStep": {
-          "5b205b5281": "Interrompre l'analyse",
           "6680289908": "/home/user/project",
           "ef410aa881": "Chemin sur l'hôte",
-          "0416bde073": "Ajouter dans les paramètres",
-          "df6fbcf880": "Aucune cible SSH configurée.",
           "44637f43bd": "Cible SSH",
-          "80557be85a": "Choisissez une cible SSH connectée et saisissez le chemin vers un dépôt Git.",
           "serverDescription": "Choisissez un hôte SSH auquel {{server}} se connecte, puis saisissez le chemin d’un dépôt Git sur cet hôte.",
           "serverEmpty": "{{server}} n’a pas encore d’hôte SSH.",
           "serverAddHost": "Ajouter un hôte SSH",
@@ -5250,10 +5244,7 @@
           "007651bdf9": "Naviguez jusqu'à un répertoire et cliquez sur Sélectionner pour le choisir.",
           "dd3ff65486": "Parcourir le système de fichiers distant",
           "36d427bb66": "Ajouter un projet sur l'hôte SSH",
-          "35831a7312": "Ajout...",
-          "lockedDescription": "Saisissez le chemin vers un dépôt Git sur {{value0}}.",
-          "lockedDisconnected": "{{value0}} est déconnecté.",
-          "93e0221434": "Se connecter"
+          "35831a7312": "Ajout..."
         },
         "AddRepoServerStartStep": {
           "ae990c86a0": "Retour aux options d'ajout",
@@ -5985,12 +5976,8 @@
                   "serverSshTitle": "Projet sur un hôte SSH de ce serveur",
                   "serverSshDescription": "Ouvrir un dossier de projet depuis un hôte SSH auquel ce serveur se connecte",
                   "serverSshUpdate": "Mettez ce serveur à jour pour ajouter des projets sur ses hôtes SSH",
-                  "sshCreateUnavailable": "Pas encore disponible pour les hôtes SSH",
-                  "3d162cc76f": "Projet sur hôte SSH",
                   "fb4fc5380e": "Projet local, dépôt Git ou dossier contenant plusieurs dépôts",
                   "2281fdc8c7": "Parcourir le dossier",
-                  "sshBrowseTitle": "Ouvrir un projet sur l'hôte SSH",
-                  "sshBrowseDescription": "Dépôt Git existant ou dossier sur cet hôte SSH",
                   "runtimeBrowseDescription": "Dépôt Git existant ou dossier sur cette machine"
                 }
               }
@@ -12474,7 +12461,7 @@
           }
         },
         "sshHostServer": {
-          "sourceChanged": "Modifié sur une version plus ancienne d'Orca : exécute le relais jusqu'à ce qu'il soit de nouveau déplacé vers son serveur géré.",
+          "sourceChanged": "Une version plus ancienne d'Orca a modifié les projets de cet hôte. Déplacez ces modifications vers son serveur géré, ou conservez la version du serveur, pour vous reconnecter.",
           "deploying": "Configuration d'un serveur Orca géré…",
           "converting": "Déplacement des projets de cet hôte vers son serveur Orca géré…",
           "connecting": "Connexion au serveur Orca géré…",
@@ -18048,7 +18035,6 @@
         "imagePasteFailed": "Échec du collage de l'image.",
         "worktreeNotReady": "Worktree pas encore prêt — réessayez dans un instant.",
         "pasteUnavailable": "Impossible de coller — ce chat n'accepte pas de saisie pour le moment.",
-        "uploadingAttachments": "Envoi de {{value0}} fichier(s) vers le distant…",
         "model": "Modèle",
         "effort": "Effort",
         "fastMode": "Mode rapide",

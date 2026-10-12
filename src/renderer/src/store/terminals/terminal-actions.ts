@@ -9,7 +9,6 @@ import type {
   AgentProviderSessionMetadata,
   SleepingAgentLaunchConfig
 } from '../../../../shared/agent-session-resume'
-import type { DirectSshAuthority } from '../../../../shared/ssh-types'
 import type { StartupCommandDelivery } from '../../../../shared/codex-startup-delivery'
 import type { SessionOptionValue } from '../../../../shared/native-chat-session-options'
 import type { AgentStartedTelemetry } from '../../lib/worktree-startup-payload'
@@ -27,8 +26,7 @@ import type {
 import type {
   AutomaticAgentResumeClaim,
   CodexRestartNotice,
-  HydrateWorkspaceSessionOptions,
-  ReconnectPersistedTerminalsOptions
+  HydrateWorkspaceSessionOptions
 } from './terminal-contracts'
 
 export type TerminalActions = {
@@ -145,7 +143,6 @@ export type TerminalActions = {
   /** Records the relay's own answer that a PTY id is gone; the one `exited` a respawn may act on. */
   markPtySourceDisowned: (ptyId: string) => void
   clearDirectSshTargetPtyBindings: (targetId: string) => number
-  invalidateStaleDirectSshTargetPtyBindings: (authority: DirectSshAuthority) => number
   /** Awaited verified shutdown; unlike closeTab, physical teardown gates the state commit. */
   shutdownWorktreeTerminals: (
     worktreeId: string,
@@ -279,8 +276,5 @@ export type TerminalActions = {
     options?: HydrateWorkspaceSessionOptions
   ) => void
   /** Publishes wake hints without spawning; global completion alone opens the readiness gate. */
-  reconnectPersistedTerminals: (
-    signal?: AbortSignal,
-    options?: ReconnectPersistedTerminalsOptions
-  ) => Promise<void>
+  reconnectPersistedTerminals: (signal?: AbortSignal) => Promise<void>
 }

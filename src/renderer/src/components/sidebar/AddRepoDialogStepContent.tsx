@@ -15,7 +15,6 @@ type AddRepoDialogStepContentProps = {
   step: AddRepoDialogStep
   isRuntimeEnvironmentActive: boolean
   activeRuntimeEnvironmentId: string | null | undefined
-  isSshLikely: boolean
   repoCount: number
   isAdding: boolean
   addProjectBusyLabel: string | null
@@ -30,13 +29,10 @@ type AddRepoDialogStepContentProps = {
   isCloning: boolean
   sshTargets: (SshTarget & { state?: SshConnectionState })[]
   selectedTargetId: string | null
-  selectedSshTargetId?: string | null
   selectedHostLabel?: string | null
-  lockSshTargetSelection?: boolean
   remotePath: string
   remoteError: string | null
   isAddingRemote: boolean
-  isScanningRemoteNested: boolean
   nestedScan: NestedRepoScanResult | null
   nestedSelectedPaths: Set<string>
   nestedGroupName: string
@@ -45,11 +41,9 @@ type AddRepoDialogStepContentProps = {
   createError: string | null
   isCreating: boolean
   hostSelector?: ReactNode
-  showRemoteAction?: boolean
-  canCreateProject?: boolean
   actionsDisabled?: boolean
   manualCreateParentEntry?: boolean
-  browseHostKind?: 'local' | 'ssh' | 'runtime'
+  browseHostKind?: 'local' | 'runtime'
   createDefaultParent: string
   createGitAvailability: GitAvailability
   createRuntimeParentStatus: 'idle' | 'checking' | 'failed'
@@ -64,9 +58,7 @@ type AddRepoDialogStepContentProps = {
   onSelectTarget: (id: string) => void
   onRemotePathChange: (path: string) => void
   onAddRemoteRepo: () => void
-  onOpenSshSettings: () => void
   onConnectTarget: (id: string) => Promise<void>
-  onStopRemoteNestedScan: () => void
   onCloneUrlChange: (url: string) => void
   onCloneDestinationChange: (destination: string) => void
   onPickCloneDestination: () => void
@@ -85,7 +77,6 @@ export function AddRepoDialogStepContent({
   step,
   isRuntimeEnvironmentActive,
   activeRuntimeEnvironmentId,
-  isSshLikely,
   repoCount,
   isAdding,
   addProjectBusyLabel,
@@ -100,13 +91,10 @@ export function AddRepoDialogStepContent({
   isCloning,
   sshTargets,
   selectedTargetId,
-  selectedSshTargetId,
   selectedHostLabel,
-  lockSshTargetSelection = false,
   remotePath,
   remoteError,
   isAddingRemote,
-  isScanningRemoteNested,
   nestedScan,
   nestedSelectedPaths,
   nestedGroupName,
@@ -115,8 +103,6 @@ export function AddRepoDialogStepContent({
   createError,
   isCreating,
   hostSelector,
-  showRemoteAction = true,
-  canCreateProject = true,
   actionsDisabled = false,
   manualCreateParentEntry = isRuntimeEnvironmentActive,
   browseHostKind = 'local',
@@ -134,9 +120,7 @@ export function AddRepoDialogStepContent({
   onSelectTarget,
   onRemotePathChange,
   onAddRemoteRepo,
-  onOpenSshSettings,
   onConnectTarget,
-  onStopRemoteNestedScan,
   onCloneUrlChange,
   onCloneDestinationChange,
   onPickCloneDestination,
@@ -156,18 +140,17 @@ export function AddRepoDialogStepContent({
     selectedHostLabel ?? null,
     onOpenRemoteStep
   )
-  if (step === 'add') {
+  // Why the start step for a remote step without a server: SSH hosts hold projects only through
+  // the paired server that reaches them, so there is nothing to show if that server went away.
+  if (step === 'add' || (step === 'remote' && !serverSsh)) {
     return (
       <AddRepoLocalStartStep
         repoCount={repoCount}
-        isSshLikely={isSshLikely}
         isAdding={isAdding}
         addProjectBusyLabel={addProjectBusyLabel}
         nestedScanInProgress={nestedScanInProgress}
         nestedScanId={nestedScanId}
         hostSelector={hostSelector}
-        showRemoteAction={showRemoteAction || Boolean(serverSsh)}
-        canCreateProject={canCreateProject}
         actionsDisabled={actionsDisabled}
         browseHostKind={browseHostKind}
         serverSshProjects={serverSsh?.state}
@@ -197,23 +180,19 @@ export function AddRepoDialogStepContent({
     )
   }
 
-  if (step === 'remote') {
+  if (step === 'remote' && serverSsh) {
     return (
       <RemoteStep
         sshTargets={sshTargets}
         selectedTargetId={selectedTargetId}
-        lockSshTargetSelection={lockSshTargetSelection}
         remotePath={remotePath}
         remoteError={remoteError}
         isAddingRemote={isAddingRemote}
-        isScanningNested={isScanningRemoteNested}
         onSelectTarget={onSelectTarget}
         onRemotePathChange={onRemotePathChange}
         onAdd={onAddRemoteRepo}
-        onOpenSshSettings={onOpenSshSettings}
         onConnectTarget={onConnectTarget}
-        onStopNestedScan={onStopRemoteNestedScan}
-        server={serverSsh ?? undefined}
+        server={serverSsh}
       />
     )
   }
@@ -228,10 +207,7 @@ export function AddRepoDialogStepContent({
         isCloning={isCloning}
         disableDestinationPicker={isRuntimeEnvironmentActive}
         runtimeEnvironmentId={activeRuntimeEnvironmentId}
-        sshTargetId={selectedSshTargetId}
-        cloneTargetLabel={
-          isRuntimeEnvironmentActive || selectedSshTargetId ? selectedHostLabel : null
-        }
+        cloneTargetLabel={isRuntimeEnvironmentActive ? selectedHostLabel : null}
         onUrlChange={onCloneUrlChange}
         onDestChange={onCloneDestinationChange}
         onPickDestination={onPickCloneDestination}
@@ -271,7 +247,6 @@ export function AddRepoDialogStepContent({
         parentDefaultPending={createParentDefaultPending}
         manualParentEntry={manualCreateParentEntry}
         runtimeEnvironmentId={activeRuntimeEnvironmentId}
-        sshTargetId={selectedSshTargetId}
         onNameChange={onCreateNameChange}
         onParentChange={onCreateParentChange}
         onPickParent={onPickCreateParent}

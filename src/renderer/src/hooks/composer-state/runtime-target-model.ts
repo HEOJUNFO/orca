@@ -5,7 +5,6 @@ import type { Repo } from '../../../../shared/repo-types'
 import type { SshConnectionState, SshConnectionStatus } from '../../../../shared/ssh-types'
 import type { TuiAgent } from '../../../../shared/tui-agent'
 import type { OrcaVmRecipe } from '../../../../shared/orca-yaml-hook-types'
-import type { GlobalSettings } from '../../../../shared/global-settings-types'
 import type { AgentStartupShell } from '../../../../shared/tui-agent-startup-shell'
 import type { ExecutionHostPlatformFact } from '@/lib/execution-host-facts'
 import type { NewWorkspaceProjectOption } from '@/lib/new-workspace-project-options'
@@ -45,7 +44,8 @@ export type ComposerRuntimeTargetModel = {
   selectedProjectHostSetupId: string | null
   projectHostSetupOptions: ProjectHostSetupOption[]
   projectOptions: NewWorkspaceProjectOption[]
-  selectedRepoSettings: Pick<GlobalSettings, 'activeRuntimeEnvironmentId'> | null
+  /** Runtime that owns the selected repo; an unstamped repo follows focus. */
+  selectedRepoRuntimeEnvironmentId: string | null
   /** Transport to the selected repo's owner; `null` with no repo selected. */
   selectedRepoTarget: RuntimeClientTarget | null
   selectedRecipeRepoId: string | null

@@ -277,12 +277,9 @@
 2 src/renderer/src/components/use-worktree-jump-palette-store-state.ts
 1 src/renderer/src/components/use-worktree-jump-palette-task-url.ts
 1 src/renderer/src/components/worktree-jump-palette-create-worktree.ts
-1 src/renderer/src/hooks/composer-state/attachment-drop-state.ts
-1 src/renderer/src/hooks/composer-state/composer-attachment-drop-state.ts
 1 src/renderer/src/hooks/composer-state/composer-navigation-actions.ts
-2 src/renderer/src/hooks/composer-state/composer-source-state.ts
-1 src/renderer/src/hooks/composer-state/composer-target-state.ts
-1 src/renderer/src/hooks/composer-state/workspace-identity-state.ts
+1 src/renderer/src/hooks/composer-state/composer-source-state.ts
+1 src/renderer/src/hooks/composer-state/runtime-target-selection.ts
 1 src/renderer/src/hooks/editor-external-watch-target-rows.ts
 3 src/renderer/src/hooks/editor-external-watch-targets.ts
 1 src/renderer/src/hooks/ipc-events-close-routing-test-harness.ts
@@ -345,7 +342,7 @@
 2 src/renderer/src/lib/provider-runtime-context.ts
 2 src/renderer/src/lib/remap-open-editor-tabs-for-path-change.ts
 1 src/renderer/src/lib/remote-workspace-drop-test-fixtures.ts
-3 src/renderer/src/lib/repo-runtime-owner.ts
+2 src/renderer/src/lib/repo-runtime-owner.ts
 2 src/renderer/src/lib/resume-sleeping-agent-session.ts
 1 src/renderer/src/lib/runtime-session-mirror-owners.ts
 1 src/renderer/src/lib/runtime-session-mirror-targets.ts

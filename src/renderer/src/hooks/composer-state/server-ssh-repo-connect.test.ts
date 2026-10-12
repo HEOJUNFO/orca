@@ -109,7 +109,7 @@ describe("agents for a project on a paired server's SSH host", () => {
         persistDraft: false,
         newWorkspaceDraft: null,
         selectedRepoConnectionId: 'ssh-dike',
-        selectedRepoSettings: { activeRuntimeEnvironmentId: 'env-1' },
+        selectedRepoRuntimeEnvironmentId: 'env-1',
         settings: null
       } as unknown as Parameters<typeof useWorkspaceIdentityState>[0])
     )

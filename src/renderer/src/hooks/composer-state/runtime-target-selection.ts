@@ -22,7 +22,7 @@ import { useAppStore } from '@/store'
 import { repoIsRemote } from '../../../../shared/agent-launch-remote'
 import { buildProjectHostSetupOptions } from '@/lib/project-host-setup-options'
 import { buildNewWorkspaceCreateTargetOptions } from '@/lib/new-workspace-project-options'
-import { getSettingsForRepoRuntimeOwner } from '@/lib/repo-runtime-owner'
+import { getRuntimeEnvironmentIdForRepo } from '@/lib/repo-runtime-owner'
 import { useEphemeralVmRecipeOptions } from '@/hooks/useEphemeralVmRecipeOptions'
 
 export function useComposerRuntimeTargetSelection(input: ComposerRuntimeTargetSelectionInput) {
@@ -212,16 +212,13 @@ export function useComposerRuntimeTargetSelection(input: ComposerRuntimeTargetSe
     [eligibleRepos, hostOptions, projectGroups, projectHostSetups, projects]
   )
 
-  const selectedRepoSettings = useMemo(() => {
-    if (!settings) {
-      return settings
-    }
-    // Why: probes and attachment uploads inspect the selected repo, even though creation defaults still follow host scope.
-    return getSettingsForRepoRuntimeOwner(
-      { repos: selectedRepo ? [selectedRepo] : [], settings },
-      selectedRepo?.id ?? null
-    )
-  }, [selectedRepo, settings])
+  // Why: probes and attachment uploads inspect the selected repo, even though creation defaults still follow host scope.
+  const selectedRepoRuntimeEnvironmentId = settings
+    ? getRuntimeEnvironmentIdForRepo(
+        { repos: selectedRepo ? [selectedRepo] : [], settings },
+        selectedRepo?.id ?? null
+      )
+    : null
 
   const selectedRepoTarget = useMemo(
     () => (selectedRepo ? runtimeTargetForOwnerHostId(getRepoExecutionHostId(selectedRepo)) : null),
@@ -304,7 +301,7 @@ export function useComposerRuntimeTargetSelection(input: ComposerRuntimeTargetSe
     selectedProjectHostSetupId,
     projectHostSetupOptions,
     projectOptions,
-    selectedRepoSettings,
+    selectedRepoRuntimeEnvironmentId,
     selectedRepoTarget,
     selectedRecipeRepoId,
     selectedRecipeRepoConnectionId,

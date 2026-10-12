@@ -1,14 +1,19 @@
 import type { RuntimeRpcResponse } from '../../../shared/runtime-rpc-envelope'
 import { isKeepaliveFrame } from '../../../shared/runtime-rpc-envelope'
-import type { PairedE2EEClientHandshake } from '../../../shared/paired-e2ee-client-handshake'
+import type {
+  PairedE2EEAuthReply,
+  PairedE2EEClientHandshake
+} from '../../../shared/paired-e2ee-client-handshake'
 import { WEB_RUNTIME_CLIENT_CAPABILITIES } from './web-runtime-client-capabilities'
-import { createWebRuntimeUnauthorizedError } from './web-runtime-client-error'
+import type { WebRuntimeAuthPlan } from './web-runtime-credential-source'
 import type { WebRuntimeTransportSubscription } from './web-runtime-subscription-contract'
 
 export type WebRuntimeConnectionState =
   | 'disconnected'
   | 'connecting'
   | 'handshaking'
+  // A v2 token socket registering this browser's key; requests still wait for 'connected'.
+  | 'migrating'
   | 'connected'
   | 'auth-failed'
 
@@ -27,9 +32,7 @@ type WebRuntimeConnectionFrameContext = {
   subscriptions: Map<string, WebRuntimeTransportSubscription>
   sendAuth: (handshake: PairedE2EEClientHandshake) => void
   setConnected: () => void
-  setAuthFailed: () => void
-  rejectUnauthorized: (error: Error) => void
-  notifyUnauthorized: () => void
+  authRejected: (reply: Extract<PairedE2EEAuthReply, { kind: 'rejected' }>) => void
 }
 
 export function sealWebRuntimeAuth(
@@ -40,6 +43,20 @@ export function sealWebRuntimeAuth(
     { kind: 'token', deviceToken },
     { clientCapabilities: WEB_RUNTIME_CLIENT_CAPABILITIES }
   )
+}
+
+/** The auth frame for this socket's plan; key auth carries capabilities, v2 token auth cannot. */
+export function sealWebRuntimePlanAuth(
+  handshake: PairedE2EEClientHandshake,
+  plan: WebRuntimeAuthPlan | null,
+  fallbackToken: string
+): Promise<string> {
+  return plan?.kind === 'device-key'
+    ? handshake.sealAuth(
+        { kind: 'device-key', deviceId: plan.deviceId, sign: plan.key.sign },
+        { clientCapabilities: WEB_RUNTIME_CLIENT_CAPABILITIES }
+      )
+    : sealWebRuntimeAuth(handshake, plan?.deviceToken ?? fallbackToken)
 }
 
 export async function routeWebRuntimeConnectionFrame(
@@ -70,16 +87,13 @@ export async function routeWebRuntimeConnectionFrame(
       reply.kind === 'rejected' &&
       (reply.type === 'e2ee_error' || reply.errorCode === 'unauthorized')
     ) {
-      const error = createWebRuntimeUnauthorizedError()
-      context.setAuthFailed()
-      context.rejectUnauthorized(error)
-      context.notifyUnauthorized()
-      context.getSocket()?.close()
+      context.authRejected(reply)
     }
     return
   }
 
-  if (context.getState() !== 'connected' || !handshake) {
+  const state = context.getState()
+  if ((state !== 'connected' && state !== 'migrating') || !handshake) {
     return
   }
   if (raw === null) {
@@ -113,12 +127,13 @@ export async function routeWebRuntimeConnectionFrame(
   if (isKeepaliveFrame(response) || !('id' in response) || typeof response.id !== 'string') {
     return
   }
-  if (isRuntimeFailureResponse(response) && response.error.code === 'unauthorized') {
-    const error = createWebRuntimeUnauthorizedError()
-    context.setAuthFailed()
-    context.rejectUnauthorized(error)
-    context.notifyUnauthorized()
-    context.getSocket()?.close()
+  // Why connected only: a failed key registration is not a revoked pairing.
+  if (
+    state === 'connected' &&
+    isRuntimeFailureResponse(response) &&
+    response.error.code === 'unauthorized'
+  ) {
+    context.authRejected({ kind: 'rejected', type: null, errorCode: 'unauthorized' })
     return
   }
 

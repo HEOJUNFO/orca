@@ -27,6 +27,12 @@ on:
         required: false
         type: boolean
         default: true
+      # Why: artifact names are unique per workflow run, and pr.yml calls this workflow twice.
+      artifact_suffix:
+        description: Appended to the build and trace artifact names so two calls in one run do not collide
+        required: false
+        type: string
+        default: ''
   workflow_dispatch:
     inputs:
       ref:
@@ -91,7 +97,7 @@ jobs:
       - name: Upload E2E build output
         uses: actions/upload-artifact@v7
         with:
-          name: e2e-build-out
+          name: e2e-build-out${{ inputs.artifact_suffix }}
           path: out/
           # Why: build-relay.mjs writes each relay's marker as `out/relay/<platform>/.version`,
           # and upload-artifact drops dotfiles by default — consumers then fail SSH specs with
@@ -201,7 +207,7 @@ jobs:
       - name: Download E2E build output
         uses: actions/download-artifact@v8
         with:
-          name: e2e-build-out
+          name: e2e-build-out${{ inputs.artifact_suffix }}
           path: out/
 
       # Why: the Electron suite is wall-clock constrained on OSS runners, but
@@ -291,7 +297,7 @@ jobs:
       - name: Download E2E build output
         uses: actions/download-artifact@v8
         with:
-          name: e2e-build-out
+          name: e2e-build-out${{ inputs.artifact_suffix }}
           path: out/
 
       - name: Run changed E2E specs
@@ -345,7 +351,7 @@ jobs:
         if: failure() || cancelled()
         uses: actions/upload-artifact@v7
         with:
-          name: playwright-traces-changed
+          name: playwright-traces-changed${{ inputs.artifact_suffix }}
           path: test-results/
           retention-days: 7
           if-no-files-found: ignore
@@ -393,7 +399,7 @@ jobs:
           native-runtime: electron
       - uses: actions/download-artifact@v8
         with:
-          name: e2e-build-out
+          name: e2e-build-out${{ inputs.artifact_suffix }}
           path: out/
       # The packaged orcad slot the T6-11 launcher runs: its own node-pty under the pinned Node.
       # The template is what `orca serve`'s default selection materializes that slot from.
@@ -423,7 +429,7 @@ jobs:
       - uses: actions/upload-artifact@v7
         if: failure()
         with:
-          name: orcad-serve-mode-switch-traces
+          name: orcad-serve-mode-switch-traces${{ inputs.artifact_suffix }}
           path: test-results/
           retention-days: 7
           if-no-files-found: ignore
@@ -451,7 +457,7 @@ jobs:
           native-runtime: electron
       - uses: actions/download-artifact@v8
         with:
-          name: e2e-build-out
+          name: e2e-build-out${{ inputs.artifact_suffix }}
           path: out/
       # Built to a path the app does not look at by default, so the relay phase has no template.
       - name: Build the linux-x64-glibc orcad template
@@ -474,7 +480,7 @@ jobs:
       - uses: actions/upload-artifact@v7
         if: failure()
         with:
-          name: orcad-auto-convert-docker-traces
+          name: orcad-auto-convert-docker-traces${{ inputs.artifact_suffix }}
           path: test-results/
           retention-days: 7
           if-no-files-found: ignore
@@ -501,7 +507,7 @@ jobs:
           native-runtime: electron
       - uses: actions/download-artifact@v8
         with:
-          name: e2e-build-out
+          name: e2e-build-out${{ inputs.artifact_suffix }}
           path: out/
       - name: Build the linux-x64-glibc orcad template
         run: |
@@ -522,7 +528,7 @@ jobs:
       - uses: actions/upload-artifact@v7
         if: failure()
         with:
-          name: orcad-journeys-docker-traces
+          name: orcad-journeys-docker-traces${{ inputs.artifact_suffix }}
           path: test-results/
           retention-days: 7
           if-no-files-found: ignore
@@ -580,7 +586,7 @@ jobs:
       - uses: actions/upload-artifact@v7
         if: failure()
         with:
-          name: orcad-serve-mode-switch-windows-traces
+          name: orcad-serve-mode-switch-windows-traces${{ inputs.artifact_suffix }}
           path: test-results/
           retention-days: 7
           if-no-files-found: ignore

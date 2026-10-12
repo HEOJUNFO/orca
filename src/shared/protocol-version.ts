@@ -45,7 +45,7 @@ import { AGENT_SESSION_RESUME_RUNTIME_CAPABILITIES } from './agent-session-resum
 import { QODER_OWNED_TERMINAL_CREATE_CAPABILITY } from './qoder-terminal-create-capability'
 import { AGENT_SESSION_CONTINUE_INTERRUPTED_RUNTIME_CAPABILITY } from './agent-session-continue-interrupted-capability'
 import { ORCAD_RUNTIME_CAPABILITIES } from './orcad-runtime-capabilities'
-import { DEVICE_KEY_RUNTIME_CAPABILITY } from './device-key-capability'
+import { DEVICE_KEY_RUNTIME_CAPABILITIES } from './device-key-capability'
 // Why a star: every resume capability is part of the runtime contract this module re-exports.
 export * from './agent-session-resume-runtime-capabilities'
 import { AGENT_SESSION_BACKGROUND_TASK_CHILD_VIEWS_CAPABILITY } from './agent-session-background-task-child-views-capability'
@@ -356,7 +356,7 @@ export const ANTIGRAVITY_CONFIGURED_MODEL_RUNTIME_CAPABILITY =
 
 export const RUNTIME_CAPABILITIES = [
   ...ORCAD_RUNTIME_CAPABILITIES,
-  DEVICE_KEY_RUNTIME_CAPABILITY,
+  ...DEVICE_KEY_RUNTIME_CAPABILITIES,
   QODER_OWNED_TERMINAL_CREATE_CAPABILITY,
   ...AGENT_SESSION_STOP_RUNTIME_CAPABILITIES,
   ...AGENT_SESSION_CREATE_RUNTIME_CAPABILITIES,

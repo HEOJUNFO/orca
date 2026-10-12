@@ -285,9 +285,7 @@ export function recordWorkspaceLineageForCreatedWorktree(
     }
   }
 
-  // Why: persisting a workspace row for an out-of-boundary worktree parent poisons the whole host —
-  // `filterLineageForHost` returns null for any owned row whose child and parent hosts differ, so
-  // every nesting on that host stops hydrating, and the row survives restarts.
+  // Why: a workspace row for an out-of-boundary worktree parent is a cross-host link that survives restarts.
   if (parentOutsideLineageBoundary) {
     return NO_CREATED_WORKTREE_LINEAGE
   }

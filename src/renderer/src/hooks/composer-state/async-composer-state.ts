@@ -19,7 +19,6 @@ type ComposerAsyncStateInput = Pick<
   | 'selectedRepoConnectionId'
   | 'selectedRepoHookContextKey'
   | 'selectedRepoIsGit'
-  | 'selectedRepoSettings'
   | 'setName'
 >
 
@@ -55,7 +54,6 @@ export function useComposerAsyncState(input: ComposerAsyncStateInput) {
     selectedRepoConnectionId,
     selectedRepoHookContextKey,
     selectedRepoIsGit,
-    selectedRepoSettings,
     setName
   } = input
   const { getInitialAutoManagedWorkspaceName, getInitialGitHubPrStartPointSelection } = decisions
@@ -209,15 +207,12 @@ export function useComposerAsyncState(input: ComposerAsyncStateInput) {
 
   const selectedRepoPathRef = useRef<string | undefined>(selectedRepoPath)
 
-  const selectedRepoSettingsRef = useRef(selectedRepoSettings)
-
   useEffect(() => {
     agentPromptRef.current = agentPrompt
     connectionIdRef.current = connectionId
     selectedRepoConnectionIdRef.current = selectedRepoConnectionId
     selectedRepoPathRef.current = selectedRepoPath
-    selectedRepoSettingsRef.current = selectedRepoSettings
-  }, [agentPrompt, connectionId, selectedRepoConnectionId, selectedRepoPath, selectedRepoSettings])
+  }, [agentPrompt, connectionId, selectedRepoConnectionId, selectedRepoPath])
 
   return {
     yamlHooks,
@@ -279,7 +274,6 @@ export function useComposerAsyncState(input: ComposerAsyncStateInput) {
     selectedRepoSlug,
     setSelectedRepoSlug,
     selectedRepoPath,
-    selectedRepoPathRef,
-    selectedRepoSettingsRef
+    selectedRepoPathRef
   }
 }

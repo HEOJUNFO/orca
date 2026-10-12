@@ -8,6 +8,7 @@ import type {
 } from '../../../shared/runtime-host-status'
 import type { RuntimeRpcResponse } from '../../../shared/runtime-rpc-envelope'
 import { WebRuntimeConnectionTransport } from './web-runtime-connection-transport'
+import type { WebRuntimeCredentialSource } from './web-runtime-credential-source'
 import { subscribeWebRuntimeFileWatch } from './web-runtime-file-watch-subscription'
 import type { WebRuntimeConnectionState } from './web-runtime-connection-frame-router'
 import type {
@@ -33,10 +34,15 @@ export class WebRuntimeClient {
 
   readonly statusOwner?: RuntimeHostStatusOwner
 
+  private readonly credential: WebRuntimeCredentialSource | undefined
+
   constructor(
     private readonly connection: PairedRuntimeConnection,
     options: {
       reconnect?: boolean
+      // Absent: the connection's token over legacy framing, as before device keys.
+      credential?: WebRuntimeCredentialSource
+      allowKeyMigration?: boolean
       status?: {
         environmentId: string
         pairingRevision: number
@@ -45,6 +51,7 @@ export class WebRuntimeClient {
       }
     } = {}
   ) {
+    this.credential = options.credential
     this.transport = new WebRuntimeConnectionTransport(
       connection,
       {
@@ -53,6 +60,8 @@ export class WebRuntimeClient {
       },
       {
         reconnect: options.reconnect,
+        credential: options.credential,
+        allowKeyMigration: options.allowKeyMigration,
         onStateChanged: (state) => {
           if (state === 'auth-failed') {
             this.statusOwner?.authenticationRejected()
@@ -117,7 +126,7 @@ export class WebRuntimeClient {
         teardownRetries: this.fileWatchTeardownRetries
       })
     }
-    const client = new WebRuntimeClient(this.connection)
+    const client = new WebRuntimeClient(this.connection, { credential: this.credential })
     this.childClients.add(client)
     const closeChild = (notifySubscriptions = false): void => {
       options?.signal?.removeEventListener('abort', onAbort)

@@ -5070,8 +5070,7 @@
         "AddProjectFromFolderDialog": {
           "7d1f51678c": "Agregar proyecto",
           "7726a16374": "Cancelar",
-          "046751dbfb": "Agrega esta carpeta como un proyecto de Orca separado.",
-          "e643b30398": "Proyecto agregado en host SSH"
+          "046751dbfb": "Agrega esta carpeta como un proyecto de Orca separado."
         },
         "AddRepoCreateStep": {
           "0ae45b8238": "my-project",
@@ -5089,8 +5088,7 @@
           "fe1e616c5b": "Git es necesario para crear un proyecto.",
           "c234df77f7": "Elige o introduce una carpeta padre del host antes de crear.",
           "3a13f6e88b": "ubicación no seleccionada",
-          "6ed14c0281": "carpeta del host no seleccionada",
-          "ssh_parent_manual": "Introduce una ruta padre SSH."
+          "6ed14c0281": "carpeta del host no seleccionada"
         },
         "AddRepoNestedImportStep": {
           "496f68cf8c": "Escaneando repositorios. Haz clic para detener.",
@@ -5115,13 +5113,9 @@
           "e52454b7f6": "Abrir como carpeta"
         },
         "AddRepoRemoteStep": {
-          "5b205b5281": "Detener escaneo",
           "6680289908": "/inicio/usuario/proyecto",
           "ef410aa881": "Ruta del host",
-          "0416bde073": "Agregar en Ajustes",
-          "df6fbcf880": "No hay destinos SSH configurados.",
           "44637f43bd": "Destino SSH",
-          "80557be85a": "Elige un destino SSH conectado e introduce la ruta a un repositorio Git.",
           "serverDescription": "Elige un host SSH al que se conecta {{server}} e introduce la ruta a un repositorio Git en él.",
           "serverEmpty": "{{server}} aún no tiene hosts SSH.",
           "serverAddHost": "Añadir host SSH",
@@ -5129,10 +5123,7 @@
           "007651bdf9": "Navega hasta un directorio y haz clic en Seleccionar para elegirlo.",
           "dd3ff65486": "Explorar el sistema de archivos remoto",
           "36d427bb66": "Agregar proyecto en host SSH",
-          "35831a7312": "Agregando...",
-          "lockedDescription": "Introduce la ruta a un repositorio Git en {{value0}}.",
-          "lockedDisconnected": "{{value0}} está desconectado.",
-          "93e0221434": "Conectar"
+          "35831a7312": "Agregando..."
         },
         "AddRepoServerStartStep": {
           "ae990c86a0": "Volver a opciones de agregado",
@@ -5882,12 +5873,8 @@
                   "serverSshTitle": "Proyecto en un host SSH de este servidor",
                   "serverSshDescription": "Abre una carpeta de proyecto de un host SSH al que se conecta este servidor",
                   "serverSshUpdate": "Actualiza este servidor para añadir proyectos en sus hosts SSH",
-                  "3d162cc76f": "Proyecto remoto",
                   "fb4fc5380e": "Proyecto local, repositorio de Git o carpeta con muchos repositorios",
                   "2281fdc8c7": "Explorar carpeta",
-                  "sshCreateUnavailable": "Aún no disponible para hosts SSH",
-                  "sshBrowseTitle": "Abrir proyecto en host SSH",
-                  "sshBrowseDescription": "Repositorio Git o carpeta existente en este host SSH",
                   "runtimeBrowseDescription": "Repositorio Git o carpeta existente en este host"
                 }
               }
@@ -12368,7 +12355,7 @@
           }
         },
         "sshHostServer": {
-          "sourceChanged": "Se modificó en una versión anterior de Orca: ejecuta el relé hasta que se mueva de nuevo a su servidor gestionado.",
+          "sourceChanged": "Una versión anterior de Orca cambió los proyectos de este host. Mueve esos cambios a su servidor gestionado o conserva la versión del servidor para volver a conectarte.",
           "deploying": "Configurando un servidor Orca gestionado…",
           "converting": "Moviendo los proyectos de este host a su servidor Orca gestionado…",
           "connecting": "Conectando al servidor Orca gestionado…",
@@ -17934,7 +17921,6 @@
         "imagePasteFailed": "Error al pegar imagen.",
         "worktreeNotReady": "Worktree no está listo — intenta de nuevo en un momento.",
         "pasteUnavailable": "No se puede pegar — este chat no acepta entradas en este momento.",
-        "uploadingAttachments": "Subiendo {{value0}} archivo(s) al remoto…",
         "model": "Modelo",
         "effort": "Esfuerzo",
         "fastMode": "Modo rápido",

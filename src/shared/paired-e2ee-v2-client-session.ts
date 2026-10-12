@@ -82,6 +82,10 @@ export class PairedE2EEV2ClientSession {
     return true
   }
 
+  get isReady(): boolean {
+    return this.transcriptHashB64Value !== null
+  }
+
   get transcriptHashB64(): string {
     if (!this.transcriptHashB64Value) {
       throw new Error('E2EE v2 ready has not been accepted')

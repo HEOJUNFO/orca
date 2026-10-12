@@ -21,6 +21,9 @@ relay_base_url               = "https://relay.onorca.dev"
 # concurrency x instances. Scaling to 2 instances took placement failures 35% -> 70%.
 relay_min_instances = 5
 relay_max_instances = 5
+# Proven on staging (2026-10-11, image F) before production turns them on.
+relay_director_cloud_sql_proxy_sidecar = true
+relay_event_loop_stall_alert           = true
 # Production cells run only on fixed-one GCE MIGs; Cloud Run remains the director.
 relay_cells                 = {}
 manage_relay_domain_mapping = true

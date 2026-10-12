@@ -14,7 +14,6 @@ import { isFolderRepo } from '../../../../shared/repo-kind'
 import { projectResolvedWorktreeLineage } from '../../../../shared/resolved-worktree-lineage'
 import type { DirectSshDetectedWorktreeRequest } from '../../../../shared/detected-worktree-provider-contract'
 import { isAdmissibleDirectSshAuthority } from '../../../../shared/ssh-retained-payload-admission'
-import type { ListDesktopLineageForHostArgs } from '../../../../shared/host-lineage-contract'
 import {
   buildDetectedGitWorktrees,
   createSshWorktreeMetaIndex,
@@ -204,14 +203,5 @@ export async function listDetectedWorktreesForCapturedRepo(
 export function hasValidDirectSshAuthority(
   args: DirectSshDetectedWorktreeRequest
 ): args is DirectSshDetectedWorktreeRequest {
-  return isAdmissibleDirectSshAuthority(args.expectedAuthority)
-}
-
-export function hasValidLineageSshAuthority(
-  args: ListDesktopLineageForHostArgs
-): args is Extract<ListDesktopLineageForHostArgs, { expectedAuthority: unknown }> {
-  if (!('expectedAuthority' in args)) {
-    return false
-  }
   return isAdmissibleDirectSshAuthority(args.expectedAuthority)
 }

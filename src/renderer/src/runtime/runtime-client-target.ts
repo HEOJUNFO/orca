@@ -22,8 +22,9 @@ export function runtimeTargetEnvironmentId(target: RuntimeClientTarget): string 
 }
 
 /**
- * Transport to the host that owns a row: a server's own runtime, or this app for local and direct
- * SSH (which ride this app's IPC with a `connectionId`). `null` when the id names no routable host.
+ * Transport to the host that owns a row: a server's own runtime, or this app for local and `ssh:`
+ * rows (this app serves no SSH route, so its IPC refuses those). `null` when the id names no
+ * routable host.
  */
 export function runtimeTargetForOwnerHostId(
   hostId: ExecutionHostId | null | undefined

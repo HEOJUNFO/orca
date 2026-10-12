@@ -19,6 +19,7 @@ import {
 import {
   claimHostCatalogFence,
   isHostCatalogFenceCurrent,
+  loadRuntimeHostCatalogs,
   type HostCatalogFence
 } from '../host-catalog-fencing'
 import {
@@ -31,7 +32,6 @@ import {
   reconcileSupersededSshRepos
 } from './repo-catalog-merge'
 import { getRuntimeTargetHostId } from '../runtime-target-host'
-import { listRuntimeEnvironmentsForAllHostLoad } from '../runtime-catalog-hosts'
 import { mergeFetchedProjectCompatibilityForHost } from '../projects/project-compatibility-host-merge'
 import { scheduleSafeAutoForkSync } from './safe-auto-fork-sync'
 
@@ -144,25 +144,18 @@ export function createAllHostRepoCatalogActions(
         return
       }
 
-      const environments = await listRuntimeEnvironmentsForAllHostLoad()
-      // Why: a superseded load must not claim remote fences, or it would void the newer load's catalogs.
-      if (latestAllHostRepoCatalogGenerationByStore.get(get) !== generation) {
-        return
-      }
       // Why: unreachable remotes can spend the full connect timeout; merge each resolved host via the state updater so parallel loads don't clobber.
-      await Promise.all(
-        environments.map(async (environment) => {
-          const target = {
-            kind: 'environment' as const,
-            environmentId: environment.id
-          }
-          const fence = claimHostCatalogFence(get, 'repos', target)
+      // A superseded load must not claim remote fences, or it would void the newer load's catalogs.
+      await loadRuntimeHostCatalogs(
+        get,
+        'repos',
+        async (target, fence) => {
           const [catalogResult, visibilitySnapshot] = await Promise.all([
             fetchRepoCatalogForTarget(target).then(
               (catalog) => ({ ok: true as const, catalog }),
               (error: unknown) => ({ ok: false as const, error })
             ),
-            readRuntimeWorktreeVisibilitySnapshot(environment.id)
+            readRuntimeWorktreeVisibilitySnapshot(target.environmentId)
           ])
           const visibilityDefaults = visibilitySnapshot.defaults
           const hostId = getRuntimeTargetHostId(target)
@@ -176,10 +169,10 @@ export function createAllHostRepoCatalogActions(
                       [hostId]: visibilityDefaults
                     },
                     // Why: the settings page mirrors only the default host's source-defaults support.
-                    ...(state.settings?.activeRuntimeEnvironmentId === environment.id
+                    ...(state.settings?.activeRuntimeEnvironmentId === target.environmentId
                       ? {
                           worktreeVisibilitySourceDefaultsSupportedRuntimeEnvironmentId:
-                            visibilitySnapshot.sourceDefaultsSupported ? environment.id : null
+                            visibilitySnapshot.sourceDefaultsSupported ? target.environmentId : null
                         }
                       : {})
                   }
@@ -192,11 +185,12 @@ export function createAllHostRepoCatalogActions(
           } else {
             failed = true
             console.warn(
-              `Skipped repos for runtime environment ${environment.id}:`,
+              `Skipped repos for runtime environment ${target.environmentId}:`,
               catalogResult.error
             )
           }
-        })
+        },
+        () => latestAllHostRepoCatalogGenerationByStore.get(get) === generation
       )
       // Why: validate repo-scoped UI only after every host answers; first-paint loads only local repos, so an offline runtime would erase its saved filters.
       if (!failed && get().reposFetchGeneration === generation) {

@@ -15,6 +15,8 @@ import { parseWebPairingInput } from './web-pairing'
 import { WebRuntimeClient } from './web-runtime-client'
 import type { RuntimeStatus } from '../../../shared/runtime-types'
 import { translate } from '@/i18n/i18n'
+import { readWebDeviceKeySupport } from './web-device-key-support'
+import { webSessionPairingGuidance } from './web-pairing-security-guidance'
 
 type WebConnectProps = {
   initialPairingInput: string | null
@@ -32,6 +34,7 @@ export default function WebConnect({
   const [connecting, setConnecting] = useState(false)
   const parsedOffer = useMemo(() => parseWebPairingInput(pairingCode), [pairingCode])
   const autoConnectAttempted = useRef(false)
+  const sessionGuidance = webSessionPairingGuidance(readWebDeviceKeySupport())
 
   const connect = async (): Promise<void> => {
     setError(null)
@@ -154,6 +157,12 @@ export default function WebConnect({
             spellCheck={false}
           />
         </div>
+
+        {sessionGuidance && (
+          <div className="rounded-md border border-border bg-muted px-3 py-2 text-xs leading-5 text-muted-foreground">
+            {sessionGuidance}
+          </div>
+        )}
 
         {parsedOffer && (
           <div className="rounded-md border border-border bg-muted px-3 py-2 text-xs text-muted-foreground">

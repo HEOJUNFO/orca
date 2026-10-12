@@ -1,4 +1,5 @@
 import { MOBILE_RUNTIME_CLIENT_CAPABILITIES } from '../../../mobile/src/transport/mobile-runtime-client-capabilities'
+import { pairedRuntimeConnectionFromOffer } from '../../../src/shared/paired-runtime-connection'
 import { decodePairingOffer } from '../../../src/shared/pairing'
 import {
   sendRemoteRuntimeRequest,
@@ -41,6 +42,7 @@ export function pairMobileClient(offer: RuntimeDesktopPairingOffer): PairedMobil
   if (pairing.scope !== 'mobile') {
     throw new Error(`Expected a mobile-scoped pairing offer, got scope ${String(pairing.scope)}`)
   }
+  const connection = pairedRuntimeConnectionFromOffer(pairing)
   const open = new Set<RemoteRuntimeSubscription>()
   const request = <T>(
     method: string,
@@ -48,7 +50,7 @@ export function pairMobileClient(offer: RuntimeDesktopPairingOffer): PairedMobil
     timeoutMs = DEFAULT_TIMEOUT_MS
   ): Promise<RuntimeRpcResponse<T>> =>
     sendRemoteRuntimeRequest<T>(
-      pairing,
+      connection,
       method,
       params,
       timeoutMs,
@@ -67,7 +69,7 @@ export function pairMobileClient(offer: RuntimeDesktopPairingOffer): PairedMobil
     },
     subscribe: async (method, params, callbacks, timeoutMs = DEFAULT_TIMEOUT_MS) => {
       const subscription = await subscribeRemoteRuntimeRequest(
-        pairing,
+        connection,
         method,
         params,
         timeoutMs,

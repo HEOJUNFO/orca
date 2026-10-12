@@ -1,6 +1,6 @@
 import { useCallback, useMemo } from 'react'
 import type { OrcaHooks } from '../../../../shared/orca-yaml-hook-types'
-import { getSettingsForRepoRuntimeOwner } from '@/lib/repo-runtime-owner'
+import { getRuntimeEnvironmentIdForRepo } from '@/lib/repo-runtime-owner'
 import { checkRuntimeHooks } from '@/runtime/runtime-hooks-client'
 import type { AutomationDraft } from './AutomationEditorDialog'
 import { getAutomationHostTargetFromKey, type AutomationHostTarget } from './automation-host-client'
@@ -72,14 +72,7 @@ export function useAutomationsPageSetupState({
             (setup) => setup.repoId !== candidate.projectId || setup.hostId === setupHostId
           )
         : projectHostSetups
-      const settingsForRepo = setupHostId
-        ? {
-            ...settings,
-            activeRuntimeEnvironmentId:
-              selectedEditAuthority?.kind === 'runtime' ? selectedEditAuthority.environmentId : null
-          }
-        : getSettingsForRepoRuntimeOwner({ repos, settings }, candidate.projectId)
-      const hookKey = `${setupHostId ?? settingsForRepo.activeRuntimeEnvironmentId ?? 'local'}:${candidate.projectId}`
+      const hookKey = `${setupHostId ?? getRuntimeEnvironmentIdForRepo({ repos, settings }, candidate.projectId) ?? 'local'}:${candidate.projectId}`
       return getVisibleAutomationSetupDecision({
         createTarget,
         workspaceMode: candidate.workspaceMode,
@@ -105,8 +98,7 @@ export function useAutomationsPageSetupState({
       if (hostId) {
         return `${hostId}:${repoId}`
       }
-      const settingsForRepo = getSettingsForRepoRuntimeOwner({ repos, settings }, repoId)
-      return `${settingsForRepo.activeRuntimeEnvironmentId ?? 'local'}:${repoId}`
+      return `${getRuntimeEnvironmentIdForRepo({ repos, settings }, repoId) ?? 'local'}:${repoId}`
     },
     [repos, settings]
   )

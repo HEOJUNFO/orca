@@ -137,6 +137,7 @@ function fixture(detectorStep = detector) {
   for (const file of [
     'package.json',
     'config/scripts/pr-code-change-scope.mjs',
+    'config/scripts/pr-layout-oracle-route.mjs',
     'config/scripts/mobile-release-check-scope.mjs',
     'config/scripts/mobile-test-change-scope.mjs'
   ]) {

@@ -4,6 +4,7 @@
  */
 
 import type { Page } from '@stablyai/playwright-test'
+import { pairedRuntimeConnectionFromOffer } from '../../../src/shared/paired-runtime-connection'
 import { decodePairingOffer } from '../../../src/shared/pairing'
 import { subscribeRemoteRuntimeRequest } from '../../../src/shared/remote-runtime-client'
 import type { RuntimeRpcResponse } from '../../../src/shared/runtime-rpc-envelope'
@@ -51,7 +52,7 @@ export async function subscribeHeadlessLayout(
 ): Promise<{ close: () => void }> {
   feed.reopening()
   const subscription = await subscribeRemoteRuntimeRequest<unknown>(
-    decodePairingOffer(pairingUrl),
+    pairedRuntimeConnectionFromOffer(decodePairingOffer(pairingUrl)),
     'layout.subscribe',
     {},
     30_000,

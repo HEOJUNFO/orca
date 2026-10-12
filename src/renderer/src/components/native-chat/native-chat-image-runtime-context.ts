@@ -121,7 +121,8 @@ export function resolveNativeChatImageRuntimeContext(
     return null
   }
   const host = parseExecutionHostId(executionHostId)
-  if (!host) {
+  // Why: an `ssh:` host is served only through its paired server; without one there is no route.
+  if (!host || (host.kind === 'ssh' && !route.runtimeEnvironmentId)) {
     return null
   }
   const context: RuntimeFileOperationArgs = {
@@ -139,10 +140,6 @@ export function resolveNativeChatImageRuntimeContext(
       )
       context.expectedSshTargetId = expectation.expectedSshTargetId
       context.expectedSshConnectionGeneration = expectation.expectedSshConnectionGeneration
-      if (!route.runtimeEnvironmentId) {
-        context.connectionId = host.targetId
-        context.expectedExternalSshTargetId = host.targetId
-      }
     } catch {
       return null
     }
