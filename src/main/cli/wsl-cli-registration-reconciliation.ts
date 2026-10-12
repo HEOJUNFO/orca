@@ -1,6 +1,9 @@
 import type { CliInstallState, CliInstallStatus } from '../../shared/cli-install-types'
-import { listRunningWslDistrosAsync, listWslDistrosAsync } from '../wsl'
-import { deferUntilWslDistroRunning } from '../wsl-background-distro-gate'
+import { listWslDistrosAsync } from '../wsl'
+import {
+  deferUntilWslDistroRunning,
+  listConfirmedRunningWslDistros
+} from '../wsl-background-distro-gate'
 import { CliInstaller } from './cli-installer'
 import {
   getWslCliRegistrationCandidates,
@@ -115,7 +118,7 @@ export async function reconcileManagedWslCliRegistrations(
   // Why: background reconciliation must not boot a stopped distro; it re-runs for that distro
   // once it is next seen running, and the registry keeps it a candidate on later startups.
   const running = new Set(
-    (await (options.listRunningDistros ?? listRunningWslDistrosAsync)()).map((distro) =>
+    (await (options.listRunningDistros ?? listConfirmedRunningWslDistros)()).map((distro) =>
       distro.toLowerCase()
     )
   )

@@ -16,11 +16,16 @@ function distroKey(distro: string): string {
   return distro.trim().toLowerCase()
 }
 
-/** True when the distro shows in `wsl --list --running`, which never boots anything. A failed
- *  probe falls back to the last confirmed list, so an unknown state reads as stopped. */
+/** Distros a fresh `wsl --list --running` (which never boots anything) confirmed. Why not the
+ *  last-known-good fallback: a distro that idle-stopped since would read as running and get
+ *  booted, so an unknown state reads as stopped and deferred work waits for a confirmed probe. */
+export async function listConfirmedRunningWslDistros(): Promise<string[]> {
+  return listRunningWslDistrosAsync({ requireConfirmed: true }).catch(() => [])
+}
+
 export async function isWslDistroRunning(distro: string): Promise<boolean> {
   const wanted = distroKey(distro)
-  const running = await listRunningWslDistrosAsync()
+  const running = await listConfirmedRunningWslDistros()
   return running.some((candidate) => distroKey(candidate) === wanted)
 }
 

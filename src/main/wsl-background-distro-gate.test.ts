@@ -1,7 +1,8 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 const wslMocks = vi.hoisted(() => ({
-  listRunningWslDistrosAsync: vi.fn<() => Promise<string[]>>(),
+  listRunningWslDistrosAsync:
+    vi.fn<(options?: { requireConfirmed?: boolean }) => Promise<string[]>>(),
   listWslDistrosAsync: vi.fn<() => Promise<string[]>>()
 }))
 vi.mock('./wsl', () => wslMocks)
@@ -40,6 +41,20 @@ describe('isWslDistroRunning', () => {
   it('matches running distros case-insensitively', async () => {
     await expect(isWslDistroRunning(' ubuntu ')).resolves.toBe(true)
     await expect(isWslDistroRunning('Debian')).resolves.toBe(false)
+  })
+
+  it('reads a distro as stopped when the probe fails, not as its last-known state', async () => {
+    vi.spyOn(console, 'warn').mockImplementation(() => undefined)
+    let probe: () => Promise<string[]> = async () => ['Ubuntu']
+    wslMocks.listRunningWslDistrosAsync.mockImplementation((options) =>
+      resolveRunningWslDistros(() => probe(), options)
+    )
+    await expect(isWslDistroRunning('Ubuntu')).resolves.toBe(true)
+
+    probe = () => Promise.reject(new Error('wsl.exe wedged'))
+    await expect(isWslDistroRunning('Ubuntu')).resolves.toBe(false)
+    // Inside the backoff window the cache still holds Ubuntu; the gate must not trust it.
+    await expect(isWslDistroRunning('Ubuntu')).resolves.toBe(false)
   })
 })
 
