@@ -10,7 +10,6 @@ import type {
   RuntimeEnsureAgentSessionResult
 } from '../../shared/agent-session-host-authority'
 import { canonicalizeAgentSessionIdentity } from './agent-session-claim-identity'
-import { isTuiAgentEnabled } from '../../shared/tui-agent-selection'
 import { buildAgentResumeStartupPlan } from '../../shared/tui-agent-startup'
 import { OrchestrationError } from './orchestration/orchestration-error'
 import {
@@ -121,9 +120,6 @@ export class OrcaRuntimeWithGetAgentSessionExecutionNamespace extends OrcaRuntim
       canonicalWorktreeId: workspace.id
     })
     const settings = this.store.getSettings()
-    if (!isTuiAgentEnabled(request.agent, settings.disabledTuiAgents)) {
-      throw new Error('Selected agent is disabled. Choose an enabled agent before resuming.')
-    }
     const launchRuntime = this.resolveAgentLaunchRuntime(workspace)
     const { platform, quotingShell: shell } = launchRuntime
     // Why: `workspace.repo` is display metadata and may be a row from another host; the launch

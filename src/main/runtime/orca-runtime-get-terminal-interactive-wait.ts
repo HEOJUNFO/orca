@@ -13,8 +13,6 @@ import { parsePaneKey } from '../../shared/stable-pane-id'
 import type { ExactWorkerProviderSession } from '../../shared/orchestration-worker-output'
 import { selectExactWorkerProviderSession } from './orchestration/worker-provider-session'
 import type { TuiAgent } from '../../shared/tui-agent'
-import { isTuiAgentEnabled } from '../../shared/tui-agent-selection'
-import { OrchestrationError } from './orchestration/orchestration-error'
 import { resolveLocalWindowsAgentStartupShell } from '../../shared/windows-terminal-shell'
 import { resolveStartupShell, type AgentStartupShell } from '../../shared/tui-agent-startup-shell'
 import { isTuiAgent } from '../../shared/tui-agent-config'
@@ -280,16 +278,10 @@ export class OrcaRuntimeWithGetTerminalInteractiveWait extends OrcaRuntimeWithAd
     }
   }
 
-  validateOrchestrationAgentLauncher(agent: TuiAgent): void {
+  validateOrchestrationAgentLauncher(_agent: TuiAgent): void {
     const settings = this.store?.getSettings()
     if (!settings) {
       throw new Error('runtime_unavailable')
-    }
-    if (!isTuiAgentEnabled(agent, settings.disabledTuiAgents)) {
-      throw new OrchestrationError(
-        'agent_unconfigured',
-        `Agent launcher ${agent} is disabled or unavailable.`
-      )
     }
   }
 }

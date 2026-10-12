@@ -29,7 +29,6 @@ import {
 } from './agent-launch-scope-runtime'
 import { resolveQoderTerminalCommand } from './qoder-terminal-command-resolution'
 import { isWslShellName } from '../../shared/local-windows-terminal-runtime'
-import { isTuiAgentEnabled } from '../../shared/tui-agent-selection'
 
 type AgentTerminalPlanHost = {
   store: RuntimeStore | null | undefined
@@ -135,9 +134,6 @@ async function buildRuntimeAgentTerminalStartupOptions(
   // Why: `workspace.repo` is display metadata and may be a row from another host; the launch
   // shape must match the PTY route this scope already resolved.
   const isRemote = Boolean(workspace.connectionId)
-  if (opts.startupAgent && !isTuiAgentEnabled(opts.startupAgent, settings.disabledTuiAgents)) {
-    throw new Error(`Agent ${opts.startupAgent} is disabled. Choose an enabled agent.`)
-  }
   // A prompt this launch command cannot carry has nowhere to go from here — the create returns
   // options, not a live PTY — so refuse rather than spawn the agent and drop the text.
   if (opts.startupPrompt && !agentPromptRidesLaunchCommand(agent)) {

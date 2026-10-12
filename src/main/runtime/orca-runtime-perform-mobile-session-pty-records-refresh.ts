@@ -180,8 +180,8 @@ export class OrcaRuntimeWithPerformMobileSessionPtyRecordsRefresh extends OrcaRu
               agent: tab.launchAgent
             })
           } catch {
-            // Why: a disabled or unresolvable agent must not make the tab
-            // untappable; fall back to the plain-shell materialize.
+            // Why: an unresolvable agent must not make the tab untappable;
+            // fall back to the plain-shell materialize.
           }
         }
         try {

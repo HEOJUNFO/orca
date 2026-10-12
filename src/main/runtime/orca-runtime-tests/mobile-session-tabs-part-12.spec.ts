@@ -218,32 +218,6 @@ describe('OrcaRuntimeService', () => {
     ])
   })
 
-  it('rejects disabled mobile session agent launches before spawning', async () => {
-    const spawn = vi.fn().mockResolvedValue({ id: 'pty-agent' })
-    const runtime = new OrcaRuntimeService({
-      ...store,
-      getSettings: () => ({
-        ...store.getSettings(),
-        disabledTuiAgents: ['codex'],
-        agentCmdOverrides: {}
-      })
-    } as never)
-    runtime.setPtyController({
-      spawn,
-      write: () => true,
-      kill: () => true,
-      getForegroundProcess: async () => null
-    })
-    runtime.syncWindowGraph(0, { tabs: [], leaves: [] })
-
-    await expect(
-      runtime.createMobileSessionTerminal(`id:${TEST_WORKTREE_ID}`, {
-        agent: 'codex'
-      })
-    ).rejects.toThrow('Selected agent is disabled')
-    expect(spawn).not.toHaveBeenCalled()
-  })
-
   it('validates mobile terminal insertion anchors before resolving agent launch commands', async () => {
     const spawn = vi.fn().mockResolvedValue({ id: 'pty-agent' })
     const runtime = new OrcaRuntimeService({

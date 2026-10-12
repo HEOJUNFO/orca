@@ -149,9 +149,6 @@ export function buildWorktreeStartupForAgent(
   followup?: WorktreeStartupFollowup
 } {
   const { agent, repo, settings } = environment
-  if (!isTuiAgentEnabled(agent, settings.disabledTuiAgents)) {
-    throw new Error('Selected agent is disabled. Choose an enabled agent before creating.')
-  }
   const planInputs = resolveAgentStartupPlanInputs({
     agent,
     settings,

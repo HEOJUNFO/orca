@@ -11,7 +11,6 @@ import {
   parseAgentSessionOperationTimestamp
 } from '../../shared/agent-session-host-authority'
 import { createHash } from 'node:crypto'
-import { isTuiAgentEnabled } from '../../shared/tui-agent-selection'
 import { resolveAgentStartupPlanInputs } from '../../shared/agent-startup-plan-inputs'
 import { buildExecutionHostAgentStartupPlan } from '../opencode/opencode-model-startup-plan'
 import type { RuntimeTerminalCreate } from '../../shared/runtime-types'
@@ -127,9 +126,6 @@ export class OrcaRuntimeWithCreateAgentSession extends OrcaRuntimeWithGetAgentSe
         )
         .digest('base64url')
       const settings = this.store!.getSettings()
-      if (!isTuiAgentEnabled(request.agent, settings.disabledTuiAgents)) {
-        throw new Error('Selected agent is disabled. Choose an enabled agent before creating.')
-      }
       // The OpenCode model hop keeps main's own quoting and shell rules until C2 deletes it.
       const launchRuntime = this.resolvePreC1AgentLaunchRuntime(workspace)
       const startupArgs = resolveAgentStartupPlanInputs({

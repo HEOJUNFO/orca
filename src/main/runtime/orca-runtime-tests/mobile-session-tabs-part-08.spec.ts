@@ -11,7 +11,6 @@ import {
   makeRuntimeStoreWithWorkspaceSession,
   makeWorkspaceSessionWithHeadlessTerminal
 } from '../orca-runtime-test-fixtures.spec'
-import { makePendingAgentTabActivationRuntime } from '../orca-runtime-test-scenario-builders.spec'
 
 describe('OrcaRuntimeService', () => {
   it('materializes a plain shell when the pending tab has no launch agent', async () => {
@@ -58,30 +57,6 @@ describe('OrcaRuntimeService', () => {
       expect.objectContaining({ sessionId: 'serve-dead-pty', worktreeId: TEST_WORKTREE_ID })
     )
     expect(spawn.mock.calls[0]![0].command).toBeUndefined()
-  })
-
-  it('falls back to a plain shell when the pending tab agent is disabled', async () => {
-    const { runtime, spawn } = makePendingAgentTabActivationRuntime({
-      disabledTuiAgents: ['claude']
-    })
-
-    const activated = await runtime.activateMobileSessionTab(
-      `id:${TEST_WORKTREE_ID}`,
-      `host-tab::${HEADLESS_LEAF_ID}`,
-      undefined,
-      { notifyClients: false }
-    )
-
-    expect(spawn).toHaveBeenCalledWith(
-      expect.objectContaining({ sessionId: 'serve-dead-pty', worktreeId: TEST_WORKTREE_ID })
-    )
-    expect(spawn.mock.calls[0]![0].command).toBeUndefined()
-    // Why: the disabled-agent fallback keeps the tab's agent identity; only the startup command is skipped.
-    expect(activated.tabs[0]).toMatchObject({
-      type: 'terminal',
-      status: 'ready',
-      launchAgent: 'claude'
-    })
   })
 
   it('collapses duplicate mobile terminal entries when renderer and headless leaf ids diverge for the same pty', async () => {

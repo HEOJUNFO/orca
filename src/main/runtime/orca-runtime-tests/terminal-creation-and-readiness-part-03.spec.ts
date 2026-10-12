@@ -174,37 +174,6 @@ describe('OrcaRuntimeService', () => {
     expect(spawnCall?.env?.ORCA_AGENT_LAUNCH_TOKEN).toBeUndefined()
   })
 
-  it('keeps disabled bare agent command terminal creates unchanged', async () => {
-    const spawn = vi.fn().mockResolvedValue({ id: 'pty-bg' })
-    const runtimeStore = {
-      ...store,
-      getSettings: () => ({
-        ...store.getSettings(),
-        disabledTuiAgents: ['codex' as const],
-        agentCmdOverrides: {},
-        agentDefaultArgs: { codex: '--dangerously-bypass-approvals-and-sandbox' },
-        agentDefaultEnv: {}
-      })
-    }
-    const runtime = new OrcaRuntimeService(runtimeStore)
-    runtime.setPtyController({
-      spawn,
-      write: () => true,
-      kill: () => true,
-      getForegroundProcess: async () => null
-    })
-
-    await runtime.createTerminal(`path:${TEST_WORKTREE_PATH}`, {
-      command: 'codex'
-    })
-
-    const spawnCall = spawn.mock.calls[0]?.[0] as
-      | { command?: string; env?: Record<string, string> }
-      | undefined
-    expect(spawnCall?.command).toBe('codex')
-    expect(spawnCall?.env?.ORCA_AGENT_LAUNCH_TOKEN).toBeUndefined()
-  })
-
   it('sends Settings agent defaults through renderer-backed bare agent terminal creates', async () => {
     const runtimeStore = {
       ...store,

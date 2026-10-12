@@ -4,7 +4,6 @@ import type { TerminalWorkspaceLaunchScope } from './runtime-legacy-worker-termi
 import type { WorktreeStartupLaunch } from '../../shared/worktree/launch-types'
 import type { TuiAgent } from '../../shared/tui-agent'
 import type { SleepingAgentLaunchConfig } from '../../shared/agent-session-resume'
-import { isTuiAgentEnabled } from '../../shared/tui-agent-selection'
 import { buildAgentStartupPlan } from '../../shared/tui-agent-startup'
 import { resolveAgentStartupPlanInputs } from '../../shared/agent-startup-plan-inputs'
 
@@ -43,9 +42,6 @@ export class OrcaRuntimeWithResolveMobileSessionTerminalCommand extends OrcaRunt
       throw new Error('runtime_unavailable')
     }
     const settings = this.store.getSettings()
-    if (!isTuiAgentEnabled(opts.agent, settings.disabledTuiAgents)) {
-      throw new Error('Selected agent is disabled. Choose an enabled agent before creating.')
-    }
     const launchRuntime = this.resolveAgentLaunchRuntime(workspace)
     const startupPlan = buildAgentStartupPlan({
       ...resolveAgentStartupPlanInputs({

@@ -2,7 +2,6 @@
 import { OrcaRuntimeWithGetWorktreeTerminalProvisioningHost } from './orca-runtime-get-worktree-terminal-provisioning-host'
 import type { RuntimeManagedWorktreeCreateArgs } from './runtime-managed-worktree-create-types'
 import type { CreateWorktreeResult } from '../../shared/worktree/create-types'
-import { isTuiAgentEnabled } from '../../shared/tui-agent-selection'
 import { isFolderRepo } from '../../shared/repo-kind'
 import { resolveWorktreeCreateRoute } from '../worktree-create-execution-host-route'
 import { ExecutionHostNotDispatchableError } from '../providers/execution-host-provider-dispatch'
@@ -50,20 +49,6 @@ export class OrcaRuntimeWithCreateManagedWorktree extends OrcaRuntimeWithGetWork
     const repo = await this.resolveRepoSelector(args.repoSelector)
     const createSettings = this.store.getSettings()
     const requestedAgent = args.startupAgent ?? args.createdWithAgent
-    const requestedAgentEnabled =
-      requestedAgent !== undefined
-        ? isTuiAgentEnabled(requestedAgent, createSettings.disabledTuiAgents)
-        : false
-    if ((args.startup || args.startupAgent) && requestedAgent && !requestedAgentEnabled) {
-      throw new Error('Selected agent is disabled. Choose an enabled agent before creating.')
-    }
-    if (
-      args.startup &&
-      args.startupDraftPaste &&
-      !isTuiAgentEnabled(args.startupDraftPaste.agent, createSettings.disabledTuiAgents)
-    ) {
-      throw new Error('Selected agent is disabled. Choose an enabled agent before creating.')
-    }
     const agentStartup = resolveWorktreeCreateAgentStartup(args, (...inputs) =>
       this.buildStartupForAgent(repo, ...inputs)
     )
@@ -80,9 +65,7 @@ export class OrcaRuntimeWithCreateManagedWorktree extends OrcaRuntimeWithGetWork
     const effectiveStartupFollowup = agentStartup?.followup
     const effectiveCreatedWithAgent = args.startup
       ? args.createdWithAgent
-      : (agentStartup?.agent ??
-        draftStartup?.agent ??
-        (requestedAgentEnabled ? requestedAgent : undefined))
+      : (agentStartup?.agent ?? draftStartup?.agent ?? requestedAgent)
     const effectiveDraftPaste = args.startupDraftPaste ?? draftStartup?.draftPaste
     // Match IPC routing: executionHostId-only SSH repos must not create locally.
     const createRoute = resolveWorktreeCreateRoute(repo)

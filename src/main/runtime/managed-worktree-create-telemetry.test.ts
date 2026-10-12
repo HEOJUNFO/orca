@@ -265,9 +265,10 @@ describe('runtime create events', () => {
       makeRuntime().createManagedWorktree({
         repoSelector: 'repo-1',
         name: 'app',
-        startupAgent: 'codex'
+        startupAgent: 'opencode',
+        startupLaunchPreferences: { model: 'opencode/any' }
       })
-    ).rejects.toThrow('Selected agent is disabled')
+    ).rejects.toThrow('The execution host cannot verify this OpenCode model launch.')
     expect(mocks.createLocal).not.toHaveBeenCalled()
     expect(mocks.track).not.toHaveBeenCalled()
   })

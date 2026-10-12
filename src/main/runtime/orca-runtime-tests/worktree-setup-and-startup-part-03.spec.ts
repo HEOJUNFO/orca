@@ -2,7 +2,6 @@ import { getDefaultWorkspaceSession } from '../../../shared/constants'
 import { describe, expect, it, onTestFinished, vi } from 'vitest'
 import {
   OrcaRuntimeService,
-  addWorktree,
   computeWorktreePathMock,
   createSetupRunnerScript,
   detectInstalledAgentsWithShellPathHydrationMock,
@@ -731,36 +730,6 @@ describe('OrcaRuntimeService', () => {
       `\x1b[200~${draftUrl}\x1b[201~`,
       'launch'
     )
-  })
-
-  it('rejects explicit startup commands for disabled selected agents', async () => {
-    const runtimeStore = {
-      ...store,
-      getSettings: () => ({
-        ...store.getSettings(),
-        disabledTuiAgents: ['codex' as const]
-      })
-    }
-    const runtime = new OrcaRuntimeService(runtimeStore as never)
-    const spawn = vi.fn().mockResolvedValue({ id: 'pty-disabled-startup' })
-    runtime.setPtyController({
-      spawn,
-      write: () => true,
-      kill: () => true,
-      getForegroundProcess: async () => null
-    })
-
-    await expect(
-      runtime.createManagedWorktree({
-        repoSelector: TEST_REPO_ID,
-        name: 'disabled-startup',
-        startup: { command: 'codex' },
-        createdWithAgent: 'codex'
-      })
-    ).rejects.toThrow('Selected agent is disabled. Choose an enabled agent before creating.')
-
-    expect(spawn).not.toHaveBeenCalled()
-    expect(addWorktree).not.toHaveBeenCalled()
   })
 
   it('launches explicit startup agents with prompts for CLI-created worktrees', async () => {

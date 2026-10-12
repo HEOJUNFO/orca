@@ -6,7 +6,6 @@ import type { ClaudeAgentTeamsMode } from '../../shared/claude-agent-teams-tmux-
 import type { ProjectExecutionRuntimeResolution } from '../../shared/project-execution-runtime'
 import { isWindowsAbsolutePathLike } from '../../shared/cross-platform-path'
 import { getTuiAgentLaunchCommand, TUI_AGENT_CONFIG } from '../../shared/tui-agent-config'
-import { isTuiAgentEnabled } from '../../shared/tui-agent-selection'
 
 export function mergeTerminalEnvDeletionKeys(
   first: readonly string[] | undefined,
@@ -52,7 +51,6 @@ export function resolveBareAgentLaunchCommand(args: {
   command: string | undefined
   settings: {
     agentCmdOverrides?: Partial<Record<TuiAgent, string>> | null
-    disabledTuiAgents?: Iterable<unknown> | null
   }
   platform: NodeJS.Platform
   isRemote: boolean
@@ -63,10 +61,8 @@ export function resolveBareAgentLaunchCommand(args: {
   }
 
   const cmdOverrides = args.settings.agentCmdOverrides ?? {}
+  // Hiding an agent in Settings only hides it from pickers; its typed launcher is still that agent.
   for (const agent of Object.keys(TUI_AGENT_CONFIG) as TuiAgent[]) {
-    if (!isTuiAgentEnabled(agent, args.settings.disabledTuiAgents)) {
-      continue
-    }
     const override = cmdOverrides[agent]?.trim()
     const defaultLaunchCommand = getTuiAgentLaunchCommand(TUI_AGENT_CONFIG[agent], args.platform, {
       isRemote: args.isRemote
