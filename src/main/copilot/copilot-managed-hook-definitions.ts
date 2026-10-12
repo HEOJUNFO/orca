@@ -3,6 +3,7 @@ import {
   wrapWindowsHookCommand,
   type HookDefinition
 } from '../agent-hooks/installer-utils'
+import { wrapWindowsDirectCmdHookCommand } from '../agent-hooks/windows-direct-cmd-hook-command'
 
 // Why: Copilot's user-level hook files can use VS Code-compatible PascalCase
 // names, which match the event vocabulary already normalized by Orca's hook
@@ -28,9 +29,18 @@ export const COPILOT_EVENTS = [
 
 export function getManagedCommand(scriptPath: string, eventName: string): string {
   if (process.platform !== 'win32') {
-    return wrapPosixHookCommand(scriptPath, { ORCA_COPILOT_HOOK_EVENT: eventName })
+    return wrapPosixHookCommand(scriptPath, {
+      ORCA_COPILOT_HOOK_EVENT: eventName
+    })
   }
-  return wrapWindowsHookCommand(scriptPath, { ORCA_COPILOT_HOOK_EVENT: eventName })
+  // Why an argument, not the hook `env` map: every Copilot version runs the command text, so the
+  // event survives runners that ignore `env`, and each event keeps a distinct managed command.
+  const direct = wrapWindowsDirectCmdHookCommand(scriptPath)
+  return direct
+    ? `${direct} ${eventName}`
+    : wrapWindowsHookCommand(scriptPath, {
+        ORCA_COPILOT_HOOK_EVENT: eventName
+      })
 }
 
 export function getManagedHookDefinition(command: string): HookDefinition {

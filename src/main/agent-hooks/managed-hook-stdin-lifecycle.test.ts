@@ -285,7 +285,7 @@ describe('Windows managed hook stdin structure', () => {
         (name) => name.endsWith('-hook.cmd') && !name.startsWith('antigravity-')
       )
       mainBatchScripts.push('antigravity-hook.cmd')
-      expect(mainBatchScripts).toHaveLength(10)
+      expect(mainBatchScripts).toHaveLength(11)
       for (const fileName of mainBatchScripts) {
         const script = readFileSync(join(hooksDir, fileName), 'utf8')
         // Why: missing-env path must not touch more.com — hang class from #11549.
@@ -330,13 +330,6 @@ describe('Windows managed hook stdin structure', () => {
         claude.indexOf('if not "%DEVIN_PROJECT_DIR%"=="" goto :orca_agent_hook_drain_stdin')
       )
 
-      // Why (#11549 class): every Windows-local hook now guards before owning stdin —
-      // the caller may abandon the pipe, and the payload is discarded on this path anyway.
-      const copilot = readFileSync(join(hooksDir, 'copilot-hook.ps1'), 'utf8')
-      expect(copilot.indexOf('if (-not $env:ORCA_AGENT_HOOK_PORT')).toBeGreaterThan(-1)
-      expect(copilot.indexOf('if (-not $env:ORCA_AGENT_HOOK_PORT')).toBeLessThan(
-        copilot.indexOf('[Console]::In.ReadToEnd()')
-      )
       // Why: the two encoded-PowerShell launchers own stdin themselves when the managed
       // script is missing, so the same guard has to precede their ReadToEnd — and the
       // fallback answer has to precede the guard, or a gate event outside a pane is
