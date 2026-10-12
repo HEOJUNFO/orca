@@ -35,11 +35,14 @@ describe('openServeBundlePark', () => {
     await rm(root, { recursive: true, force: true })
   })
 
-  const open = (env: NodeJS.ProcessEnv = { XPC_SERVICE_NAME: LABEL }, platform = 'darwin') =>
+  const open = (
+    env: NodeJS.ProcessEnv = { XPC_SERVICE_NAME: LABEL },
+    platform: NodeJS.Platform = 'darwin'
+  ) =>
     openServeBundlePark({
       executable,
       env,
-      platform: platform as NodeJS.Platform,
+      platform,
       userDataRoot: join(root, 'data')
     })
 
