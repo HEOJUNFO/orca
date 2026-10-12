@@ -29,7 +29,11 @@ import {
   type ServeOrcaAppArgs
 } from './serve-orcad-launch'
 import { waitForRecipeJson } from './serve-recipe-json'
-import { preflightElectronServe, recordElectronServeStartupAbort } from './serve-electron-preflight'
+import {
+  preflightElectronServe,
+  recordElectronServeStartupAbort,
+  refuseIfProfileServed
+} from './serve-electron-preflight'
 import { MacServeStartupAbortError } from './serve-signal-exit-diagnostic'
 import { superviseServeService } from './serve-supervised-service'
 
@@ -157,6 +161,12 @@ async function serveWithSelectedRuntime(
     usesMacUpdateHandoff: args.recipeJson !== true && getMacAppBundlePath(executable) !== null
   })
   if (selection.kind === 'orcad') {
+    // Why only supervised: orcad refuses a held profile as a configuration fault (exit 78), which
+    // the brake would count; exit 3 here lets the supervisor wait for the other Orca instead.
+    const refusal = args.supervise ? await refuseIfProfileServed(args, userDataPath) : null
+    if (refusal !== null) {
+      return refusal
+    }
     process.stderr.write(`[serve] running on orcad ${selection.version}\n`)
     return serveWithOrcad(selection, args, userDataPath, stripElectronRunAsNode(process.env))
   }
