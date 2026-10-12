@@ -42,7 +42,6 @@ import {
   parseWslPath,
   toLinuxPath,
   toWindowsWslPath,
-  wslUncDirectoryExists,
   wslUncDirectoryExistsAsync
 } from './wsl'
 
@@ -686,60 +685,6 @@ describe('wsl path helpers', () => {
     expect(toWindowsWslPath('/mnt/c/Users/jinwo/git/orca', 'Ubuntu')).toBe(
       'C:\\Users\\jinwo\\git\\orca'
     )
-  })
-})
-
-describe('wslUncDirectoryExists', () => {
-  afterEach(() => {
-    runProcessSyncMock.mockReset()
-  })
-
-  it('returns true when the distro reports the directory exists', () => {
-    runProcessSyncMock.mockReturnValue(exited('__ORCA_DIRECTORY_EXISTS__'))
-    const result = withPlatform('win32', () =>
-      wslUncDirectoryExists('\\\\wsl.localhost\\Ubuntu\\home\\jin\\repo')
-    )
-    expect(result).toBe(true)
-    expect(runProcessSyncMock).toHaveBeenCalledWith(
-      expect.objectContaining({
-        program: 'wsl.exe',
-        timeoutMs: 5000,
-        args: [
-          '-d',
-          'Ubuntu',
-          '--exec',
-          'sh',
-          '-c',
-          expect.stringContaining('__ORCA_DIRECTORY_EXISTS__'),
-          'sh',
-          '/home/jin/repo'
-        ]
-      })
-    )
-  })
-
-  it('returns false when the guest reports the directory missing', () => {
-    runProcessSyncMock.mockReturnValue(exited('__ORCA_DIRECTORY_MISSING__'))
-    const result = withPlatform('win32', () =>
-      wslUncDirectoryExists('\\\\wsl.localhost\\Ubuntu\\home\\jin\\missing')
-    )
-    expect(result).toBe(false)
-  })
-
-  it('returns null when wsl.exe or the distro is unavailable', () => {
-    runProcessSyncMock.mockReturnValue(exited('', 4294967295))
-    const result = withPlatform('win32', () =>
-      wslUncDirectoryExists('\\\\wsl.localhost\\Ubuntu\\home\\jin\\repo')
-    )
-    expect(result).toBeNull()
-  })
-
-  it('returns null for non-WSL paths and off Windows', () => {
-    expect(withPlatform('win32', () => wslUncDirectoryExists('C:\\Users\\jin\\repo'))).toBeNull()
-    expect(
-      withPlatform('linux', () => wslUncDirectoryExists('\\\\wsl.localhost\\Ubuntu\\home\\jin'))
-    ).toBeNull()
-    expect(runProcessSyncMock).not.toHaveBeenCalled()
   })
 })
 

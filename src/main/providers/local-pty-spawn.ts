@@ -9,6 +9,7 @@ import { finalizeLocalPtySpawnEnvironment } from './local-pty-finalize-environme
 import { normalizeLocalCallerSessionId } from './local-pty-launch-helpers'
 import { createLocalPtyLaunchPlan, DeferredLocalPtyLaunchPlan } from './local-pty-launch-plan'
 import type { LocalPtyProviderOptions } from './local-pty-provider-types'
+import { validateWorkingDirectory } from './local-pty-utils'
 import { allocatePtyId, ptyShutdownOperations } from './local-pty-provider-state'
 import { activateLocalPtySession } from './local-pty-session-activation'
 import {
@@ -68,6 +69,10 @@ export async function spawnLocalPty(
       plan = plan.finish(available)
     }
     throwIfCanceled()
+    if (args.prevalidatedCwd !== plan.validationCwd) {
+      await validateWorkingDirectory(plan.validationCwd)
+      throwIfCanceled()
+    }
     const envResult = buildLocalPtySpawnEnvironment({
       id,
       spawn: args,

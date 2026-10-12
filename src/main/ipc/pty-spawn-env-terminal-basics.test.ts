@@ -1,6 +1,10 @@
 import { withFreshOmpLaunch } from '../../shared/omp-fresh-launch'
 import { describe, expect, it, vi } from 'vitest'
-import { piBuildPtyEnvMock, spawnMock } from './pty-ipc-mock-registry'
+import {
+  piBuildPtyEnvMock,
+  spawnMock,
+  wslUncDirectoryExistsAsyncMock
+} from './pty-ipc-mock-registry'
 import { TEST_CODEX_HOME } from './pty-ipc-test-constants'
 import { setupPtyIpcSuite } from './pty-ipc-test-harness'
 import { LocalPtyProvider } from '../providers/local-pty-provider'
@@ -306,6 +310,7 @@ describe('registerPtyHandlers', () => {
         })
       }))
       __resetPersistedWindowsPathCacheForTests()
+      wslUncDirectoryExistsAsyncMock.mockResolvedValue(true)
 
       try {
         const provider = new LocalPtyProvider({

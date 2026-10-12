@@ -55,7 +55,7 @@ export function isWslPath(path: string): boolean {
  * Check whether a WSL UNC working directory exists by testing it inside the
  * distro itself, returning null when the answer can't be determined.
  *
- * Why: Win32 fs.statSync against the WSL 9P filesystem (\\wsl.localhost\...)
+ * Why: Win32 fs.stat against the WSL 9P filesystem (\\wsl.localhost\...)
  * is unreliable for repos that live on the WSL side — it can report ENOENT for
  * directories that exist, which made opening a WSL worktree fail with
  * "Working directory ... does not exist". The guest marker probe asks the
@@ -63,24 +63,6 @@ export function isWslPath(path: string): boolean {
  * than false) when wsl.exe is unavailable or errors so callers can fall back to
  * the fs check instead of falsely rejecting a valid directory.
  */
-export function wslUncDirectoryExists(uncPath: string): boolean | null {
-  if (process.platform !== 'win32') {
-    return null
-  }
-  const info = parseWslUncPath(uncPath)
-  if (!info) {
-    return null
-  }
-  try {
-    const stdout = wslExeStdout(
-      runProcessSync(wslExeProcessSpec(getWslDirectoryProbeArgs(info), WSL_PROBE_TIMEOUT_MS))
-    )
-    return parseWslDirectoryProbeOutput(stdout)
-  } catch {
-    return null
-  }
-}
-
 export function wslUncDirectoryExistsAsync(uncPath: string): Promise<boolean | null> {
   if (process.platform !== 'win32') {
     return Promise.resolve(null)
