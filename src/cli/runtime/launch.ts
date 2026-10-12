@@ -124,6 +124,7 @@ export function serveOrcaApp(args: ServeOrcaAppArgs = {}): Promise<number> {
     return superviseServeService({
       userDataPath,
       executable,
+      appRoot: resolveAppRoot(),
       force: args.force === true,
       // Why first only: --force overrides a remembered abort once; the brake owns later attempts.
       runOnce: () =>

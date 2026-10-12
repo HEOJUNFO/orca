@@ -185,6 +185,17 @@ describe('superviseServeService', () => {
     ])
   })
 
+  it('hands the restart to the service manager when the executable stays gone', async () => {
+    let runs = 0
+    const h = harness({
+      userDataPath,
+      readInstallEvidence: async () => ({ kind: 'hold', reason: 'bundle-missing' }),
+      runOnce: async () => (runs++, 0)
+    })
+    await expect(superviseServeService(h.options)).resolves.toBe(1)
+    expect(runs).toBe(0)
+  })
+
   it('waits for a live peer without counting it as a failure', async () => {
     let runs = 0
     const h = harness({

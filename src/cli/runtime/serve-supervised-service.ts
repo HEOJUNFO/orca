@@ -19,12 +19,16 @@ import { requestSupervisedServeStop, resetSupervisedServeStop } from './serve-su
 export const SERVE_INSTALL_HOLD_POLL_MS = 2_000
 /** A hold this long is reported as stuck; it still never times out into a spawn. */
 export const SERVE_INSTALL_HOLD_STUCK_MS = 30 * 60_000
+/** A version-specific executable this long gone was removed by an update, not swapped by one. */
+export const SERVE_EXECUTABLE_MISSING_EXIT_MS = 2 * 60_000
 
 type StopListener = () => void
 
 export type SupervisedServeOptions = {
   userDataPath: string
   executable: string
+  /** Part of the build identity: the app archive changes with every release. */
+  appRoot?: string
   force: boolean
   /** One full serve attempt: preflight, spawn, and the existing update-aware wait. */
   runOnce: () => Promise<number>
@@ -85,7 +89,9 @@ export async function superviseServeService(options: SupervisedServeOptions): Pr
   const log = options.log ?? ((line: string) => process.stderr.write(`${line}\n`))
   const setTimer = options.setTimer ?? defaultSetTimer
   const readEvidence = options.readInstallEvidence ?? readServeInstallEvidence
-  const identify = options.buildIdentity ?? serveBuildIdentity
+  const identify =
+    options.buildIdentity ??
+    ((executable: string) => serveBuildIdentity(executable, options.appRoot))
   const writeBrake = options.writeBrake ?? writeServeSupervisorBrake
 
   // Why not keyed yet: mid-install the executable may be missing, which must not reset a give-up.
@@ -131,9 +137,18 @@ export async function superviseServeService(options: SupervisedServeOptions): Pr
     })
 
   const awaitClearToSpawn = async (): Promise<boolean> => {
+    const since = now()
     while (!stopped) {
-      if ((await readEvidence(options.executable)).kind === 'clear') {
+      const evidence = await readEvidence(options.executable)
+      if (evidence.kind === 'clear') {
         return !stopped
+      }
+      if (
+        evidence.reason === 'bundle-missing' &&
+        now() - since >= SERVE_EXECUTABLE_MISSING_EXIT_MS
+      ) {
+        // The outer loop sees the same hold and hands the restart to the service manager.
+        return false
       }
       await sleep(SERVE_INSTALL_HOLD_POLL_MS)
     }
@@ -158,6 +173,15 @@ export async function superviseServeService(options: SupervisedServeOptions): Pr
           log(
             `[serve] Waiting before starting Orca serve: ${SERVE_INSTALL_HOLD_REASON_TEXT[evidence.reason]}.`
           )
+        } else if (
+          evidence.reason === 'bundle-missing' &&
+          now() - held.since >= SERVE_EXECUTABLE_MISSING_EXIT_MS
+        ) {
+          // Why exit 1: the manager restarts the CLI through the stable launcher, which finds the installed build.
+          log(
+            '[serve] The Orca executable this service started from is gone; exiting so the service manager starts the installed Orca.'
+          )
+          return 1
         } else if (!held.reportedStuck && now() - held.since >= SERVE_INSTALL_HOLD_STUCK_MS) {
           held.reportedStuck = true
           log(

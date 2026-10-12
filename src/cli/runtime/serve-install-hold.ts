@@ -52,21 +52,19 @@ export async function readServeInstallEvidence(
   executable: string,
   options: { platform?: NodeJS.Platform; listProcesses?: ListProcesses } = {}
 ): Promise<ServeInstallEvidence> {
-  if (!existsSync(executable)) {
-    return { kind: 'hold', reason: 'bundle-missing' }
-  }
   const platform = options.platform ?? process.platform
   const bundlePath = platform === 'darwin' ? macBundlePathOf(executable) : null
-  if (!bundlePath) {
-    return { kind: 'clear' }
+  // Why ShipIt first: mid-swap the executable is briefly missing, and that must not look like removal.
+  if (bundlePath) {
+    const listing = await (options.listProcesses ?? listProcessCommands)()
+    if (listing === null) {
+      return { kind: 'hold', reason: 'installer-unknown' }
+    }
+    if (isShipItRunningForBundle(listing, bundlePath)) {
+      return { kind: 'hold', reason: 'installer-running' }
+    }
   }
-  const listing = await (options.listProcesses ?? listProcessCommands)()
-  if (listing === null) {
-    return { kind: 'hold', reason: 'installer-unknown' }
-  }
-  return isShipItRunningForBundle(listing, bundlePath)
-    ? { kind: 'hold', reason: 'installer-running' }
-    : { kind: 'clear' }
+  return existsSync(executable) ? { kind: 'clear' } : { kind: 'hold', reason: 'bundle-missing' }
 }
 
 function macBundlePathOf(executable: string): string | null {
@@ -74,12 +72,19 @@ function macBundlePathOf(executable: string): string | null {
   return bundle.endsWith('.app') ? bundle : null
 }
 
-/** Changes whenever the installed app does, so a new build starts with a clean restart count. */
-export function serveBuildIdentity(executable: string): string {
-  try {
-    const stat = statSync(executable)
-    return `${stat.size}:${Math.trunc(stat.mtimeMs)}`
-  } catch {
-    return 'missing'
-  }
+/**
+ * Changes whenever the installed app does, so a new build starts with a clean restart count. The
+ * app archive is included because Linux releases on one Electron version share the launcher binary.
+ */
+export function serveBuildIdentity(executable: string, appRoot?: string): string {
+  return [executable, ...(appRoot ? [appRoot] : [])]
+    .map((path) => {
+      try {
+        const stat = statSync(path)
+        return `${stat.size}:${Math.trunc(stat.mtimeMs)}`
+      } catch {
+        return 'missing'
+      }
+    })
+    .join('|')
 }
