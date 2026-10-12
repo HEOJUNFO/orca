@@ -11,8 +11,9 @@ import {
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import { WINDOWS_CMD_SAFE_PATH, wrapPosixHookCommand } from '../agent-hooks/installer-utils'
 import { KimiHookService } from './hook-service'
-import { KIMI_HOOK_EVENTS } from './kimi-hook-config-toml'
+import { buildManagedKimiHooksBlock, KIMI_HOOK_EVENTS } from './kimi-hook-config-toml'
 
 // Why: getSharedManagedScriptPath() writes the managed script under
 // homedir()/.orca, and getKimiHome() honors KIMI_CODE_HOME. Point both at a
@@ -53,34 +54,96 @@ afterEach(() => {
 })
 
 const configPath = (): string => join(home, '.kimi-code', 'config.toml')
-const scriptPath = (): string => join(home, '.orca', 'agent-hooks', 'kimi-hook.sh')
+const scriptPath = (fileName = 'kimi-hook.sh'): string =>
+  join(home, '.orca', 'agent-hooks', fileName)
 const supportsPosixFileModes = process.platform !== 'win32'
+const toForwardSlashes = (path: string): string => path.replaceAll('\\', '/')
+
+function withPlatform<T>(platform: NodeJS.Platform, run: () => T): T {
+  const original = Object.getOwnPropertyDescriptor(process, 'platform')
+  Object.defineProperty(process, 'platform', { configurable: true, value: platform })
+  try {
+    return run()
+  } finally {
+    if (original) {
+      Object.defineProperty(process, 'platform', original)
+    }
+  }
+}
 
 describe('KimiHookService', () => {
   it('reports not_installed before install', () => {
     expect(new KimiHookService().getStatus().state).toBe('not_installed')
   })
 
-  it('installs the managed hooks block and the managed script', () => {
-    const status = new KimiHookService().install()
-    expect(status.state).toBe('installed')
-    expect(status.managedHooksPresent).toBe(true)
+  // Why: Kimi runs hooks through cmd.exe on Windows, where a POSIX `if [ -f ... ]` command
+  // fails before it ever reaches the script, so no status event was ever posted.
+  it('registers a cmd.exe-runnable .cmd hook on Windows', () => {
+    withPlatform('win32', () => {
+      expect(new KimiHookService().install().state).toBe('installed')
+    })
 
     const config = readFileSync(configPath(), 'utf-8')
-    for (const event of KIMI_HOOK_EVENTS) {
-      expect(config).toContain(`event = "${event}"`)
-    }
-    // The managed script must exist and POST to the Kimi hook endpoint.
-    const script = readFileSync(scriptPath(), 'utf-8')
+    expect(config).not.toContain('if [')
+    expect(config).not.toContain('kimi-hook.sh')
+    const script = readFileSync(scriptPath('kimi-hook.cmd'), 'utf-8')
+    expect(script.startsWith('@echo off\r\n')).toBe(true)
+    expect(script).toContain('"%SystemRoot%\\System32\\curl.exe"')
     expect(script).toContain('/hook/kimi')
-    // Why: payload is piped to curl via stdin (`payload@-`) so it never lands
-    // on the curl command line (EDR oversized-command-line false positive).
-    expect(script).toContain('printf \'%s\' "$payload" | curl')
-    expect(script).toContain('--data-urlencode "payload@-"')
-    expect(script).not.toContain('--data-urlencode "payload=${payload}"')
-    // The command Kimi runs points at the managed script via sh.
-    expect(config).toContain('agent-hooks/kimi-hook.sh')
+    // A cmd-safe profile registers the bare forward-slash path, which needs no TOML escaping.
+    if (WINDOWS_CMD_SAFE_PATH.test(scriptPath('kimi-hook.cmd'))) {
+      expect(config).toContain(`command = "${toForwardSlashes(scriptPath('kimi-hook.cmd'))}"`)
+    }
+    expect(withPlatform('win32', () => new KimiHookService().getStatus().state)).toBe('installed')
   })
+
+  it('replaces the pre-fix Windows .sh entry on the next install', () => {
+    mkdirSync(join(home, '.kimi-code'), { recursive: true })
+    const userConfig = 'default_model = "kimi-k2.6"\n'
+    // Exactly what the pre-fix installer registered on Windows.
+    const legacyCommand = wrapPosixHookCommand(toForwardSlashes(scriptPath('kimi-hook.sh')))
+    writeFileSync(configPath(), `${userConfig}\n${buildManagedKimiHooksBlock(legacyCommand)}\n`)
+
+    withPlatform('win32', () => {
+      const service = new KimiHookService()
+      // The stale entry is still Orca's, so status must not claim nothing is installed.
+      expect(service.getStatus().state).toBe('installed')
+      expect(service.install().state).toBe('installed')
+    })
+
+    const migrated = readFileSync(configPath(), 'utf-8')
+    expect(migrated).not.toContain('kimi-hook.sh')
+    expect(migrated).toContain('kimi-hook.cmd')
+    expect((migrated.match(/orca-managed-kimi-hooks \(/g) ?? []).length).toBe(1)
+    expect((migrated.match(/^\[\[hooks\]\]$/gm) ?? []).length).toBe(KIMI_HOOK_EVENTS.length)
+
+    withPlatform('win32', () => new KimiHookService().remove())
+    expect(readFileSync(configPath(), 'utf-8')).toBe(userConfig)
+  })
+
+  it.skipIf(process.platform === 'win32')(
+    'installs the managed hooks block and the managed script',
+    () => {
+      const status = new KimiHookService().install()
+      expect(status.state).toBe('installed')
+      expect(status.managedHooksPresent).toBe(true)
+
+      const config = readFileSync(configPath(), 'utf-8')
+      for (const event of KIMI_HOOK_EVENTS) {
+        expect(config).toContain(`event = "${event}"`)
+      }
+      // The managed script must exist and POST to the Kimi hook endpoint.
+      const script = readFileSync(scriptPath(), 'utf-8')
+      expect(script).toContain('/hook/kimi')
+      // Why: payload is piped to curl via stdin (`payload@-`) so it never lands
+      // on the curl command line (EDR oversized-command-line false positive).
+      expect(script).toContain('printf \'%s\' "$payload" | curl')
+      expect(script).toContain('--data-urlencode "payload@-"')
+      expect(script).not.toContain('--data-urlencode "payload=${payload}"')
+      // The command Kimi runs points at the managed script via sh.
+      expect(config).toContain('agent-hooks/kimi-hook.sh')
+    }
+  )
 
   it('keeps user config when installing, then restores it on remove', () => {
     const dir = join(home, '.kimi-code')

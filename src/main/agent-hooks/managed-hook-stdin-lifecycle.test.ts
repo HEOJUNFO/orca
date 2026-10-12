@@ -285,7 +285,7 @@ describe('Windows managed hook stdin structure', () => {
         (name) => name.endsWith('-hook.cmd') && !name.startsWith('antigravity-')
       )
       mainBatchScripts.push('antigravity-hook.cmd')
-      expect(mainBatchScripts).toHaveLength(10)
+      expect(mainBatchScripts).toHaveLength(11)
       for (const fileName of mainBatchScripts) {
         const script = readFileSync(join(hooksDir, fileName), 'utf8')
         // Why: missing-env path must not touch more.com — hang class from #11549.
@@ -361,12 +361,6 @@ describe('Windows managed hook stdin structure', () => {
           `${name} guards before owning stdin`
         ).toBeLessThan(decoded.indexOf('[Console]::In.ReadToEnd()'))
       }
-
-      const kimi = readFileSync(join(hooksDir, 'kimi-hook.sh'), 'utf8')
-      expect(kimi.indexOf('if [ -z "$ORCA_AGENT_HOOK_PORT" ]')).toBeGreaterThan(-1)
-      expect(kimi.indexOf('if [ -z "$ORCA_AGENT_HOOK_PORT" ]')).toBeLessThan(
-        kimi.indexOf(`payload=$(${POSIX_HOOK_STDIN_READER})`)
-      )
     } finally {
       homedirMock.mockImplementation(() => process.env.HOME ?? tmpdir())
       if (previousGrokHome === undefined) {
