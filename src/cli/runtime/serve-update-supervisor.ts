@@ -25,6 +25,17 @@ export const SERVE_CHILD_FORCE_KILL_GRACE_MS =
   WILL_QUIT_TEARDOWN_DEADLINE_MS +
   SERVE_CHILD_FORCE_KILL_SCHEDULING_MARGIN_MS
 
+let supervisedStopRequested = false
+
+/** A stop that reached `--supervise` before its child existed must still reach that child. */
+export function requestSupervisedServeStop(): void {
+  supervisedStopRequested = true
+}
+
+export function resetSupervisedServeStop(): void {
+  supervisedStopRequested = false
+}
+
 type ServeSupervisorArgs = {
   executable: string
   childArgs: string[]
@@ -217,6 +228,9 @@ function waitForForegroundChild(
     }
     if (typeof child.on === 'function') {
       child.on('message', handleMessage)
+    }
+    if (supervisedStopRequested) {
+      forwardSignal('SIGTERM')
     }
     if (expected) {
       readyTimer = setTimeout(() => {
