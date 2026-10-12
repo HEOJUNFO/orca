@@ -1,9 +1,10 @@
-import { mkdir, mkdtemp, rm, symlink } from 'node:fs/promises'
+import { mkdir, mkdtemp, realpath, rm, symlink } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { basename, dirname, join } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import {
   parseDarwinExecutablePath,
+  readShellProcessReadiness,
   resolveInstalledShellExecutablePaths,
   resolveShellExecutablePath
 } from './shell-process-readiness'
@@ -14,6 +15,14 @@ describe('shell process readiness', () => {
       '/bin/zsh'
     )
   })
+
+  it.runIf(process.platform === 'darwin')(
+    'reads the executable path through non-blocking lsof on macOS',
+    async () => {
+      const readiness = await readShellProcessReadiness(process.pid)
+      expect(readiness?.executablePath).toBe(await realpath(process.execPath))
+    }
+  )
 
   it.skipIf(process.platform === 'win32')(
     'resolves bare shell commands through the spawn PATH',
