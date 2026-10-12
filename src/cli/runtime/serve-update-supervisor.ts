@@ -13,6 +13,11 @@ import {
 import { serveSignalExitError } from './serve-signal-exit-diagnostic'
 import { waitForMacBundleVersion } from './mac-app-update-bundle'
 import {
+  isSupervisedStopRequested,
+  mayRespawn,
+  supervisedStopSignal
+} from './serve-supervised-stop'
+import {
   decideAfterServeChildExit,
   type InstallRequestedHandoff,
   type ServeReadiness
@@ -24,17 +29,6 @@ export const SERVE_CHILD_FORCE_KILL_GRACE_MS =
   QUIT_RENDERER_ACK_TIMEOUT_MS +
   WILL_QUIT_TEARDOWN_DEADLINE_MS +
   SERVE_CHILD_FORCE_KILL_SCHEDULING_MARGIN_MS
-
-let supervisedStopRequested = false
-
-/** A stop that reached `--supervise` before its child existed must still reach that child. */
-export function requestSupervisedServeStop(): void {
-  supervisedStopRequested = true
-}
-
-export function resetSupervisedServeStop(): void {
-  supervisedStopRequested = false
-}
 
 type ServeSupervisorArgs = {
   executable: string
@@ -52,6 +46,9 @@ export async function resumeInterruptedServeUpdate(
     args.handoffPath,
     args.handoff
   )
+  if (!(await mayRespawn())) {
+    return 0
+  }
   const child = args.spawnChild(args.executable, args.childArgs, args.spawnOptions)
   return superviseForegroundServe({ ...args, child, expectedHandoff })
 }
@@ -61,8 +58,13 @@ async function awaitInstalledHandoff(
   handoffPath: string,
   handoff: InstallRequestedHandoff
 ): Promise<InstallRequestedHandoff | null> {
-  if (await waitForMacBundleVersion(executable, handoff.targetVersion)) {
+  const stop = supervisedStopSignal()
+  if (await waitForMacBundleVersion(executable, handoff.targetVersion, undefined, stop)) {
     return handoff
+  }
+  if (stop.aborted) {
+    // A stop is not a failed update: the next start resumes this handoff.
+    return null
   }
   await recordServeUpdateHandoffFailure(
     handoffPath,
@@ -118,6 +120,9 @@ export async function superviseForegroundServe(
           args.handoffPath,
           decision.handoff
         )
+        if (!(await mayRespawn())) {
+          return 0
+        }
         child = args.spawnChild(args.executable, args.childArgs, args.spawnOptions)
     }
   }
@@ -229,7 +234,7 @@ function waitForForegroundChild(
     if (typeof child.on === 'function') {
       child.on('message', handleMessage)
     }
-    if (supervisedStopRequested) {
+    if (isSupervisedStopRequested()) {
       forwardSignal('SIGTERM')
     }
     if (expected) {

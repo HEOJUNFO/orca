@@ -138,6 +138,26 @@ describe('superviseServeService', () => {
     expect(runs).toBe(2)
   })
 
+  it('keeps a give-up while the executable is missing mid-install', async () => {
+    const gaveUp: ServeSupervisorBrake = {
+      ...emptyServeSupervisorBrake('build-a'),
+      gaveUp: { at: 1, reason: 'old' }
+    }
+    const identities = ['missing', 'build-a']
+    const evidence: ServeInstallEvidence[] = [{ kind: 'hold', reason: 'bundle-missing' }]
+    let runs = 0
+    const h = harness({
+      userDataPath,
+      readBrake: () => gaveUp,
+      buildIdentity: () => identities.shift() ?? 'build-a',
+      readInstallEvidence: async () => evidence.shift() ?? { kind: 'clear' },
+      runOnce: async () => (runs++, 0)
+    })
+    await expect(superviseServeService(h.options)).resolves.toBe(0)
+    expect(runs).toBe(0)
+    expect(h.logs.join('\n')).toContain('Not starting')
+  })
+
   it('never spawns while the installer holds the bundle, even when the check fails', async () => {
     const evidence: ServeInstallEvidence[] = [
       { kind: 'hold', reason: 'installer-running' },

@@ -2,7 +2,6 @@ import { SINGLE_INSTANCE_ALREADY_RUNNING_EXIT_CODE } from '../../shared/single-i
 import {
   brakeForBuild,
   clearServeSupervisorBrake,
-  emptyServeSupervisorBrake,
   readServeSupervisorBrake,
   recordSupervisedFailure,
   standbyDelayMs,
@@ -15,7 +14,7 @@ import {
   SERVE_INSTALL_HOLD_REASON_TEXT,
   type ServeInstallEvidence
 } from './serve-install-hold'
-import { requestSupervisedServeStop, resetSupervisedServeStop } from './serve-update-supervisor'
+import { requestSupervisedServeStop, resetSupervisedServeStop } from './serve-supervised-stop'
 
 export const SERVE_INSTALL_HOLD_POLL_MS = 2_000
 /** A hold this long is reported as stuck; it still never times out into a spawn. */
@@ -89,22 +88,24 @@ export async function superviseServeService(options: SupervisedServeOptions): Pr
   const identify = options.buildIdentity ?? serveBuildIdentity
   const writeBrake = options.writeBrake ?? writeServeSupervisorBrake
 
-  let record = brakeForBuild(
-    (options.readBrake ?? readServeSupervisorBrake)(options.userDataPath),
-    identify(options.executable)
+  // Why not keyed yet: mid-install the executable may be missing, which must not reset a give-up.
+  let record: ServeSupervisorBrake | null = (options.readBrake ?? readServeSupervisorBrake)(
+    options.userDataPath
   )
   if (options.force) {
     ;(options.clearBrake ?? clearServeSupervisorBrake)(options.userDataPath)
-    record = emptyServeSupervisorBrake(record.build)
+    record = null
   }
-  if (record.gaveUp) {
+  const refuseGaveUp = (gaveUp: { reason: string }): number => {
     log(
-      `[serve] Not starting: ${record.gaveUp.reason} Fix the cause, then run \`orca serve --supervise --force\` once, or reinstall Orca.`
+      `[serve] Not starting: ${gaveUp.reason} Fix the cause, then run \`orca serve --supervise --force\` once, or reinstall Orca.`
     )
     return 0
   }
+  if (record?.gaveUp && record.build === identify(options.executable)) {
+    return refuseGaveUp(record.gaveUp)
+  }
 
-  resetSupervisedServeStop()
   let stopped = false
   let wake: (() => void) | null = null
   const removeStopListener = (options.onStopSignal ?? defaultOnStopSignal)(() => {
@@ -128,6 +129,17 @@ export async function superviseServeService(options: SupervisedServeOptions): Pr
         resolveSleep()
       }
     })
+
+  const awaitClearToSpawn = async (): Promise<boolean> => {
+    while (!stopped) {
+      if ((await readEvidence(options.executable)).kind === 'clear') {
+        return !stopped
+      }
+      await sleep(SERVE_INSTALL_HOLD_POLL_MS)
+    }
+    return false
+  }
+  resetSupervisedServeStop(awaitClearToSpawn)
 
   try {
     let standbyAttempt = 0
@@ -157,6 +169,9 @@ export async function superviseServeService(options: SupervisedServeOptions): Pr
       }
       hold.current = null
       record = brakeForBuild(record, identify(options.executable))
+      if (record.gaveUp) {
+        return refuseGaveUp(record.gaveUp)
+      }
 
       let failure: string
       try {
@@ -196,5 +211,6 @@ export async function superviseServeService(options: SupervisedServeOptions): Pr
     return 0
   } finally {
     removeStopListener()
+    resetSupervisedServeStop()
   }
 }
