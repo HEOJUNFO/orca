@@ -7,10 +7,14 @@ import {
   getExplicitBrowserPageZoomLevel,
   rememberExplicitBrowserPageZoomLevel
 } from '../../components/browser-pane/host-guest/browser-page-zoom'
+import { releaseBrowserPageMount } from '../../components/browser-pane/host-guest/browser-page-mount-admission'
 
 export { moveFocusToRendererBeforeFocusedWebviewHidden }
 
+// Why the admission is released here: every way a page leaves the store (close, worktree purge,
+// guest eviction) destroys its guest through this function, so the start admission dies with it.
 export function destroyRemovedBrowserWebview(browserPageId: string): void {
+  releaseBrowserPageMount(browserPageId)
   destroyPersistentWebview(browserPageId)
 }
 
