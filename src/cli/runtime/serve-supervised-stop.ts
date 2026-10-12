@@ -24,10 +24,28 @@ export async function mayRespawn(): Promise<boolean> {
   return supervisedSpawnGate ? supervisedSpawnGate() : true
 }
 
-export function isSupervisedStopRequested(): boolean {
-  return supervisedStopRequested
-}
-
 export function supervisedStopSignal(): AbortSignal {
   return supervisedStop.signal
+}
+
+type ServeChild = { pid: number | null; stop: () => void }
+let currentChild: ServeChild | null = null
+
+/** The child a supervised serve is waiting on right now, so a desktop install can park it. */
+export function currentServeChild(): ServeChild | null {
+  return currentChild
+}
+
+/** A stop that reached `--supervise` before this child existed is passed on to it now. */
+export function trackServeChild(child: ServeChild): void {
+  currentChild = child
+  if (supervisedStopRequested) {
+    child.stop()
+  }
+}
+
+export function untrackServeChild(child: ServeChild): void {
+  if (currentChild === child) {
+    currentChild = null
+  }
 }

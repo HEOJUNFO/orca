@@ -7,7 +7,14 @@ import {
   isMacInstallerReady,
   setMacInstallPreflightInProgress
 } from '../updater-mac-install'
+import { homedir } from 'node:os'
 import { getMacUpdateRunningInstances } from '../macos-update-running-instances'
+import { macCoordinationRoot } from '../../shared/serve-bundle-coordination'
+import {
+  commitServeSupervisorPark,
+  parkServeSupervisorsForInstall,
+  serveInstallRefusalMessage
+} from './serve-supervisor-install-park'
 import { armUpdateInstallExitWatchdog } from '../update-install-exit-watchdog'
 import { getLinuxPackageType } from '../linux-update-package-type'
 import { LINUX_PACKAGE_MARKER_UNUSABLE_MESSAGE } from '../linux-package-downloaded-status'
@@ -83,18 +90,27 @@ export abstract class UpdaterInstallExecution extends UpdaterPackageRecovery {
           recordUpdaterLifecycle('macos_running_instances_check_failed')
           return
         }
-        if (blockers.length > 0) {
+        // Why: registered `orca serve --supervise` services can pause their server for us; anything else is refused as before.
+        const park =
+          blockers.length > 0
+            ? await parkServeSupervisorsForInstall(process.execPath, blockers, {
+                macUserDataRoot: macCoordinationRoot(homedir()),
+                listBlockers: () => getMacUpdateRunningInstances()
+              })
+            : null
+        if (park && park.kind === 'refused') {
           this.resetQuitForUpdateState()
           this.mainWindowRef?.webContents.send('updater:quitAndInstallAborted')
           this.sendInstallFailureStatus({
             state: 'error',
             version: pendingVersion,
             retryAction: 'install',
-            message: `Close the other Orca instances (process IDs: ${blockers.slice(0, 10).join(', ')}) before installing this update. Background orca serve instances also need to stop. Orca remains open; retry the update after closing them.`
+            message: serveInstallRefusalMessage(park)
           })
           recordUpdaterLifecycle('macos_install_blocked_by_running_instances', {
-            pids: blockers.slice(0, 10).join(', '),
-            count: blockers.length
+            pids: park.pids.slice(0, 10).join(', '),
+            count: park.pids.length,
+            reason: park.reason
           })
           return
         }
@@ -137,6 +153,7 @@ export abstract class UpdaterInstallExecution extends UpdaterPackageRecovery {
           return
         }
 
+        await commitServeSupervisorPark()
         recordUpdaterLifecycle('quit_and_install_invoking_native', {
           version: pendingVersion || null
         })

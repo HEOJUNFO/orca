@@ -14,7 +14,13 @@ import {
   SERVE_INSTALL_HOLD_REASON_TEXT,
   type ServeInstallEvidence
 } from './serve-install-hold'
-import { requestSupervisedServeStop, resetSupervisedServeStop } from './serve-supervised-stop'
+import {
+  currentServeChild,
+  requestSupervisedServeStop,
+  resetSupervisedServeStop
+} from './serve-supervised-stop'
+import type { ServeBundlePark } from './serve-bundle-park'
+import { createSupervisedParkWatch } from './serve-supervised-park-watch'
 
 export const SERVE_INSTALL_HOLD_POLL_MS = 2_000
 /** A hold this long is reported as stuck; it still never times out into a spawn. */
@@ -42,6 +48,10 @@ export type SupervisedServeOptions = {
   setTimer?: (callback: () => void, ms: number) => () => void
   onStopSignal?: (listener: StopListener) => () => void
   log?: (line: string) => void
+  /** The desktop-install park protocol; null when this supervisor does not take part. */
+  park?: ServeBundlePark | null
+  currentChild?: typeof currentServeChild
+  setRepeating?: (callback: () => void, ms: number) => () => void
 }
 
 export function getServeSuperviseValidationError(input: {
@@ -79,6 +89,19 @@ function defaultSetTimer(callback: () => void, ms: number): () => void {
   return () => clearTimeout(timer)
 }
 
+function defaultSetRepeating(callback: () => void, ms: number): () => void {
+  const timer = setInterval(callback, ms)
+  return () => clearInterval(timer)
+}
+
+async function settle(run: () => Promise<number>): Promise<PromiseSettledResult<number>> {
+  try {
+    return { status: 'fulfilled', value: await run() }
+  } catch (reason) {
+    return { status: 'rejected', reason }
+  }
+}
+
 /**
  * `orca serve --supervise`: the restart owner for a service manager. It never exits because its
  * child died; it exits on a stop signal, or with 0 after giving up so the manager stops too.
@@ -112,6 +135,13 @@ export async function superviseServeService(options: SupervisedServeOptions): Pr
     return refuseGaveUp(record.gaveUp)
   }
 
+  const parkWatch = options.park
+    ? createSupervisedParkWatch(options.park, {
+        currentChild: options.currentChild ?? currentServeChild,
+        setRepeating: options.setRepeating ?? defaultSetRepeating,
+        now
+      })
+    : null
   let stopped = false
   let wake: (() => void) | null = null
   const removeStopListener = (options.onStopSignal ?? defaultOnStopSignal)(() => {
@@ -139,7 +169,9 @@ export async function superviseServeService(options: SupervisedServeOptions): Pr
   const awaitClearToSpawn = async (): Promise<boolean> => {
     const since = now()
     while (!stopped) {
-      const evidence = await readEvidence(options.executable)
+      const evidence: ServeInstallEvidence = parkWatch?.idle()
+        ? { kind: 'hold', reason: 'install-park' }
+        : await readEvidence(options.executable)
       if (evidence.kind === 'clear') {
         return !stopped
       }
@@ -162,7 +194,9 @@ export async function superviseServeService(options: SupervisedServeOptions): Pr
       current: null
     }
     while (!stopped) {
-      const evidence = await readEvidence(options.executable)
+      const evidence: ServeInstallEvidence = parkWatch?.idle()
+        ? { kind: 'hold', reason: 'install-park' }
+        : await readEvidence(options.executable)
       if (stopped) {
         break
       }
@@ -197,12 +231,19 @@ export async function superviseServeService(options: SupervisedServeOptions): Pr
         return refuseGaveUp(record.gaveUp)
       }
 
+      const attempt = parkWatch
+        ? await parkWatch.during(options.runOnce)
+        : { parked: false, settled: await settle(options.runOnce) }
+      if (stopped) {
+        break
+      }
+      if (attempt.parked) {
+        // Why not a failure: the desktop stopped this server to install an update.
+        continue
+      }
       let failure: string
-      try {
-        const code = await options.runOnce()
-        if (stopped) {
-          break
-        }
+      if (attempt.settled.status === 'fulfilled') {
+        const code = attempt.settled.value
         if (code === SINGLE_INSTANCE_ALREADY_RUNNING_EXIT_CODE) {
           // Why not a failure: another Orca serves this profile, so wait for it instead of racing it.
           const delayMs = standbyDelayMs(standbyAttempt++, random)
@@ -213,10 +254,8 @@ export async function superviseServeService(options: SupervisedServeOptions): Pr
           continue
         }
         failure = `exited with code ${code}`
-      } catch (error) {
-        if (stopped) {
-          break
-        }
+      } else {
+        const error: unknown = attempt.settled.reason
         failure = error instanceof Error ? error.message : String(error)
       }
       standbyAttempt = 0
@@ -236,5 +275,6 @@ export async function superviseServeService(options: SupervisedServeOptions): Pr
   } finally {
     removeStopListener()
     resetSupervisedServeStop()
+    parkWatch?.close()
   }
 }

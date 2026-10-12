@@ -13,9 +13,10 @@ import {
 import { serveSignalExitError } from './serve-signal-exit-diagnostic'
 import { waitForMacBundleVersion } from './mac-app-update-bundle'
 import {
-  isSupervisedStopRequested,
   mayRespawn,
-  supervisedStopSignal
+  supervisedStopSignal,
+  trackServeChild,
+  untrackServeChild
 } from './serve-supervised-stop'
 import {
   decideAfterServeChildExit,
@@ -184,6 +185,7 @@ function waitForForegroundChild(
       }
       forceKillTimer ??= setTimeout(() => child.kill('SIGKILL'), SERVE_CHILD_FORCE_KILL_GRACE_MS)
     }
+    const tracked = { pid: child.pid ?? null, stop: () => forwardSignal('SIGTERM') }
     const handleMessage = (value: unknown): void => {
       const message = parseServeSupervisorMessage(value)
       if (!message || !expected || readiness !== 'pending') {
@@ -211,6 +213,7 @@ function waitForForegroundChild(
       })
     }
     const cleanup = (): void => {
+      untrackServeChild(tracked)
       process.off('SIGINT', forwardSignal)
       process.off('SIGTERM', forwardSignal)
       if (forwardsHangup) {
@@ -234,9 +237,7 @@ function waitForForegroundChild(
     if (typeof child.on === 'function') {
       child.on('message', handleMessage)
     }
-    if (isSupervisedStopRequested()) {
-      forwardSignal('SIGTERM')
-    }
+    trackServeChild(tracked)
     if (expected) {
       readyTimer = setTimeout(() => {
         rejectReplacement(

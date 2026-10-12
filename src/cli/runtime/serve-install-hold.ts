@@ -4,7 +4,10 @@ import { runProcess } from '@orca/process-host'
 
 export type ServeInstallEvidence =
   | { kind: 'clear' }
-  | { kind: 'hold'; reason: 'bundle-missing' | 'installer-running' | 'installer-unknown' }
+  | {
+      kind: 'hold'
+      reason: 'bundle-missing' | 'installer-running' | 'installer-unknown' | 'install-park'
+    }
 
 export const SERVE_INSTALL_HOLD_REASON_TEXT: Record<
   Extract<ServeInstallEvidence, { kind: 'hold' }>['reason'],
@@ -12,7 +15,9 @@ export const SERVE_INSTALL_HOLD_REASON_TEXT: Record<
 > = {
   'bundle-missing': 'the Orca executable is missing, likely mid-install',
   'installer-running': "macOS's updater (ShipIt) is replacing this Orca app",
-  'installer-unknown': "could not check whether macOS's updater (ShipIt) is replacing this Orca app"
+  'installer-unknown':
+    "could not check whether macOS's updater (ShipIt) is replacing this Orca app",
+  'install-park': 'the Orca desktop app paused this server to install an update'
 }
 
 type ListProcesses = () => Promise<string | null>

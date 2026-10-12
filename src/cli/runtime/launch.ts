@@ -36,6 +36,7 @@ import {
 } from './serve-electron-preflight'
 import { MacServeStartupAbortError } from './serve-signal-exit-diagnostic'
 import { superviseServeService } from './serve-supervised-service'
+import { openServeBundlePark } from './serve-bundle-park'
 
 const USER_NAMESPACE_PROBE_TIMEOUT_MS = 2_000
 const STARTUP_ABORT_MS = 30_000
@@ -126,6 +127,7 @@ export function serveOrcaApp(args: ServeOrcaAppArgs = {}): Promise<number> {
       executable,
       appRoot: resolveAppRoot(),
       force: args.force === true,
+      park: openServeBundlePark({ executable }),
       // Why first only: --force overrides a remembered abort once; the brake owns later attempts.
       runOnce: () =>
         serveOnce(
