@@ -76,14 +76,11 @@ export function registerTerminalPresentationIpcBridge(unsubs: (() => void)[]): v
             revealWorkspaceSurface(store, worktreeId)
           }
           if (ptyId && tabId && leafId && wasAgentLaunchPaneClosedByUser(tabId, leafId)) {
-            // The user closed the launch's tab or pane while it waited. That close wins: it stays
-            // closed, and its agent stops, as closing any tab stops what runs in it.
-            // The host stops the same agent; a second kill of a retired PTY may reject, harmlessly.
+            // User close wins while launch waits; stop its agent, tolerating a second kill after host retirement.
             window.api.pty.kill(ptyId).catch(() => {})
             throw new Error('agent_launch_tab_closed')
           }
-          // Why: a split pane revealed from mobile is only bound in the persisted
-          // layout until its pane mounts; missing it minted a duplicate tab (#10486).
+          // Mobile-revealed splits may exist only in persisted layout before mount; recognize them to avoid duplicate tabs (#10486).
           const ownership = ptyId
             ? resolveTerminalTabPtyOwnership(
                 store,
@@ -97,8 +94,7 @@ export function registerTerminalPresentationIpcBridge(unsubs: (() => void)[]): v
               ? worktreeTabs.find((candidate) => candidate.id === ownership.tabId)
               : undefined
           let reusedTab = existingTab ?? splitTargetTab
-          // Switch point: main wrote this tab before revealing it, so its frame may have drawn it
-          // while stale records left the terminal's owner unclear; that tab is the one to show.
+          // Reuse main’s frame-drawn tab even if stale records make legacy ownership ambiguous.
           const frameDrawnTab =
             ORCA_LAYOUT_OWNER_IS_MAIN && !reusedTab && tabId !== undefined
               ? worktreeTabs.find((candidate) => candidate.id === tabId)
@@ -116,7 +112,8 @@ export function registerTerminalPresentationIpcBridge(unsubs: (() => void)[]): v
                     agentLaunchViewer === 'focus-window' ||
                     agentLaunchViewer === 'focus-in-workspace',
                   ...(surfaceOwner === false && terminalPresentation === 'background'
-                    ? { recordInteraction: false } : {}),
+                    ? { recordInteraction: false }
+                    : {}),
                   ...(launchAgent
                     ? {
                         launchAgent,
@@ -127,7 +124,6 @@ export function registerTerminalPresentationIpcBridge(unsubs: (() => void)[]): v
                   ...(cwd ? { startupCwd: cwd } : {}),
                   // Why: CLI-spawned PTYs bake the pane key into env; adopt the same tab id so hook-event attribution keeps working.
                   ...(tabId !== undefined ? { id: tabId } : {}),
-                  // Switch point: main's pane too, so this create matches the tab main already wrote.
                   ...(ORCA_LAYOUT_OWNER_IS_MAIN && leafId ? { initialLeafId: leafId } : {})
                 })
               : store.createTab(
@@ -147,12 +143,14 @@ export function registerTerminalPresentationIpcBridge(unsubs: (() => void)[]): v
           if (afterTabId) {
             const unifiedTabs = useAppStore.getState().unifiedTabsByWorktree[worktreeId] ?? []
             const createdUnified = unifiedTabs.find((item) => item.entityId === tab.id)?.id
-            const anchorUnified = unifiedTabs.find((item) => item.id === afterTabId || item.entityId === afterTabId)?.id
+            const anchorUnified = unifiedTabs.find(
+              (item) => item.id === afterTabId || item.entityId === afterTabId
+            )?.id
             if (createdUnified && anchorUnified) {
               insertUnifiedTabAfterAnchor(worktreeId, createdUnified, anchorUnified)
             }
           }
-          // Why: a reused tab whose id differs from the hint breaks the PTY's baked-in paneKey attribution; warn during dev.
+          // Different reused IDs break the PTY’s baked-in paneKey attribution; warn in dev.
           if (tabId !== undefined && tab.id !== tabId) {
             console.warn(
               `[onCreateTerminal] tabId hint ${tabId} ignored for ptyId ${ptyId}; existing tab ${tab.id} adopted instead (hook attribution will degrade for this terminal)`
@@ -170,7 +168,7 @@ export function registerTerminalPresentationIpcBridge(unsubs: (() => void)[]): v
           if (agentLaunchViewer) {
             presentAgentLaunchTab(agentLaunchViewer, worktreeId, tab.id, leafId)
           }
-          // Why: only stamp the runtime title on fresh tabs; reused tabs may have a user customTitle it would overwrite on focus.
+          // Apply runtime titles only to fresh tabs or focus would overwrite reused tabs’ custom titles.
           if (title && !reusedTab) {
             store.setTabCustomTitle(tab.id, title, { recordInteraction: false })
           }
@@ -189,7 +187,7 @@ export function registerTerminalPresentationIpcBridge(unsubs: (() => void)[]): v
               store.clearAgentLaunchConfig(launchPaneKey)
             }
             if (splitFromLeafId) {
-              // Why: runtime split PTYs already carry the parent tab's paneKey, so reuse the tab instead of minting a collision tab.
+              // Runtime splits already use their parent paneKey; reuse the tab rather than minting a colliding ID.
               store.updateTabPtyId(tab.id, ptyId)
               const existingLayout = store.terminalLayoutsByTabId?.[tab.id]
               const sourcePtyId = existingLayout?.ptyIdsByLeafId?.[splitFromLeafId]
@@ -221,20 +219,21 @@ export function registerTerminalPresentationIpcBridge(unsubs: (() => void)[]): v
                 })
               )
             } else {
+              const paneTitle = ORCA_LAYOUT_OWNER_IS_MAIN ? undefined : title
               // Why: CLI/runtime PTYs emit hook events before the tab mounts, so the leaf must exist in layout for paneKey validation.
               const existingLayout = reusedTab
                 ? activateExistingLeafInLayout(
                     store.terminalLayoutsByTabId?.[tab.id],
                     leafId,
                     ptyId,
-                    title
+                    paneTitle
                   )
                 : null
               if (existingLayout) {
                 store.updateTabPtyId(tab.id, ptyId)
                 store.setTabLayout(tab.id, existingLayout)
               } else {
-                store.setTabLayout(tab.id, singlePaneLayoutSnapshot(leafId, ptyId, title))
+                store.setTabLayout(tab.id, singlePaneLayoutSnapshot(leafId, ptyId, paneTitle))
               }
             }
           }

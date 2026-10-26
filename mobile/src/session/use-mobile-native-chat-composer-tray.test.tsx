@@ -1,6 +1,4 @@
-// The composer tray keeps one card list and one child-work strip per conversation, so an action
-// still in flight in one never disables the same control in another, and the strip's open list
-// outlives a roster that empties between sequential children.
+// Keep pending actions per conversation and preserve child-work disclosure across temporarily empty rosters.
 
 import { createElement } from 'react'
 import { act, create, type ReactTestRenderer } from 'react-test-renderer'
@@ -14,6 +12,7 @@ import type { MobileStructuredBackgroundTasks } from './use-mobile-structured-ba
 
 vi.mock('react-native', () => ({
   Dimensions: { get: () => ({ width: 430, height: 900 }) },
+  useWindowDimensions: () => ({ fontScale: 1 }),
   Pressable: 'Pressable',
   ScrollView: 'ScrollView',
   StyleSheet: { create: (styles: unknown) => styles, hairlineWidth: 1 },

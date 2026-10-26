@@ -19,6 +19,7 @@ import { useCombinedDiffSectionRetry } from './load-sections/use-combined-diff-s
 import { useCombinedDiffSectionRevalidation } from './load-sections/use-combined-diff-section-revalidation'
 import { useCombinedDiffViewPersist } from './remember-view/use-combined-diff-view-persist'
 import { useCombinedDiffViewRestore } from './remember-view/use-combined-diff-view-restore'
+import { buildCombinedDiffViewTabSuccession } from './remember-view/combined-diff-view-tab-scope'
 import { useCombinedDiffDirectScrollInput } from './scroll-viewport/use-combined-diff-direct-scroll-input'
 import { useCombinedDiffScrollAnchors } from './scroll-viewport/use-combined-diff-scroll-anchors'
 import { useCombinedDiffScrollPersistence } from './scroll-viewport/use-combined-diff-scroll-persistence'
@@ -42,10 +43,12 @@ import { useDocumentDarkTheme } from '@/hooks/use-document-dark-theme'
 
 export default function CombinedDiffViewer({
   file,
-  viewStateKey
+  viewStateKey,
+  viewStateScopeId
 }: {
   file: OpenFile
   viewStateKey: string
+  viewStateScopeId?: string
 }): React.JSX.Element {
   const settings = useAppStore((s) => s.settings)
   const gitStatusEntries = useAppStore(
@@ -104,7 +107,9 @@ export default function CombinedDiffViewer({
     setSectionHeights,
     setSections,
     setSideBySide: preferences.setSideBySide,
-    viewStateKey
+    succession: buildCombinedDiffViewTabSuccession(file.id, viewStateScopeId),
+    viewStateKey,
+    worktreeId: file.worktreeId
   })
   const { loadSection, loadDeferredSection } = useCombinedDiffSectionLoader({
     entrySet,
@@ -121,8 +126,7 @@ export default function CombinedDiffViewer({
     setSections
   })
 
-  // Why: one incremental scan of `sections` feeds the virtualizer keys, the restore signal and the
-  // toolbar collapse state, instead of three independent full passes per loaded section.
+  // Share one incremental scan across virtualizer keys, restore signals and toolbar collapse state.
   const sectionRowKeys = useCombinedDiffSectionRowKeys({ generation, sections })
   const sectionIndexByKey = useCombinedDiffSectionIndexMap({
     entrySignature: entrySet.entrySignature,
@@ -157,7 +161,7 @@ export default function CombinedDiffViewer({
     sideBySide: preferences.sideBySide,
     structureRevision: sectionRowKeys.structureRevision,
     totalSize: virtualizer.getTotalSize(),
-    viewStateKey,
+    memoryLeaseRef: restore.memoryLeaseRef,
     virtualizer
   })
 
@@ -216,6 +220,7 @@ export default function CombinedDiffViewer({
     entryCount: entrySet.entries.length,
     entrySignature: entrySet.entrySignature,
     loadedIndicesRef: registry.loadedIndicesRef,
+    memoryLeaseRef: restore.memoryLeaseRef,
     scrollContainerRef,
     sectionHeights,
     sections,
@@ -227,6 +232,7 @@ export default function CombinedDiffViewer({
     entrySignature: entrySet.entrySignature,
     hasDirectScrollInput,
     latestDomScrollAnchorRef: restore.latestDomScrollAnchorRef,
+    memoryLeaseRef: restore.memoryLeaseRef,
     programmaticScrollMarks,
     scrollAnchorRef: restore.scrollAnchorRef,
     scrollContainerRef,

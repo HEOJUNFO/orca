@@ -18,7 +18,6 @@ vi.mock('react-native', () => ({
   StyleSheet: { create: (value: unknown) => value, hairlineWidth: 1 }
 }))
 vi.mock('lucide-react-native', () => ({ Copy: 'Copy', Check: 'Check' }))
-vi.mock('../components/MobileSelectableText', () => ({ MobileSelectableText: 'Text' }))
 vi.mock('../components/MobileMarkdown', () => ({ MobileMarkdown: 'MobileMarkdown' }))
 vi.mock('../platform/clipboard', () => ({ useClipboardWriter: () => ({ writeText }) }))
 vi.mock('./MobileNativeChatMessageActionsSheet', () => ({
@@ -114,7 +113,6 @@ describe('iOS whole-message copy', () => {
       for (const node of nodes('MobileMarkdown')) {
         expect(node.props.onLongPress).toBeUndefined()
       }
-      // A held press selects text natively: the body claims no press of its own.
       expect(body.findAll((node) => String(node.type) === 'Pressable')).toHaveLength(0)
       await act(async () => copy.props.onPress())
       expect(writeText.mock.calls).toEqual([[first + '\n\n' + last]])
@@ -143,7 +141,6 @@ describe('iOS whole-message copy', () => {
     '::orca-visual{file="usage.html"}'
   ])('copies the entire visible own source %j', async (text) => {
     render({ ...message, role: 'user', blocks: [{ type: 'text', text }] })
-    // Drawn as written: your own message never renders a visual.
     expect(nodes('MobileMarkdown')).toHaveLength(1)
     expect(nodes('MobileMarkdown')[0]?.props.content).toBe(text)
     expect(nodes('MobileMarkdown')[0]?.props.renderVisual).toBeUndefined()

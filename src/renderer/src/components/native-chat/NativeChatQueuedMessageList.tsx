@@ -9,24 +9,26 @@ import {
   NativeChatQueuedMessageCard,
   queuedMessageCardCaption
 } from './NativeChatQueuedMessageCard'
-import type { StructuredAgentSessionQueuedMessagesController } from './use-structured-agent-session-queued-messages'
+import type {
+  QueuedMessagesPendingAction,
+  StructuredAgentSessionQueuedMessagesController
+} from './use-structured-agent-session-queued-messages'
+import { NativeChatPendingIcon } from './NativeChatPendingIcon'
 import type { AgentSessionFailureFact } from '../../../../shared/agent-session-failure'
 import { NATIVE_CHAT_ROOT_SELECTOR } from '@/lib/native-chat-paste-request'
 import { focusNativeChatPromptCard } from './use-native-chat-prompt-card-focus'
 import { QUEUED_MESSAGE_PAUSED_SEND_FAILED } from '../../../../shared/agent-session-wire'
+import type { QueuedEditAttachTarget } from './use-native-chat-queued-edit-image-intake'
 
-/**
- * Host-held drafts stacked between the transcript and the composer — never in
- * the transcript: a draft only becomes a bubble once the host consumes it into
- * a submission. The live region stays mounted while empty, so the first card is announced.
- */
+/** Keep host-held drafts outside the transcript until consumed; keep the live region mounted for the first card. */
 export function NativeChatQueuedMessageList({
   controller,
   chatWorktreeId,
   agentName,
   statedFailures,
   steerHeld = false,
-  focusComposer
+  focusComposer,
+  editAttachTo
 }: {
   controller: StructuredAgentSessionQueuedMessagesController
   /** Where a card's sender is opened from; null shows it unlinked. */
@@ -37,6 +39,8 @@ export function NativeChatQueuedMessageList({
   steerHeld?: boolean
   /** Where focus goes once Steer, Delete or a closing edit takes the focused card away. */
   focusComposer?: () => void
+  /** The chat files added in a card's editor attach to, as its chat box attaches them. */
+  editAttachTo?: QueuedEditAttachTarget
 }): React.JSX.Element {
   const updateSettings = useAppStore((store) => store.updateSettings)
   const regionRef = useRef<HTMLDivElement>(null)
@@ -76,8 +80,7 @@ export function NativeChatQueuedMessageList({
   const turnOffQueueing = controller.queueCapable
     ? () => void updateSettings({ nativeChatQueueFollowUps: false })
     : undefined
-  // Only when focus was on the queue (a card, or the header) — never pull it from wherever the user
-  // moved on to. A question or approval holding the composer's slot takes it instead.
+  // Refocus only if focus stayed on the queue; an active prompt card takes priority over the composer.
   const refocusAfter = (action: Promise<unknown>): void => {
     void action.then(() => {
       const active = document.activeElement
@@ -102,13 +105,12 @@ export function NativeChatQueuedMessageList({
     <div ref={regionRef} aria-live="polite">
       {cards.length > 0 ? (
         <div ref={queueRef} className="mx-auto w-full max-w-(--chat-content-max-width) px-4 py-1">
-          {/* One box: the header is its first row, and each card a row below it. */}
           <div className="divide-y divide-border rounded-md border border-border bg-card text-card-foreground">
             <NativeChatQueueHeader
               count={cards.length}
               attentionCaption={attentionCaption}
               pause={pause}
-              resuming={controller.resuming}
+              queuePending={controller.queuePending}
               clearCapable={controller.clearCapable}
               expanded={expanded}
               listId={listId}
@@ -125,8 +127,11 @@ export function NativeChatQueuedMessageList({
                 'components.native-chat.queuedMessages.listLabel',
                 'Queued messages'
               )}
-              // Scrolls on its own so a long queue never squeezes the transcript or the composer.
-              className="scrollbar-sleek max-h-40 divide-y divide-border overflow-y-auto"
+              // Bound queue height to preserve transcript/composer space; allow extra room for edit thumbnails.
+              className={cn(
+                'scrollbar-sleek divide-y divide-border overflow-y-auto',
+                controller.editor?.images?.chips.length ? 'max-h-72' : 'max-h-40'
+              )}
             >
               {cards.map((card) => (
                 <NativeChatQueuedMessageCard
@@ -137,6 +142,7 @@ export function NativeChatQueuedMessageList({
                   statedFailures={statedFailures}
                   showsSteerShortcut={controller.queueCapable && card === newest}
                   steerHeld={steerHeld}
+                  pending={controller.pending(card.messageId)}
                   onSteer={() => refocusAfter(controller.steer(card.messageId))}
                   onDelete={() => refocusAfter(controller.remove(card.messageId))}
                   onEdit={
@@ -145,6 +151,7 @@ export function NativeChatQueuedMessageList({
                   editor={
                     controller.editor?.messageId === card.messageId ? controller.editor : undefined
                   }
+                  editAttachTo={editAttachTo}
                   editDisabled={controller.editor !== undefined}
                   onTurnOffQueueing={turnOffQueueing}
                 />
@@ -157,13 +164,11 @@ export function NativeChatQueuedMessageList({
   )
 }
 
-/** "Queued" and the count; while the host holds the queue after a Stop, "Paused" with Clear all
- *  and Resume. Collapsing hides only the cards. */
 function NativeChatQueueHeader({
   count,
   attentionCaption,
   pause,
-  resuming,
+  queuePending,
   clearCapable,
   expanded,
   listId,
@@ -174,7 +179,7 @@ function NativeChatQueueHeader({
   count: number
   attentionCaption: string | null
   pause: { reason: string } | null
-  resuming: boolean
+  queuePending: QueuedMessagesPendingAction | null
   clearCapable: boolean
   expanded: boolean
   listId: string
@@ -198,6 +203,7 @@ function NativeChatQueueHeader({
           ? translate('components.native-chat.queuedMessages.paused', 'Paused')
           : translate('components.native-chat.queuedMessages.queued', 'Queued')}
       </p>
+      <span aria-hidden>·</span>
       <span className={cn('tabular-nums', attentionCaption ? 'shrink-0' : 'min-w-0 flex-1')}>
         {count}
       </span>
@@ -209,18 +215,29 @@ function NativeChatQueueHeader({
       ) : null}
       {pause ? (
         <>
+          {/* Each greys during the other: a Resume would send the cards a Clear is deleting. */}
           <Button
             type="button"
             variant="ghost"
             size="xs"
-            disabled={!clearCapable}
+            disabled={!clearCapable || queuePending !== null}
             onClick={onClearAll}
           >
-            <Trash2 />
+            <NativeChatPendingIcon pending={queuePending === 'clear'} className="size-3">
+              <Trash2 className="size-3" />
+            </NativeChatPendingIcon>
             {translate('components.native-chat.queuedMessages.clearAll', 'Clear all')}
           </Button>
-          <Button type="button" variant="ghost" size="xs" disabled={resuming} onClick={onResume}>
-            <Play />
+          <Button
+            type="button"
+            variant="ghost"
+            size="xs"
+            disabled={queuePending !== null}
+            onClick={onResume}
+          >
+            <NativeChatPendingIcon pending={queuePending === 'resume'} className="size-3">
+              <Play className="size-3" />
+            </NativeChatPendingIcon>
             {translate('components.native-chat.queuedMessages.resume', 'Resume')}
           </Button>
         </>

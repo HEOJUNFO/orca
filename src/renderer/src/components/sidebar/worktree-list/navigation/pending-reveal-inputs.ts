@@ -11,7 +11,10 @@ import type { WorktreeLineage } from '../../../../../../shared/worktree/lineage-
 import type { ExecutionHostId } from '../../../../../../shared/execution-host'
 import type { RenderRow } from '../listing/render-row'
 import type { ProjectGroupingModel } from '../../../../../../shared/project-section-grouping'
-import type { PinnedWorktreeDisplayPolicy, WorktreeGroupBy } from '../grouping/row-types'
+import type {
+  PinnedWorktreeDisplayPolicy,
+  WorktreeGroupBy
+} from '../../../../../../shared/sidebar-list/row-types'
 import { getFolderWorkspaceRevealGroupKeys } from './folder-reveal'
 import { getWorktreeRevealCollapsedGroupKeys } from './worktree-reveal-group-keys'
 
@@ -48,7 +51,6 @@ export type PendingSidebarRevealArgs = {
   cancelPendingRevealFrames: () => void
 }
 
-// Expand whatever collapsed section hides the reveal target, then scroll to it.
 export function expandGroupsForWorktreeReveal(
   args: PendingSidebarRevealArgs,
   worktreeId: string,

@@ -49,8 +49,7 @@ function getPreservedBranchDescription(
       )
 }
 
-// Why: Sonner's native action row pinches long branch/worktree names into a
-// narrow column. Keep the native toast frame, but give the body its own footer.
+// Use a custom footer so long branch/worktree names do not squeeze Sonner’s native action row.
 function PreservedBranchToastBody({
   description,
   forceDeleteLabel,
@@ -58,7 +57,7 @@ function PreservedBranchToastBody({
   onAlwaysForceDelete
 }: PreservedBranchToastBodyProps): React.JSX.Element {
   return (
-    <div className="flex w-[300px] max-w-[calc(100vw-96px)] flex-col gap-3">
+    <div className="flex w-full flex-col gap-3">
       <p className="min-w-0 break-words text-sm leading-5 text-popover-foreground/80">
         {description}
       </p>

@@ -79,10 +79,6 @@ describe('a scenario that declares its device', () => {
     await expect(module.getItem!('orca:other')).resolves.toBeNull()
   })
 
-  /**
-   * A write that fed back into a read would let a later read return a byte nothing declared, which
-   * is the device back inside the recording. The write is an effect instead, where it is observed.
-   */
   it('records a write as an effect without letting a read see it', async () => {
     const { module, effects } = store({})
     await module.setItem!('orca:key', 'written')
@@ -127,18 +123,13 @@ describe('a scenario that declares its device', () => {
     expect(lastCheckpoint(recording).state).toMatchObject({ selected: 'repo-b' })
   })
 
-  it('backs a recorded write: the reset credit journals its key before the request', async () => {
+  it('records no device write for the reset credit: the host ledger keeps the attempt', async () => {
     const recording = await record('codex-reset-credit-consumed')
     // oxlint-disable-next-line typescript/consistent-type-assertions -- SAFETY: a recorded request's params are recorded data.
     const params = sentParams(recording) as { name: string; params: { idempotencyKey?: string } }
     expect(params.name).toBe('accounts.consumeCodexResetCredit#1')
-    // oxlint-disable-next-line typescript/consistent-type-assertions -- SAFETY: recorded effects are a list of name/value pairs.
-    const effects = lastCheckpoint(recording).effects as { name: string; value: unknown }[]
-    expect(effects.map((effect) => effect.name)).toEqual(['device-store.setItem'])
-    // oxlint-disable-next-line typescript/consistent-type-assertions -- SAFETY: as above.
-    const write = effects[0]!.value as { key: string; value: string }
-    expect(write.key).toMatch(/^orca:codex-reset-credit-attempt:v1:[0-9a-f]{64}$/)
-    expect(JSON.parse(write.value)).toMatchObject({ idempotencyKey: params.params.idempotencyKey })
+    expect(params.params.idempotencyKey).toEqual(expect.any(String))
+    expect(lastCheckpoint(recording).effects).toEqual([])
   })
 
   it('backs a recorded tray: the presented push is the identity the catch-up sends', async () => {

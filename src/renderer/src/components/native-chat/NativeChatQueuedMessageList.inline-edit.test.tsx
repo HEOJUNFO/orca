@@ -1,8 +1,5 @@
 // @vitest-environment happy-dom
 
-// A card edited in place inside the list: the editor replaces its text and actions, a host that
-// cannot edit offers no Edit, and focus leaves a closing editor for the question or the composer.
-
 import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
@@ -57,8 +54,9 @@ function controller(
     ...edits,
     pause,
     resume: vi.fn(async () => false),
-    resuming: false,
     clear: vi.fn(async () => true),
+    queuePending: null,
+    pending: () => null,
     steer: vi.fn(async () => {}),
     remove: vi.fn(async () => {}),
     edit: vi.fn(async () => {}),

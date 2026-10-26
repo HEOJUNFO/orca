@@ -49,11 +49,7 @@ export function commitTerminalShutdownState({
               clearTransientTerminalState(tab, index)
             )
           }
-      // Why copy-on-write everywhere below: a worktree whose panes already exited hits
-      // this with nothing to clear, and unconditional spreads then hand every map a new
-      // identity for no data change. ptyIdsByTabId is the costly one — six components
-      // select it whole, and selectLivePtyIdsForWorktree memoizes per sidebar card on
-      // its identity, so churning it rebuilds that record once per card.
+      // Use copy-on-write for already-exited workspaces; churning ptyIdsByTabId invalidates whole-map selectors and every sidebar live-PTY memo.
       const ptyIdsByTabId = copyOnWriteRecord(state.ptyIdsByTabId)
       for (const tab of tabs) {
         // Why `!== undefined`: an absent key is not an empty array, and the spread this
@@ -65,7 +61,7 @@ export function commitTerminalShutdownState({
       }
       const suppressedPtyExitIds = copyOnWriteRecord(state.suppressedPtyExitIds)
       const pendingPtyShutdownIds = copyOnWriteRecord(state.pendingPtyShutdownIds)
-      const pendingCodexPaneRestartIds = copyOnWriteRecord(state.pendingCodexPaneRestartIds)
+      const pendingPaneAccountRestarts = copyOnWriteRecord(state.pendingPaneAccountRestarts)
       const codexRestartNoticeByPtyId = copyOnWriteRecord(state.codexRestartNoticeByPtyId)
       for (const ptyId of exitGuardPtyIds) {
         if (state.suppressedPtyExitIds[ptyId] !== true) {
@@ -82,7 +78,7 @@ export function commitTerminalShutdownState({
         }
         // Sleeping terminals retain restart intent, but a wake can receive a different live PTY id.
         if (!keepIdentifiers) {
-          pendingCodexPaneRestartIds.delete(ptyId)
+          pendingPaneAccountRestarts.delete(ptyId)
         }
         codexRestartNoticeByPtyId.delete(ptyId)
       }
@@ -122,7 +118,7 @@ export function commitTerminalShutdownState({
         runtimePaneTitlesByTabId: runtimePaneTitlesByTabId.read(),
         suppressedPtyExitIds: suppressedPtyExitIds.read(),
         pendingPtyShutdownIds: pendingPtyShutdownIds.read(),
-        pendingCodexPaneRestartIds: pendingCodexPaneRestartIds.read(),
+        pendingPaneAccountRestarts: pendingPaneAccountRestarts.read(),
         codexRestartNoticeByPtyId: codexRestartNoticeByPtyId.read(),
         pendingIssueCommandSplitByTabId: pendingIssueCommandSplitByTabId.read(),
         terminalLayoutsByTabId: terminalLayoutsByTabId.read(),

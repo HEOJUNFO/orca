@@ -52,6 +52,7 @@ export type RuntimeHostDisplayLabelOverrides = Partial<
 export type RuntimeClientSettingsUpdate = Pick<
   Partial<GlobalSettings>,
   | 'agentStatusHooksEnabled'
+  | 'experimentalConnectors'
   | 'defaultTuiAgent'
   | 'disabledTuiAgents'
   | 'agentDefaultArgs'

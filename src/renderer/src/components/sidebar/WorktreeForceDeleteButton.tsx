@@ -1,4 +1,4 @@
-import { useState, type ReactNode, type Ref } from 'react'
+import { useEffect, useRef, useState, type ReactNode, type Ref } from 'react'
 import { ChevronDown } from 'lucide-react'
 import { toast } from 'sonner'
 import { translate } from '@/i18n/i18n'
@@ -11,6 +11,15 @@ import {
   DropdownMenuTrigger
 } from '../ui/dropdown-menu'
 import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/tooltip'
+
+// Sonner hides toasts through collapsed stacking or its visible-toast limit.
+function isHiddenInToastStack(toastElement: Element): boolean {
+  return (
+    toastElement.getAttribute('data-visible') === 'false' ||
+    (toastElement.getAttribute('data-expanded') === 'false' &&
+      toastElement.getAttribute('data-front') === 'false')
+  )
+}
 
 export function WorktreeForceDeleteButton({
   toastId,
@@ -42,6 +51,28 @@ export function WorktreeForceDeleteButton({
   children?: ReactNode
 }): React.JSX.Element {
   const [isSaving, setIsSaving] = useState(false)
+  const [menuOpen, setMenuOpen] = useState(false)
+  const groupRef = useRef<HTMLDivElement>(null)
+  const isToastHidden = (): boolean => {
+    const toastElement = groupRef.current?.closest('[data-sonner-toast]')
+    return toastElement ? isHiddenInToastStack(toastElement) : false
+  }
+  useEffect(() => {
+    const toastElement = menuOpen ? groupRef.current?.closest('[data-sonner-toast]') : null
+    if (!toastElement) {
+      return
+    }
+    // Close portaled menus when Sonner hides their owning toast.
+    const observer = new MutationObserver(() => {
+      if (isHiddenInToastStack(toastElement)) {
+        setMenuOpen(false)
+      }
+    })
+    observer.observe(toastElement, {
+      attributeFilter: ['data-expanded', 'data-front', 'data-visible']
+    })
+    return () => observer.disconnect()
+  }, [menuOpen])
   const forceDelete = (): void => {
     if (toastId) {
       toast.dismiss(toastId)
@@ -70,8 +101,18 @@ export function WorktreeForceDeleteButton({
   }
 
   return (
-    <DropdownMenu modal={false}>
+    <DropdownMenu
+      modal={false}
+      open={menuOpen}
+      onOpenChange={(open) => {
+        // Hidden toast chevrons can still take keys; forbid opening detached-looking menus.
+        if (!open || !isToastHidden()) {
+          setMenuOpen(open)
+        }
+      }}
+    >
       <ButtonGroup
+        ref={groupRef}
         className={fullWidth ? 'w-full' : undefined}
         onBlur={(event) => {
           if (
@@ -118,6 +159,12 @@ export function WorktreeForceDeleteButton({
           // Sonner restores toast focus on blur; the portaled menu owns its focus.
           onFocus={(event) => event.stopPropagation()}
           onBlur={(event) => event.stopPropagation()}
+          onCloseAutoFocus={(event) => {
+            // Do not restore keyboard focus to an invisible toast control.
+            if (isToastHidden()) {
+              event.preventDefault()
+            }
+          }}
         >
           <Tooltip>
             <TooltipTrigger asChild>

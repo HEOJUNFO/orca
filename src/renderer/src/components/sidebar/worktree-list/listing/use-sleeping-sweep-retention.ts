@@ -8,7 +8,7 @@ import {
   cloneSleepingSweepRetentionState,
   createSleepingSweepRetentionState,
   updateSleepingSweepRetention
-} from '../../sleeping-sweep-retention'
+} from '../../../../../../shared/sidebar-list/sleeping-sweep-retention'
 
 type SweepActivityInputs = Pick<
   VisibleWorktreeOptions,
@@ -79,7 +79,7 @@ export function useSleepingSweepRetention(
     committedStateRef.current = pass.state ?? createSleepingSweepRetentionState()
   }, [pass.state])
 
-  // Why: without a wake the last grace window holds its row until an unrelated store change.
+  // Wake at expiry or the final grace window would retain its row until an unrelated store write.
   const { nextExpiryInMs } = pass
   useEffect(() => {
     if (nextExpiryInMs === null) {

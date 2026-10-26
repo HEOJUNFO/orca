@@ -1,15 +1,14 @@
 import { sameAgentStatusTerminalOwner } from '../../../../shared/agent-status-terminal-owner'
 import type { AppState } from '../types'
 import { resolveAgentStatusLiveEntryMainAgent } from './agent-status-live-entry-main-agent'
-import { resolveAgentStatusLiveEntryStateHistory } from './agent-status-live-entry-state-history'
-import type {
-  MigrationUnsupportedPtyEntry,
-  AgentStatusEntry
+import { resolveAgentStatusLiveEntryStateHistory } from '../../../../shared/agent-status-live-entry-state-history'
+import {
+  pickHostTurnEnd,
+  type MigrationUnsupportedPtyEntry,
+  type AgentStatusEntry
 } from '../../../../shared/agent-status-types'
 import {
   agentProviderSessionsEqual,
-  getAgentResumeArgv,
-  isResumableTuiAgent,
   type AgentProviderSessionMetadata,
   type SleepingAgentLaunchConfig,
   type SleepingAgentSessionRecord
@@ -30,6 +29,11 @@ import { findAgentPaneWorktreeId, getTabIdFromPaneKey } from './agent-status-pan
 import { mergeCurrentOrchestrationContext } from './agent-status-orchestration-context'
 import { deriveAgentStatusLiveFacts } from './agent-status-live-facts'
 import { liveEntryChildFields } from './agent-status-live-entry-children'
+import {
+  canReuseStatusProviderSession,
+  recordLaunchConfigForStatus,
+  statusRetainsResumableIdentity
+} from '../../../../shared/agent-resume-record-from-status'
 
 export type AgentStatusLiveEntryBuild = {
   entry: AgentStatusEntry
@@ -93,9 +97,10 @@ export function buildAgentStatusLiveEntry(
           worktreeId: routing?.worktreeId ?? existing.worktreeId
         }
       )
-        ? existing
+        ? { ...existing, agentPresence: metadata?.paneOwner }
         : undefined,
     incoming: payload.agentType,
+    incomingSession: metadata?.providerSession?.id,
     now: updatedAt
   })
   const commandCodeNewTurn =
@@ -119,11 +124,17 @@ export function buildAgentStatusLiveEntry(
       : existing && existing.state === payload.state
         ? existing.stateStartedAt
         : updatedAt)
-  // Why: a writer with no turn clock (an OSC repaint) keeps the host's stamp only within one state;
-  // a state change it cannot date must not inherit another turn's start.
+  // Clockless OSC repaints retain host turn start only within the same state; undated transitions must not inherit another turn.
   const turnStartedAt =
     timing?.turnStartedAt ??
     (existing && existing.state === payload.state ? existing.turnStartedAt : undefined)
+  // Why: the end stamp and its disposition are one host fact, inherited together.
+  const turnEnd =
+    timing?.turnEndedAt !== undefined || timing?.turnEndDisposition !== undefined
+      ? pickHostTurnEnd(timing)
+      : existing && existing.state === payload.state
+        ? pickHostTurnEnd(existing)
+        : {}
   if (
     existing &&
     shouldSuppressInheritedTerminalStatus({
@@ -146,9 +157,10 @@ export function buildAgentStatusLiveEntry(
     payloadMergedOrchestration ??
     runtimeMergedOrchestration ??
     (payload.state === 'done' ? existing?.orchestration : undefined)
-  const canReuseExistingProviderSession =
-    existing?.agentType === identity.agentType &&
-    (existing.state !== 'done' || payload.state === 'done')
+  const canReuseExistingProviderSession = canReuseStatusProviderSession(existing, {
+    agentType: identity.agentType,
+    state: payload.state
+  })
   const providerSession =
     metadata?.providerSession ??
     (canReuseExistingProviderSession ? existing.providerSession : undefined)
@@ -178,22 +190,16 @@ export function buildAgentStatusLiveEntry(
   })
   const matchedRegistryLaunchConfig = registryMatched ? registryEntry?.launchConfig : undefined
   const existingSleepingRecord = state.sleepingAgentSessionsByPaneKey[paneKey]
-  const retainsResumableRecoveryIdentity =
-    payload.state === 'done' &&
-    isResumableTuiAgent(identity.agentType) &&
-    providerSession !== undefined &&
-    getAgentResumeArgv(identity.agentType, providerSession) !== null
+  const retainsResumableRecoveryIdentity = statusRetainsResumableIdentity(
+    { agentType: identity.agentType, state: payload.state },
+    providerSession
+  )
   const matchedSleepingLaunchConfig =
-    (payload.state !== 'done' || retainsResumableRecoveryIdentity) &&
-    existingSleepingRecord?.launchConfig &&
-    existingSleepingRecord.agent === identity.agentType &&
-    providerSession &&
-    agentProviderSessionsEqual(
-      identity.agentType,
-      existingSleepingRecord.providerSession,
-      providerSession
-    )
-      ? existingSleepingRecord.launchConfig
+    payload.state !== 'done' || retainsResumableRecoveryIdentity
+      ? recordLaunchConfigForStatus(existingSleepingRecord, {
+          agentType: identity.agentType,
+          providerSession
+        })
       : undefined
   const launchConfigSource =
     (payload.state !== 'done' && !providerSessionChanged && metadata?.launchToken
@@ -202,13 +208,14 @@ export function buildAgentStatusLiveEntry(
     matchedRegistryLaunchConfig ??
     matchedSleepingLaunchConfig
   const mainAgent = resolveAgentStatusLiveEntryMainAgent(existing, payload, identity.agentType)
+  const programStatus =
+    payload.programStatus === undefined ? existing?.programStatus : payload.programStatus
   const entry: AgentStatusEntry = {
     state: payload.state,
     workingMode: payload.workingMode,
     prompt: payload.prompt,
     updatedAt,
-    // Why: a writer that carries no observation clock (OSC bytes, launch seeds) is itself
-    // fresh evidence, so it must not inherit the previous row's older observation time.
+    // Clockless OSC/launch writes are fresh evidence; never inherit prior observation time.
     ...(timing?.evidenceObservedAt !== undefined
       ? { evidenceObservedAt: timing.evidenceObservedAt }
       : {}),
@@ -216,6 +223,7 @@ export function buildAgentStatusLiveEntry(
     stateStartedAt,
     stateObservedAt,
     ...(turnStartedAt !== undefined ? { turnStartedAt } : {}),
+    ...turnEnd,
     agentType: identity.agentType,
     model:
       payload.model ?? (existing?.agentType === identity.agentType ? existing.model : undefined),
@@ -255,6 +263,7 @@ export function buildAgentStatusLiveEntry(
     ...(payload.restoredUnconfirmed ? { restoredUnconfirmed: true } : {}),
     acceptedStatusSeq: (existing?.acceptedStatusSeq ?? 0) + 1,
     ...(payload.observation ? { observation: payload.observation } : {}),
+    ...(programStatus ? { programStatus } : {}),
     interrupted: payload.interrupted,
     sessionBoundary:
       payload.sessionBoundary ??

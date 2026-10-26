@@ -1,7 +1,3 @@
-// A spawn group's roster row on the phone: drawn from the host's live block, replacing its frozen
-// sentence only when it can draw, outside the settled-tools collapse, and opened by group id from
-// state the transcript holds.
-
 import { createElement, type ReactNode } from 'react'
 import { act, create, type ReactTestInstance, type ReactTestRenderer } from 'react-test-renderer'
 import { afterEach, describe, expect, it, vi } from 'vitest'
@@ -31,8 +27,20 @@ vi.mock('expo-clipboard', () => ({ setStringAsync: vi.fn() }))
 vi.mock('lucide-react-native', () => ({
   Bot: 'Bot',
   Brain: 'Brain',
+  Check: 'Check',
   ChevronDown: 'ChevronDown',
   ChevronRight: 'ChevronRight',
+  Eye: 'Eye',
+  FileMinus2: 'FileMinus2',
+  FilePen: 'FilePen',
+  FilePlus2: 'FilePlus2',
+  Folder: 'Folder',
+  Globe: 'Globe',
+  ListChecks: 'ListChecks',
+  MessageSquareMore: 'MessageSquareMore',
+  Pencil: 'Pencil',
+  Plug: 'Plug',
+  Search: 'Search',
   SquareChevronRight: 'SquareChevronRight',
   SquareTerminal: 'SquareTerminal',
   Wrench: 'Wrench'
@@ -99,7 +107,6 @@ describe('mobile transcript roster row', () => {
 
   const markdown = (tree: ReactTestRenderer): unknown[] =>
     tree.root.findAll((node) => String(node.type) === 'MobileMarkdown').map((n) => n.props.content)
-  // A system row's own words draw as a faint aside, never as the agent's prose.
   const aside = (tree: ReactTestRenderer): string[] =>
     tree.root.findAll((node) => String(node.type) === 'Text').map(textOf)
   const group = (tree: ReactTestRenderer): ReactTestInstance[] =>

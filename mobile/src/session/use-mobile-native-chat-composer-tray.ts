@@ -1,6 +1,3 @@
-// The region between the transcript and the composer, built outside the chat view: the session's
-// running child work, then its queued-draft cards, and the composer ref a card's Edit focuses.
-
 import { createElement, Fragment, useMemo, type ReactNode, type RefObject } from 'react'
 import type { TextInput } from 'react-native'
 import { MobileNativeChatBackgroundTasks } from './MobileNativeChatBackgroundTasks'
@@ -17,11 +14,10 @@ export type MobileNativeChatComposerTray = {
 }
 
 export type ComposerTrayProps = {
-  /** Running child work and host-held queued drafts, drawn between transcript and composer. */
   composerTray?: MobileNativeChatComposerTray
 }
 
-/** A view given no tray draws nothing there; one stable object, so the default never re-renders. */
+// Reuse the empty tray so its default cannot trigger rerenders.
 export const NO_COMPOSER_TRAY: MobileNativeChatComposerTray = {}
 
 export function useMobileNativeChatComposerTray({
@@ -32,20 +28,18 @@ export function useMobileNativeChatComposerTray({
     /** One card list per conversation: a pending action in one never disables another's. */
     sessionKey: string
   }
-  /** Null off the structured lane, which publishes no child work. */
   backgroundTasks: MobileStructuredBackgroundTasks | null
 }): MobileNativeChatComposerTray {
   const { composerInputRef, editQueuedMessage } = useMobileNativeChatQueuedEditFocus(queued.onEdit)
-  const { cards, onSend, onDelete, onClearAll, pause, onResume, sessionKey, steerHeld } = queued
+  const { cards, onSend, onDelete, onClearAll, editor, pause, onResume, sessionKey, steerHeld } =
+    queued
   return useMemo(
     () => ({
       content: createElement(
         Fragment,
         null,
         backgroundTasks
-          ? // Keyed per conversation: one chat's open list or pending Stop never shows in another.
-            // Its own suffix: the two never share a key, so each stays mounted as the other comes
-            // and goes.
+          ? // Use distinct conversation keys so pending actions stay scoped and each tray section survives changes to the other.
             createElement(MobileNativeChatBackgroundTasks, {
               key: `${backgroundTasks.sessionKey}:background-tasks`,
               tasks: backgroundTasks
@@ -58,6 +52,7 @@ export function useMobileNativeChatComposerTray({
           onDelete,
           onClearAll,
           onEdit: editQueuedMessage,
+          editor,
           pause,
           onResume,
           steerHeld
@@ -70,6 +65,7 @@ export function useMobileNativeChatComposerTray({
       cards,
       composerInputRef,
       editQueuedMessage,
+      editor,
       onDelete,
       onClearAll,
       onResume,

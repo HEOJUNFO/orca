@@ -37,10 +37,8 @@ import {
   removeWorktree
 } from '../../git/worktree'
 import * as gitRunner from '../../git/runner'
-import {
-  WORKTREE_PROCESS_SWEEP_TIMEOUT_MS,
-  WORKTREE_TEARDOWN_RPC_MARGIN_MS
-} from '../worktree-teardown'
+import { WORKTREE_PROCESS_SWEEP_TIMEOUT_MS } from '../worktree-teardown'
+import { WORKTREE_TEARDOWN_RPC_MARGIN_MS } from '../worktree-teardown-deadline'
 import { clearSubmodulePathsCacheForTests, listSubmodulePaths } from '../../git/status'
 import { getEffectiveHooks, hasHooksFile, loadHooks, parseOrcaYaml, runHook } from '../../hooks'
 import { createSetupRunnerScript, resolveSetupRunnerShell } from '../../worktree-runner-script'
@@ -64,7 +62,7 @@ import {
 } from '../orca-runtime'
 import { RUNTIME_GRAPH_RELOAD_TIMEOUT_MS } from '../runtime-graph-reload-lifecycle'
 import { getRuntimeBrowserPageRegistry } from '../runtime-browser-page-registry'
-import { getBrowserHostLeaseRegistry } from '../browser-host-lease-registry-instance'
+import { getBrowserHostLeaseRegistry } from '../browser-host/browser-host-lease-registry-instance'
 import {
   appendRecentPtyPathCandidates,
   recentTerminalPathCandidatesIncludePath,
@@ -83,7 +81,6 @@ import {
   TERMINAL_INPUT_MAX_BYTES,
   TERMINAL_INPUT_TOO_LARGE_ERROR
 } from '../../../shared/terminal-input'
-import { MAX_QUICK_COMMANDS } from '../../../shared/terminal-quick-commands'
 import {
   AGENT_PROMPT_BRACKETED_PASTE_END,
   AGENT_PROMPT_BRACKETED_PASTE_START,
@@ -98,7 +95,7 @@ import {
   unregisterPty as unregisterLocalPtyMemoryRow
 } from '../../memory/pty-registry'
 import { inspectPtyProviderProcess } from '../../providers/pty-process-inspection'
-import * as worktreePathComparison from '../../ipc/worktree-path-comparison'
+import * as worktreePathComparison from '../../worktree-path-comparison-key'
 import * as localWorktreeFilesystem from '../../local-worktree-filesystem'
 import {
   DEFAULT_REPO_BADGE_COLOR,
@@ -123,7 +120,6 @@ import { clearConfiguredWorktreeSharedDirectoriesCacheForTests } from '../../git
 import { setWorktreeWatcherRemoval } from '../../ipc/worktree-watcher-removal'
 import { createRootDispatch } from '../orchestration/db/root-dispatch-test-fixture'
 
-// Imported bindings are copied after Vitest's hoisted mocks have registered.
 export const exportedAGENT_PROMPT_BRACKETED_PASTE_END = AGENT_PROMPT_BRACKETED_PASTE_END
 export const exportedAGENT_PROMPT_BRACKETED_PASTE_START = AGENT_PROMPT_BRACKETED_PASTE_START
 export const exportedAGENT_STATUS_STALE_AFTER_MS = AGENT_STATUS_STALE_AFTER_MS
@@ -138,7 +134,6 @@ export const exportedFOLDER_WORKSPACE_INSTANCE_SEPARATOR = FOLDER_WORKSPACE_INST
 export const exportedHEADLESS_RUNTIME_WINDOW_ID = HEADLESS_RUNTIME_WINDOW_ID
 export const exportedHeadlessEmulator = HeadlessEmulator
 export const exportedMAX_OSC_TITLE_CHARS = MAX_OSC_TITLE_CHARS
-export const exportedMAX_QUICK_COMMANDS = MAX_QUICK_COMMANDS
 export const exportedOrcaRuntimeService = OrcaRuntimeServiceConstructor
 export const exportedOrchestrationDb = RuntimeOrchestrationDb
 export const exportedREVIEW_HEAD_FETCH_TIMEOUT_MS = REVIEW_HEAD_FETCH_TIMEOUT_MS

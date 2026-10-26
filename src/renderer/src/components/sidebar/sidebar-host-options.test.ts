@@ -9,7 +9,7 @@ import {
   type SidebarHostOption
 } from './sidebar-host-options'
 import { toggleVisibleHostRow } from '../../../../shared/workspace-view/workspace-host-visibility'
-import { filterFolderWorkspacesForVisibleHosts } from './worktree-list/listing/host-filtering'
+import { filterFolderWorkspacesForVisibleHosts } from '../../../../shared/sidebar-list/host-filtering'
 import type { FolderWorkspace } from '../../../../shared/folder-workspace-types'
 import type { ProjectGroup } from '../../../../shared/project-group-types'
 import type { SshConnectionState } from '../../../../shared/ssh-types'
@@ -114,9 +114,7 @@ describe('sidebar host options', () => {
       repos: [],
       sshTargetLabels: new Map(),
       settings: { activeRuntimeEnvironmentId: 'runtime-1' },
-      // Why: protocol 0 is below the minimum compatible server version, so the
-      // registry must surface a 'server-too-old' blocked verdict + health when
-      // the live status map is passed.
+      // Protocol zero must produce a blocked server-too-old verdict from the live status map.
       runtimeStatusByEnvironmentId: new Map([
         [
           'runtime-1',
@@ -217,6 +215,8 @@ describe('sidebar host options', () => {
     expect(getSidebarHostHealthLabel('available')).toBe('Connected')
     expect(getSidebarHostHealthLabel('connecting')).toBe('Connecting')
     expect(getSidebarHostHealthLabel('blocked')).toBe('Update needed')
+    expect(getSidebarHostHealthLabel('blocked', 'incompatible')).toBe('Update needed')
+    expect(getSidebarHostHealthLabel('blocked', 'access-revoked')).toBe('Re-pair needed')
     expect(getSidebarHostHealthLabel('error')).toBe('Needs attention')
   })
 

@@ -4,8 +4,8 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import type { GlobalSettings } from '../../../../shared/global-settings-types'
 import type { Repo } from '../../../../shared/repo-types'
 import type { WorktreeCardProperty } from '../../../../shared/ui-chrome-types'
-import { buildRows } from './worktree-list/grouping/build-rows'
-import { PINNED_GROUP_KEY } from './worktree-list/grouping/group-keys'
+import { buildRows } from './worktree-list/grouping/build-rows.test-fixture'
+import { PINNED_GROUP_KEY } from '../../../../shared/sidebar-list/group-keys'
 import type { WorktreeCardProps } from './worktree-card-model'
 import type { Worktree } from '../../../../shared/worktree/types'
 
@@ -116,7 +116,7 @@ function makeWorktree(overrides: Partial<Worktree> = {}): Worktree {
   }
 }
 
-// Imported per test so the mocked store is seeded before the module reads it.
+// Seed mocked store state before importing the card that reads it.
 async function renderCardMarkup(props: Partial<WorktreeCardProps> = {}): Promise<string> {
   const { default: WorktreeCard } = await import('./WorktreeCard')
   return renderToStaticMarkup(

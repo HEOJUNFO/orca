@@ -51,7 +51,7 @@ export function useWorktreeJumpPaletteListEntries({
     } = paletteSections
     // Exact entity matches keep priority; issue/PR URLs keep their jump and create rows first.
     const browserNavigationItem =
-      taskSourceUrl || middleLeadsSections
+      taskSourceUrl || !paletteSections.hasExactEntityDestination
         ? middleItems.find(
             (item) =>
               item.type === 'quick-action' && item.result.id === BROWSER_NAVIGATION_ACTION_ID
@@ -165,8 +165,7 @@ export function useWorktreeJumpPaletteListEntries({
         )
       }
     }
-    // Why: a pasted issue/PR URL is decisive. Show linked worktrees first so
-    // Enter jumps; keep create available underneath when the user wants a new one.
+    // Issue/PR URLs put linked worktrees first for Enter-to-jump while keeping create underneath.
     if (taskSourceUrl) {
       if (visibleWorktreeItems.length > 0) {
         pushWorktreeSection()
@@ -289,8 +288,7 @@ export function useWorktreeJumpPaletteListEntries({
   )
   useEffect(() => {
     autoSelectedItemIdRef.current = selectionItemIds[0] ?? null
-    // oxlint-disable-next-line react-hooks/exhaustive-deps -- the controller ref preserves its original stable identity.
-  }, [selectionItemIds])
+  }, [autoSelectedItemIdRef, selectionItemIds])
   return { listEntries, listEntryRenderKeys, selectableItems, selectionItemIds }
 }
 

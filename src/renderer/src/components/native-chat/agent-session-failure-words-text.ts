@@ -1,5 +1,4 @@
-// Desktop words for a failure fact: each piece of the shared sentence translated whole, with the
-// shared English as its fallback, so the host's row and desktop's notice never say it differently.
+// Translate shared failure sentence pieces whole with shared English fallbacks to keep host and desktop wording aligned.
 
 import { translate } from '@/i18n/i18n'
 import {
@@ -13,6 +12,7 @@ import { ATTACHMENT_FAILURE_PIECES } from './agent-session-failure-attachment-wo
 import { STOP_FAILURE_PIECES } from './agent-session-failure-stop-words-text'
 import { PROVIDER_EXIT_PIECES } from './agent-session-provider-exit-words-text'
 import { PROVIDER_RETRY_PIECES } from './agent-session-provider-retry-words-text'
+import { USAGE_LIMIT_PIECES } from './agent-session-usage-limit-words-text'
 
 // The pieces a refusal notice says too keep the notice's keys, so each has one translation.
 const PIECES: Record<AgentSessionFailureCopyId, (values: AgentSessionFailureCopyValues) => string> =
@@ -44,6 +44,13 @@ const PIECES: Record<AgentSessionFailureCopyId, (values: AgentSessionFailureCopy
         'components.native-chat.failureWords.couldNotRestart',
         COPY.couldNotRestart,
         values
+      ),
+    startTimedOut: (values) =>
+      translate('components.native-chat.failureWords.startTimedOut', COPY.startTimedOut, values),
+    startTimedOutKeepsHappening: () =>
+      translate(
+        'components.native-chat.failureWords.startTimedOutKeepsHappening',
+        COPY.startTimedOutKeepsHappening
       ),
     argumentsUnsupportedOption: (values) =>
       translate(
@@ -99,10 +106,11 @@ const PIECES: Record<AgentSessionFailureCopyId, (values: AgentSessionFailureCopy
         'components.native-chat.failureWords.managedAccountEnvOverride',
         COPY.managedAccountEnvOverride
       ),
-    accountSwitchInProgress: () =>
+    accountSwitchInProgress: (values) =>
       translate(
         'components.native-chat.failureWords.accountSwitchInProgress',
-        COPY.accountSwitchInProgress
+        COPY.accountSwitchInProgress,
+        values
       ),
     managedAccountUnsupported: () =>
       translate(
@@ -141,6 +149,17 @@ const PIECES: Record<AgentSessionFailureCopyId, (values: AgentSessionFailureCopy
         COPY.runtimeNotInstalled,
         values
       ),
+    conversationOpenElsewhere: () =>
+      translate(
+        'components.native-chat.failureWords.conversationOpenElsewhere',
+        COPY.conversationOpenElsewhere
+      ),
+    conversationOpenInTerminal: (values) =>
+      translate(
+        'components.native-chat.failureWords.conversationOpenInTerminal',
+        COPY.conversationOpenInTerminal,
+        values
+      ),
     chooseClaudeAccount: () =>
       translate(
         'components.native-chat.failureWords.chooseClaudeAccount',
@@ -173,6 +192,12 @@ const PIECES: Record<AgentSessionFailureCopyId, (values: AgentSessionFailureCopy
     ...ATTACHMENT_FAILURE_PIECES,
     emptyMessage: () =>
       translate('components.native-chat.failureWords.emptyMessage', COPY.emptyMessage),
+    commandUnavailable: (values) =>
+      translate(
+        'components.native-chat.failureWords.commandUnavailable',
+        COPY.commandUnavailable,
+        values
+      ),
     queueFull: () => translate('components.native-chat.failureWords.queueFull', COPY.queueFull),
     writeFailed: () =>
       translate('components.native-chat.failureWords.writeFailed', COPY.writeFailed),
@@ -210,6 +235,8 @@ const PIECES: Record<AgentSessionFailureCopyId, (values: AgentSessionFailureCopy
       translate('components.native-chat.writeNotice.waitForStart', COPY.waitForStart),
     agentStillWorking: () =>
       translate('components.native-chat.writeNotice.agentStillWorking', COPY.agentStillWorking),
+    waitForTurn: () =>
+      translate('components.native-chat.writeNotice.waitForTurn', COPY.waitForTurn),
     runCommandWhenDone: (values) =>
       translate(
         'components.native-chat.failureWords.runCommandWhenDone',
@@ -244,6 +271,7 @@ const PIECES: Record<AgentSessionFailureCopyId, (values: AgentSessionFailureCopy
     hostStopped: (values) =>
       translate('components.native-chat.failureWords.hostStopped', COPY.hostStopped, values),
     ...PROVIDER_RETRY_PIECES,
+    ...USAGE_LIMIT_PIECES,
     previousExitUnverifiable: (values) =>
       translate(
         'components.native-chat.failureWords.previousExitUnverifiable',

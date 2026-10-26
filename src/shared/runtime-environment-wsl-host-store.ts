@@ -1,7 +1,4 @@
-/**
- * The runtime environment behind a WSL host (C7): a plain paired environment whose pairing points
- * at the desktop end of the `wsl.exe` stdio bridge, plus its record in the WSL deployment store.
- */
+/** WSL host pairing points at the desktop’s wsl.exe stdio bridge; deployment state lives in the WSL store. */
 import { parsePairingCode, type PairingOffer } from './pairing'
 import {
   createEnvironmentFromPairingOffer,
@@ -17,6 +14,7 @@ import {
   writeEnvironmentStore
 } from './runtime-environment-store-file'
 import { resolveEnvironmentFromStore } from './runtime-environment-store'
+import { findCollidingEnvironmentName } from './runtime-environment-name-collision'
 import {
   readWslHostDeployments,
   writeWslHostDeployment,
@@ -72,10 +70,11 @@ export function addWslHostEnvironment(
       `A server with id "${args.id}" already exists.`
     )
   }
-  if (known.some((entry) => entry.name === args.name)) {
+  const namesake = findCollidingEnvironmentName(known, args.name)
+  if (namesake) {
     throw new RuntimeEnvironmentStoreError(
       'invalid_argument',
-      `A server named "${args.name}" already exists.`
+      `A server named "${namesake.name}" already exists.`
     )
   }
   const now = args.now ?? Date.now()
@@ -103,10 +102,7 @@ export function addWslHostEnvironment(
   return resolveEnvironmentFromStore(readEnvironmentStore(userDataPath), args.id)
 }
 
-/**
- * Keeps a WSL host's pairing and ports current after orcad relaunched (a new device token) or
- * the bridge moved. Returns whether the pairing changed, so callers retire stale transports.
- */
+/** Re-pair/move the bridge; return pairing changes so callers retire stale transports. Restarts keep the client grant. */
 export function refreshWslHostPairing(
   userDataPath: string,
   environmentId: string,

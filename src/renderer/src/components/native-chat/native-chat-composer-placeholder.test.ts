@@ -1,7 +1,11 @@
 import { describe, expect, it, vi } from 'vitest'
+import type * as RemoteRuntimePtyIdModule from '../../../../shared/remote-runtime-pty-id'
 
 vi.mock('@/i18n/i18n', () => ({ translate: (_key: string, fallback: string) => fallback }))
-vi.mock('@/runtime/runtime-terminal-inspection', () => ({ isRemoteRuntimePtyId: () => false }))
+vi.mock('../../../../shared/remote-runtime-pty-id', async (importOriginal) => ({
+  ...(await importOriginal<typeof RemoteRuntimePtyIdModule>()),
+  isRemoteRuntimePtyId: () => false
+}))
 
 import { nativeChatComposerPlaceholder } from './native-chat-composer-target'
 
@@ -22,7 +26,6 @@ describe("the composer's placeholder", () => {
     )
   })
 
-  // A held input or a lost terminal says why first: nothing can be queued from here then.
   it('keeps the reasons nothing can be sent ahead of it', () => {
     expect(nativeChatComposerPlaceholder(true, false, 'queue')).toBe(
       'Input is held by another device.'

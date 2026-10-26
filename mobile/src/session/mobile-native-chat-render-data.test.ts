@@ -23,28 +23,26 @@ function user(id: string, text: string): NativeChatMessage {
 const fold = (messages: NativeChatMessage[]) => foldMobileNativeChatMessages(messages, 'claude')
 
 describe('mobileNativeChatEmptyState', () => {
-  it('invites a first message naming the agent, matching desktop copy', () => {
-    // waiting-session (live agent, no transcript) and ready (loaded, empty) both
-    // resolve to the shared "empty" copy with the agent label substituted.
-    const waiting = mobileNativeChatEmptyState('waiting-session', 'claude')
-    expect(waiting).toEqual({
-      title: 'Start a chat with Claude',
-      subtitle: 'Ask Claude to inspect code, explain output, or make a change.'
+  it('invites a first message into a loaded, empty chat, matching desktop copy', () => {
+    expect(mobileNativeChatEmptyState('ready', 'codex')).toEqual({
+      title: 'Start a chat with Codex',
+      subtitle: 'Ask Codex to inspect code, explain output, or make a change.'
     })
-    expect(mobileNativeChatEmptyState('ready', 'codex')?.title).toBe('Start a chat with Codex')
   })
 
-  it('invites a first message while the transcript file is still unwritten', () => {
-    // The spinner is already gone by then, so a bare list would read as broken.
-    expect(mobileNativeChatEmptyState('awaiting-transcript', 'claude')?.title).toBe(
-      'Start a chat with Claude'
-    )
-  })
+  it.each(['waiting-session', 'awaiting-transcript'] as const)(
+    'says the conversation is not found yet while %s, never that the chat is new',
+    (status) => {
+      expect(mobileNativeChatEmptyState(status, 'claude')).toEqual({
+        title: "Can't find this conversation yet",
+        subtitle:
+          'Send a message to start one, or open the terminal view to see what Claude is doing.'
+      })
+    }
+  )
 
   it('falls back to "the agent" when the agent is unknown', () => {
-    expect(mobileNativeChatEmptyState('waiting-session', null)?.title).toBe(
-      'Start a chat with the agent'
-    )
+    expect(mobileNativeChatEmptyState('ready', null)?.title).toBe('Start a chat with the agent')
   })
 
   it('prefers the provided error message over the default subtitle', () => {
@@ -60,7 +58,6 @@ describe('mobileNativeChatEmptyState', () => {
   })
 })
 
-/** Mirrors the view: fold the raw transcript, then assemble the list. */
 function build(
   messages: NativeChatMessage[],
   streaming: string | null,
@@ -83,6 +80,13 @@ describe('buildMobileNativeChatTransientData', () => {
     expect(last.blocks).toEqual([{ type: 'text', text: 'queued' }])
   })
 
+  it('times an echo from when it was sent, as desktop times its pending sends', () => {
+    const data = build([assistant('a1', 'hello')], null, [
+      { id: 'p1', text: 'queued', sentAt: 1_792_024_037_937 }
+    ])
+    expect(data.at(-1)?.timestamp).toBe(1_792_024_037_937)
+  })
+
   it('renders a pending send with images as text followed by image-ref thumbnails', () => {
     const data = build([], null, [
       { id: 'p1', text: 'look', images: ['file:///a.jpg', 'file:///b.jpg'] }
@@ -102,9 +106,6 @@ describe('buildMobileNativeChatTransientData', () => {
   })
 
   it('folds transcript image marker turns into image-ref blocks (desktop parity)', () => {
-    // Claude records an attached image as `[Image: source: /path]` plus a
-    // caption turn carrying `[Image #1]`; the fold must merge them into one
-    // user turn with an image-ref block instead of showing raw marker text.
     const data = build(
       [
         user('u1', '[Image: source: /tmp/a.png]'),
@@ -236,8 +237,6 @@ describe('buildMobileNativeChatTransientData', () => {
   })
 
   it('appends a synthetic bubble for gated streaming text, between transcript and pending', () => {
-    // Whether text streams at all is the gate's call
-    // (`mobile-native-chat-streaming-gate.test.ts`); this only places it.
     const data = build([user('u1', 'hi')], 'thinking out loud', [{ id: 'p1', text: 'queued' }])
     expect(data.map((message) => message.id)).toEqual(['u1', 'streaming', 'p1'])
     expect(data[1].blocks).toEqual([{ type: 'text', text: 'thinking out loud' }])
@@ -270,9 +269,7 @@ describe('foldMobileNativeChatMessages', () => {
     }
   }
 
-  // The chat reads a 40-message tail, so the window regularly opens on a result
-  // whose `tool_use` is older than the window. It used to render as its own
-  // bubble of raw shell output with no owning call.
+  // Read windows may begin after tool_use; leading orphan results must not become raw-output bubbles.
   it('drops a leading tool result whose call is older than the read window', () => {
     const folded = fold([
       toolResult('orphan', 'Exit code 1\norca-ide not found'),
@@ -282,9 +279,8 @@ describe('foldMobileNativeChatMessages', () => {
     expect(folded.map((message) => message.id)).toEqual(['a1'])
   })
 
-  // Mobile draws no task list, so a hidden plan update must not split the run around it.
-  it('keeps one tool run across a Codex plan update it does not draw', () => {
-    const plan: NativeChatMessage = {
+  function planFrame(head: string): NativeChatMessage {
+    return {
       id: 'plan',
       role: 'system',
       timestamp: 0,
@@ -296,21 +292,32 @@ describe('foldMobileNativeChatMessages', () => {
           providerFrame: {
             provider: 'codex',
             kind: 'notification:turn/plan/updated',
-            payload: { head: '{}', byteLength: 2, digest: 'digest', truncated: false }
+            payload: { head, byteLength: head.length, digest: 'digest', truncated: false }
           }
         }
       ]
     }
+  }
+
+  it('draws a Codex plan update where it happened, as an update_plan call', () => {
     const folded = fold([
       assistant('a1', 'Working.'),
       toolCall('c1'),
       toolResult('r1', 'ok'),
-      plan,
+      planFrame('{"plan":[{"step":"Port rows","status":"inProgress"}]}'),
       toolCall('c2'),
       toolResult('r2', 'ok')
     ])
+    expect(folded.map((message) => message.id)).toEqual(['a1', 'plan', 'c2'])
+    expect(folded[1]).toMatchObject({
+      role: 'assistant',
+      blocks: [{ type: 'tool-call', name: 'update_plan', state: 'completed' }]
+    })
+  })
+
+  it('draws nothing for a plan update it cannot read', () => {
+    const folded = fold([assistant('a1', 'Working.'), planFrame('{}')])
     expect(folded.map((message) => message.id)).toEqual(['a1'])
-    expect(folded[0]?.blocks.filter((block) => block.type === 'tool-call')).toHaveLength(2)
   })
 
   it('still folds a result whose call is inside the window', () => {
@@ -350,7 +357,6 @@ describe('foldMobileNativeChatMessages', () => {
   })
 
   it('draws a skill command the user ran as their message, as desktop does', () => {
-    // The rows the host reader decoded from a Claude Code session where `/hello Kelvin` ran a skill.
     const folded = fold([
       {
         ...user(
@@ -369,10 +375,7 @@ describe('foldMobileNativeChatMessages', () => {
   })
 })
 
-// Claude consumes a mid-turn send through a `queued_command` attachment and writes
-// no `type:"user"` record for it, so that echo has no row to match - ever. What
-// made the conversation read as scrambled was not the unmatched echo itself but
-// where it rendered: appended after every turn, so it re-read below each new one.
+// Claude may consume queued commands without a user record; unmatched echoes must stay at their send position rather than trail every later turn.
 describe('buildMobileNativeChatTransientData anchoring', () => {
   function row(id: string, role: 'user' | 'assistant', text: string): NativeChatMessage {
     return { id, role, blocks: [{ type: 'text', text }], timestamp: 1, source: 'transcript' }
@@ -388,7 +391,6 @@ describe('buildMobileNativeChatTransientData anchoring', () => {
     })
     expect(data.map((m) => m.id)).toEqual(['m1', 'm2', 'p1'])
 
-    // The agent keeps working. The echo must NOT drift below the new turns.
     const later = [
       ...folded,
       row('m3', 'assistant', 'still working'),

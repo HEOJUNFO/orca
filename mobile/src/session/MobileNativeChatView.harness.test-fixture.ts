@@ -17,6 +17,7 @@ export type Overrides = {
   sendErrorMessage?: string | null
   onClearSendError?: () => void
   inputLockReason?: 'disconnected' | 'waiting' | null
+  composerText?: string
   onSend?: (text: string) => Promise<boolean>
   pending?: Parameters<typeof MobileNativeChatView>[0]['pending']
   structuredActivityUi?: boolean
@@ -29,6 +30,7 @@ export type Overrides = {
   sendSurfaceId?: string
   keyboardInset?: number
   hasMore?: boolean
+  olderPages?: Parameters<typeof MobileNativeChatView>[0]['olderPages']
   onLoadEarlier?: () => void
   status?: Parameters<typeof MobileNativeChatView>[0]['status']
   error?: string
@@ -59,7 +61,6 @@ function chatViewElement(overrides: Overrides): ReturnType<typeof createElement>
 
 let renderer: ReactTestRenderer | null = null
 
-// Stubs the frame clock and tears down the mounted view; call once at the top of a test file.
 export function installChatViewHooks(): void {
   beforeEach(() => {
     vi.stubGlobal('requestAnimationFrame', (callback: FrameRequestCallback) =>
@@ -75,7 +76,7 @@ export function installChatViewHooks(): void {
     renderer = null
     scrollToEnd.mockReset()
     scrollToOffset.mockReset()
-    pageScroller.scrollHeight = 0
+    Object.assign(pageScroller, { scrollTop: 0, scrollHeight: 0, clientHeight: 500 })
     vi.unstubAllGlobals()
   })
 }
@@ -101,7 +102,6 @@ export async function update(overrides: Overrides = {}): Promise<void> {
   })
 }
 
-// Ids of the rows the list is currently rendering.
 export function listIds(): string[] {
   return (list().props.data as { id: string }[]).map((row) => row.id)
 }
@@ -139,6 +139,16 @@ export async function pressSend(): Promise<void> {
   await act(async () => {
     await composer.props.onPress()
   })
+}
+
+export function scrollEvent(y: number, contentHeight: number) {
+  return {
+    nativeEvent: {
+      contentOffset: { y },
+      contentSize: { height: contentHeight },
+      layoutMeasurement: { height: 500 }
+    }
+  }
 }
 
 export async function scrollAwayFromTail(): Promise<void> {

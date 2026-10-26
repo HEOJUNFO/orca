@@ -20,7 +20,11 @@ export function buildMobileTerminalChatFork(args: {
   prepared: AiVaultPrepareSessionResumeResult
   settings: AiVaultResumeLaunchSettings
   runtime: AgentLaunchRuntime
-}): MobileTerminalCommand & { command: string; cwd?: string; resumeProviderSession?: AgentProviderSessionMetadata } {
+}): MobileTerminalCommand & {
+  command: string
+  cwd?: string
+  resumeProviderSession?: AgentProviderSessionMetadata
+} {
   const { prepared, settings, runtime } = args
   const source = prepared.cliForkSource
   if (!source) {
@@ -68,7 +72,8 @@ export function buildMobileTerminalChatFork(args: {
     ...(startup.envToDelete ? { envToDelete: startup.envToDelete } : {}),
     ...(startup.launchConfig ? { launchConfig: startup.launchConfig } : {}),
     ...(prepared.forkedSession && startup.providerSession
-      ? { resumeProviderSession: startup.providerSession } : {}),
+      ? { resumeProviderSession: startup.providerSession }
+      : {}),
     ...(isTuiAgent(source.agent) ? { launchAgent: source.agent } : {}),
     launchRuntime: runtime
   }

@@ -20,7 +20,7 @@ const mocks = vi.hoisted(() => {
     unifiedTabsByWorktree: { wt: [tab] },
     tabsByWorktree: {},
     settings: { experimentalNativeChat: true },
-    pendingCodexPaneRestartIds: [],
+    pendingPaneAccountRestarts: [],
     runtimePaneTitlesByTabId: { tab: { 1: 'codex', 2: 'codex' } },
     agentStatusByPaneKey: {},
     paneForegroundAgentByPaneKey: {},
@@ -270,7 +270,6 @@ describe('terminal chat ownership lifecycle', () => {
       .getPanes()
       .find((pane) => pane.leafId === hook.result.current.chatLeafId)
     expect(chatPane?.id).toBe(10)
-    // Closing the restored chat leaf must leave the left terminal untouched.
     restored.managerRef.current.getPanes().pop()?.container.remove()
     hook.rerender()
     expect(restored.managerRef.current.getPanes().map((pane) => pane.leafId)).toEqual([LEFT])

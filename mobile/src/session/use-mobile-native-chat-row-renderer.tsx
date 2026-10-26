@@ -1,15 +1,17 @@
 import { useCallback, useMemo } from 'react'
 import type { NativeChatMessage } from '../../../src/shared/native-chat-types'
 import type { NativeChatTurnJournal } from '../../../src/shared/native-chat-turn-membership'
+import type { NativeChatTaskListPredecessors } from '../../../src/shared/native-chat-task-list-history'
 import type { NativeChatResolvedPrompt } from '../../../src/shared/native-chat-resolution-receipt'
 import { isActionableStructuredAgentSessionPrompt } from '../../../src/shared/structured-agent-session-live-turn'
 import { MobileNativeChatMessage } from './MobileNativeChatMessage'
 import { mobileNativeChatUnsentNotices } from './mobile-native-chat-unsent-notices'
 import type { useMobileNativeChatTurnDisclosure } from './use-mobile-native-chat-turn-disclosure'
 
-/** Desktop parity: `NativeChatTranscriptRow`'s context. */
 export function useMobileNativeChatRowRenderer({
-  toolsExpanded,
+  rowKeyOf,
+  runOwners,
+  taskListPredecessors,
   fontScale,
   onOpenFile,
   structuredActivityUi,
@@ -19,7 +21,10 @@ export function useMobileNativeChatRowRenderer({
   receipts,
   actionablePromptIds
 }: {
-  toolsExpanded: boolean
+  rowKeyOf: (message: NativeChatMessage) => string
+  runOwners: ReadonlyMap<string, string>
+  /** The last plan each task-list tool wrote before each row, by row id. */
+  taskListPredecessors: ReadonlyMap<string, NativeChatTaskListPredecessors>
   fontScale: number
   onOpenFile?: (relativePath: string) => void
   structuredActivityUi: boolean
@@ -37,7 +42,10 @@ export function useMobileNativeChatRowRenderer({
     ({ item, index }) => (
       <MobileNativeChatMessage
         message={item}
-        toolsExpanded={toolsExpanded}
+        rowKey={rowKeyOf(item)}
+        // Depend on stable calls, not their rebuilt containing record, so row memoization survives.
+        previousTodoWrite={taskListPredecessors.get(item.id)?.todowrite}
+        previousUpdatePlan={taskListPredecessors.get(item.id)?.update_plan}
         fontScale={fontScale}
         onOpenFile={onOpenFile}
         structuredActivityUi={structuredActivityUi}
@@ -46,10 +54,13 @@ export function useMobileNativeChatRowRenderer({
         receipt={receipts?.get(item.id)}
         awaiting={isActionableStructuredAgentSessionPrompt(item.id, actionablePromptIds)}
         {...turns.resolveRow(index, item)}
+        runOwner={runOwners.get(item.id)}
       />
     ),
     [
-      toolsExpanded,
+      rowKeyOf,
+      runOwners,
+      taskListPredecessors,
       fontScale,
       onOpenFile,
       structuredActivityUi,

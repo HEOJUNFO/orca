@@ -6,7 +6,6 @@ import {
   ExternalChromiumBrowserSession,
   type ExternalChromiumLaunch
 } from './external-chromium-browser-session'
-export type { ExternalChromiumLaunch } from './external-chromium-browser-session'
 import { normalizeBrowserNavigationUrl } from '../../shared/browser-url'
 import {
   externalChromiumCommandArguments,
@@ -44,7 +43,7 @@ export class ExternalChromiumBrowserProcess {
 
   createCommands(host: RuntimeBrowserCommandHost): RuntimeBrowserCommands {
     return new Proxy({} as RuntimeBrowserCommands, {
-      // Why: startup checks membership before invoking dynamically resolved commands.
+      // Startup checks membership before resolving commands dynamically.
       has: (_target, property) => typeof property === 'string' && property !== 'then',
       get: (_target, property) => {
         if (property === 'then') {

@@ -1,25 +1,47 @@
 import { createElement } from 'react'
-import { act, create } from 'react-test-renderer'
-import { expect, it, vi } from 'vitest'
-import {
-  structuredAgentSessionPaneKey,
-  structuredAgentSessionTabId
-} from '../../../src/shared/structured-agent-session-projection'
-import { notificationPaneTab } from './notification-pane-tab'
-import { useNotificationPaneNavigation } from './use-notification-pane-navigation'
+import { act, create, type ReactTestRenderer } from 'react-test-renderer'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+import type { BridgeInitRoute } from '../mobile-web-shell/bridge/bridge-envelope'
 import type { MobileSessionTab } from './mobile-session-route-types'
-const route = vi.hoisted(() => ({ paneKey: '', setParams: vi.fn() }))
-vi.mock('expo-router', () => ({
-  useLocalSearchParams: () => ({ paneKey: route.paneKey }),
-  useRouter: () => ({ setParams: route.setParams })
+
+type RouteUpdateListener = (route: BridgeInitRoute | null) => void
+
+const bridge = vi.hoisted(() => {
+  const held: {
+    route: BridgeInitRoute | null
+    listeners: RouteUpdateListener[]
+    cleared: { param: string; value: string }[]
+  } = { route: null, listeners: [], cleared: [] }
+  return held
+})
+
+vi.mock('../transport/client-context.web', () => ({
+  usePageBridgeClient: () => ({
+    getShellSession: () => ({ route: bridge.route }),
+    onRouteUpdate: (listener: RouteUpdateListener) => {
+      bridge.listeners.push(listener)
+      return () => {
+        bridge.listeners = bridge.listeners.filter((held) => held !== listener)
+      }
+    },
+    clearRouteParam: (param: string, value: string) => {
+      bridge.cleared.push({ param, value })
+      return true
+    }
+  })
 }))
-const leaf = '11111111-1111-4111-8111-111111111111'
-const tabs: MobileSessionTab[] = [
+
+import { useNotificationPaneNavigation } from './use-notification-pane-navigation'
+
+// Use a real leaf id; invalid keys would test only the closed-pane path.
+const LEAF = '11111111-1111-4111-8111-111111111111'
+
+const TABS: MobileSessionTab[] = [
   {
     type: 'terminal',
     id: 'first',
     parentTabId: 'tab-a',
-    leafId: leaf,
+    leafId: LEAF,
     title: 'first',
     terminal: 'pty-a',
     isActive: true
@@ -28,76 +50,144 @@ const tabs: MobileSessionTab[] = [
     type: 'terminal',
     id: 'second',
     parentTabId: 'tab-b',
-    leafId: leaf,
-    title: 'agent',
+    leafId: LEAF,
+    title: 'second',
     terminal: 'pty-b',
     isActive: false
   }
 ]
-function Probe(props: Parameters<typeof useNotificationPaneNavigation>[0]) {
-  useNotificationPaneNavigation(props)
+
+const switched: MobileSessionTab[] = []
+
+function Probe({
+  terminalsLoaded,
+  sessionTabs = TABS
+}: {
+  terminalsLoaded: boolean
+  sessionTabs?: MobileSessionTab[]
+}): null {
+  useNotificationPaneNavigation({
+    sessionTabs,
+    terminalsLoaded,
+    switchSessionTab: (tab) => switched.push(tab)
+  })
   return null
 }
-it('selects the originating split pane, not the first tab; closed and invalid panes fall back', () => {
-  expect(notificationPaneTab(tabs, `tab-b:${leaf}`)).toBe(tabs[1])
-  expect(notificationPaneTab(tabs, `closed:${leaf}`)).toBeUndefined()
-  expect(notificationPaneTab(tabs, 'invalid')).toBeUndefined()
-})
-it('waits for tabs, switches through the existing action, and consumes the navigation request', async () => {
-  route.paneKey = `tab-b:${leaf}`
-  const switchSessionTab = vi.fn()
-  const props = { sessionTabs: tabs, terminalsLoaded: true, switchSessionTab }
-  let renderer: ReturnType<typeof create>
-  await act(async () => {
-    renderer = create(createElement(Probe, { ...props, sessionTabs: [], terminalsLoaded: false }))
+
+function render(terminalsLoaded: boolean): ReactTestRenderer {
+  const rendered: { tree: ReactTestRenderer | null } = { tree: null }
+  act(() => {
+    rendered.tree = create(createElement(Probe, { terminalsLoaded }))
   })
-  expect(switchSessionTab).not.toHaveBeenCalled()
-  await act(async () => {
-    renderer.update(createElement(Probe, props))
-  })
-  expect(switchSessionTab).toHaveBeenCalledExactlyOnceWith(tabs[1])
-  expect(route.setParams).toHaveBeenCalledWith({ paneKey: '' })
-  route.paneKey = ''
-  await act(async () => {
-    renderer.update(createElement(Probe, props))
-  })
-  expect(switchSessionTab).toHaveBeenCalledOnce()
-  await act(async () => renderer.unmount())
-})
-it('targets published native parents by session and consumes absent targets without switching', async () => {
-  const nativeTabs = ['restored', 'reserved', 'headless'].map((sessionId) => ({
-    type: 'agent-session' as const,
-    id: sessionId === 'headless' ? `agent-session:${sessionId}` : `${sessionId}-tab`,
-    sessionId,
-    agent: 'codex' as const,
-    title: 'Review',
-    isActive: false
-  }))
-  const paneKey = (sessionId: string) =>
-    structuredAgentSessionPaneKey(structuredAgentSessionTabId(sessionId), sessionId)
-  const switchSessionTab = vi.fn()
-  const props = { sessionTabs: [...tabs], terminalsLoaded: true, switchSessionTab }
-  route.setParams.mockClear()
-  route.paneKey = paneKey('reserved')
-  let renderer: ReturnType<typeof create>
-  await act(async () => {
-    renderer = create(createElement(Probe, props))
-  })
-  expect(switchSessionTab).not.toHaveBeenCalled()
-  expect(route.setParams).toHaveBeenCalledExactlyOnceWith({ paneKey: '' })
-  route.paneKey = ''
-  props.sessionTabs = [...tabs, ...nativeTabs]
-  await act(async () => renderer.update(createElement(Probe, props)))
-  expect(switchSessionTab).not.toHaveBeenCalled()
-  for (const tab of nativeTabs) {
-    route.paneKey = paneKey(tab.sessionId)
-    await act(async () => renderer.update(createElement(Probe, props)))
-    expect(switchSessionTab).toHaveBeenLastCalledWith(tab)
+  if (rendered.tree === null) {
+    throw new Error('the probe did not render')
   }
-  route.paneKey = paneKey('absent')
-  await act(async () => renderer.update(createElement(Probe, props)))
-  expect(switchSessionTab).toHaveBeenLastCalledWith(nativeTabs[2])
-  expect(switchSessionTab).toHaveBeenCalledTimes(3)
-  expect(route.setParams).toHaveBeenCalledTimes(5)
-  await act(async () => renderer.unmount())
+  return rendered.tree
+}
+
+function deliver(paneKey: string): void {
+  act(() => {
+    for (const listener of bridge.listeners.slice()) {
+      listener({ pathname: '/h/host-1/session/wt-1', params: { paneKey } })
+    }
+  })
+}
+
+beforeEach(() => {
+  bridge.route = null
+  bridge.listeners = []
+  bridge.cleared.length = 0
+  switched.length = 0
+})
+
+// Exercise the page hook: shell init carries pane requests because this document at / cannot edit the native route.
+describe('the page pane hook', () => {
+  it('switches to the pane the page was opened on, which arrives in the first init', () => {
+    bridge.route = { pathname: '/h/host-1/session/wt-1', params: { paneKey: `tab-b:${LEAF}` } }
+    render(true)
+    expect(switched.map((tab) => tab.id)).toEqual(['second'])
+  })
+
+  it('holds that request until the terminals have loaded, rather than dropping it', () => {
+    bridge.route = { pathname: '/h/host-1/session/wt-1', params: { paneKey: `tab-b:${LEAF}` } }
+    const tree = render(false)
+    expect(switched).toEqual([])
+    act(() => {
+      tree.update(createElement(Probe, { terminalsLoaded: true }))
+    })
+    expect(switched.map((tab) => tab.id)).toEqual(['second'])
+  })
+
+  it('erases the param that carried the pane it applied', () => {
+    // Erase by value so an older acknowledgement cannot spend a newer notification tap.
+    bridge.route = { pathname: '/h/host-1/session/wt-1', params: { paneKey: `tab-b:${LEAF}` } }
+    render(true)
+    expect(bridge.cleared).toEqual([{ param: 'paneKey', value: `tab-b:${LEAF}` }])
+  })
+
+  it('switches again for a repeat tap on the pane already showing', () => {
+    // A clear between identical values makes the later value a new request.
+    render(true)
+    deliver(`tab-a:${LEAF}`)
+    deliver('')
+    deliver(`tab-a:${LEAF}`)
+    expect(switched.map((tab) => tab.id)).toEqual(['first', 'first'])
+    expect(bridge.cleared).toEqual([
+      { param: 'paneKey', value: `tab-a:${LEAF}` },
+      { param: 'paneKey', value: `tab-a:${LEAF}` }
+    ])
+  })
+
+  it('applies one pane once however many inits carry it', () => {
+    // Replay must retry a lost clear without switching away from the user’s newer tab.
+    render(true)
+    deliver(`tab-a:${LEAF}`)
+    deliver(`tab-a:${LEAF}`)
+    expect(switched.map((tab) => tab.id)).toEqual(['first'])
+    expect(bridge.cleared).toHaveLength(2)
+  })
+
+  it('applies successive pane requests and names each value when clearing', () => {
+    render(true)
+    deliver(`tab-a:${LEAF}`)
+    deliver(`tab-b:${LEAF}`)
+    expect(switched.map((tab) => tab.id)).toEqual(['first', 'second'])
+    expect(bridge.cleared.map((entry) => entry.value)).toEqual([`tab-a:${LEAF}`, `tab-b:${LEAF}`])
+  })
+
+  it('asks for nothing and applies nothing when the route carries no pane', () => {
+    // The shell’s erase returns as a route update, including on later ready replies.
+    render(true)
+    deliver(`tab-a:${LEAF}`)
+    bridge.cleared.length = 0
+    deliver('')
+    expect(switched.map((tab) => tab.id)).toEqual(['first'])
+    expect(bridge.cleared).toEqual([])
+  })
+
+  it('stays on the open tab for a pane that has since closed', () => {
+    render(true)
+    deliver(`gone:${LEAF}`)
+    expect(switched).toEqual([])
+    deliver('')
+    expect(switched).toEqual([])
+  })
+
+  it('opens a pane missing from a list loaded before the push once a fresh list names it', () => {
+    const tree = render(true)
+    act(() => {
+      tree.update(createElement(Probe, { terminalsLoaded: true, sessionTabs: [TABS[0]!] }))
+    })
+    deliver(`tab-b:${LEAF}`)
+    expect(switched).toEqual([])
+    act(() => {
+      tree.update(createElement(Probe, { terminalsLoaded: true, sessionTabs: TABS }))
+    })
+    expect(switched.map((tab) => tab.id)).toEqual(['second'])
+  })
+
+  it('does nothing at all when the page was opened on no pane', () => {
+    render(true)
+    expect(switched).toEqual([])
+  })
 })

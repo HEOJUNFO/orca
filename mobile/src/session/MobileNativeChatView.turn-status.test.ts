@@ -3,6 +3,7 @@ import { act, create, type ReactTestInstance, type ReactTestRenderer } from 'rea
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import type { NativeChatMessage } from '../../../src/shared/native-chat-types'
 import { MobileNativeChatView } from './MobileNativeChatView'
+import { styles } from './mobile-native-chat-view-styles'
 
 const scrollToEnd = vi.hoisted(() => vi.fn())
 const scrollToOffset = vi.hoisted(() => vi.fn())
@@ -53,25 +54,22 @@ vi.mock('./MobileNativeChatAsk', () => ({ MobileNativeChatAsk: 'ChatAsk' }))
 vi.mock('./MobileNativeChatPermission', () => ({ MobileNativeChatPermission: 'ChatPermission' }))
 vi.mock('./MobileNativeChatQuestion', () => ({ MobileNativeChatQuestion: 'ChatQuestion' }))
 vi.mock('../components/ActionSheetModal', () => ({ ActionSheetModal: 'ActionSheetModal' }))
-vi.mock('./MobileAgentWorkingIndicator', () => ({
-  MobileAgentWorkingIndicator: 'WorkingIndicator'
-}))
 
-// Stand-in composer: exposes the view's `handleSend` through a pressable, which is
-// the only composer behaviour these banner tests exercise.
 vi.mock('./MobileNativeChatComposer', async () => {
   const React = await import('react')
+  const { MobileNativeChatStopButton } = await import('./MobileNativeChatStopButton')
   return {
     MobileNativeChatComposer: (props: {
       onSend: (text: string) => Promise<boolean>
       disabled?: boolean
       placeholder?: string
+      stop?: { onStop?: () => void; held: boolean } | null
     }) =>
-      React.createElement('Composer', {
-        ...props,
-        accessibilityLabel: 'Send message',
-        onPress: () => props.onSend('hi')
-      })
+      React.createElement(
+        'Composer',
+        { ...props, accessibilityLabel: 'Send message', onPress: () => props.onSend('hi') },
+        props.stop ? React.createElement(MobileNativeChatStopButton, props.stop) : null
+      )
   }
 })
 
@@ -150,7 +148,6 @@ describe('MobileNativeChatView', () => {
     })
   }
 
-  /** Ids of the rows the list is currently rendering. */
   function listIds(): string[] {
     return (list().props.data as { id: string }[]).map((row) => row.id)
   }
@@ -179,7 +176,6 @@ describe('MobileNativeChatView', () => {
       return (renderedRow(id) as { props: Record<string, unknown> }).props
     }
 
-    /** What the live footer line says: its label inputs, read off the line the view hands it. */
     function footerProps(): Record<string, unknown> | null {
       const list = renderer!.root.find((node) => String(node.type) === 'FlatList')
       const line = list.props.ListFooterComponent?.props.line
@@ -188,21 +184,15 @@ describe('MobileNativeChatView', () => {
         : null
     }
 
-    function workingIndicators(): ReactTestInstance[] {
-      return renderer!.root.findAll((node) => String(node.type) === 'WorkingIndicator')
-    }
-
     it('puts the clock bar under the prompt, activity at the tail, and drops the three dots', async () => {
       const folded = [userTurn('u1', 'go'), assistantTurn('a1', 'still working')]
       await render({ messages: folded, folded, structuredActivityUi: true, agentWorking: true })
       const props = rowProps('u1')
       expect(props.structuredActivityUi).toBe(true)
       expect(props.turnStatus).toMatchObject({ workedSeconds: null })
-      // Nothing reports reasoning, so the tail line reads plain working instead of guessing.
       expect(footerProps()).toEqual({ thinking: false, activityText: null, stopping: false })
       expect(listIds().at(-1)).toBe('a1')
       expect(props.activeTurnIsWorking).toBe(true)
-      expect(workingIndicators()).toHaveLength(0)
     })
 
     it.each([
@@ -313,15 +303,16 @@ describe('MobileNativeChatView', () => {
       expect(footerProps()).toMatchObject({ activityText: 'Running pnpm test' })
     })
 
-    it('keeps the bridge lane on the three-dot indicator with no turn status', async () => {
+    it('gives the bridge lane the same live Working line, with no turn status', async () => {
       const folded = [userTurn('u1', 'go')]
       await render({ messages: folded, folded, agentWorking: true })
       const props = rowProps('u1')
       expect(props.structuredActivityUi).toBe(false)
       expect(props.turnStatus).toBeNull()
       expect(props.activeTurnIsWorking).toBe(false)
-      expect(footerProps()).toBeNull()
-      expect(workingIndicators()).toHaveLength(1)
+      expect(footerProps()).toEqual({ thinking: false, activityText: null, stopping: false })
+      const list = renderer!.root.find((node) => String(node.type) === 'FlatList')
+      expect(list.props.contentContainerStyle).toBe(styles.listContent)
     })
 
     it('settles the finished turn to a tappable duration', async () => {
@@ -344,7 +335,6 @@ describe('MobileNativeChatView', () => {
       const folded = [userTurn('u1', 'go'), assistantTurn('a1', 'done')]
       await render({ messages: folded, folded, structuredActivityUi: true, agentWorking: true })
       expect(rowProps('a1').turnStatus).toBeNull()
-      // The assistant row still belongs to the live turn, so its tool row stays visible.
       expect(rowProps('a1').activeTurnIsWorking).toBe(true)
       expect(footerProps()).toMatchObject({ thinking: false })
     })

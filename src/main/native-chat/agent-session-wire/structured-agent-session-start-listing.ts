@@ -1,6 +1,4 @@
-// What a start listed reaches the account's model catalog once, with the configured default its
-// start resolved: on `started`, or on Claude's settings readback that follows it. Bookkeeping: a
-// failure is logged, never the start's.
+// Warm catalogs from listings; only startup/readback resolves defaults, and bookkeeping must not reject valid actions.
 
 import type { AgentModelCatalogLiveListing } from '../agent-model-catalog/agent-model-catalog-entry'
 import type {
@@ -15,8 +13,7 @@ export type StructuredAgentSessionStartListingContext = {
   serialize: <T>(sessionId: string, task: () => Promise<T>) => Promise<T>
 }
 
-/** A proven start's listing, saved inside its serialized step. */
-export function saveStructuredAgentSessionStartListing(
+export function saveStructuredAgentSessionListing(
   context: Pick<StructuredAgentSessionStartListingContext, 'deps'>,
   sessionId: string,
   listing: AgentModelCatalogLiveListing
@@ -24,16 +21,15 @@ export function saveStructuredAgentSessionStartListing(
   try {
     context.deps.modelCatalog?.recordLiveListing(sessionId, listing)
   } catch (error) {
-    context.deps.logger.warn('saving what a started provider listed failed', {
-      scope: 'provider-started-catalog',
+    context.deps.logger.warn('saving what a provider listed failed', {
+      scope: 'provider-catalog',
       sessionId,
       error
     })
   }
 }
 
-/** A start's late readback (Claude's settings) says once what the config resolved. Serialized
- *  behind the attach that published the child, which may still be indexing it. */
+/** Serialize delayed settings readback behind attach publication before resolving the configured default. */
 export function saveStructuredAgentSessionStartReadbackListing(
   context: StructuredAgentSessionStartListingContext,
   reporter: { sessionId: string; acquisitionGeneration: string; fence: number },

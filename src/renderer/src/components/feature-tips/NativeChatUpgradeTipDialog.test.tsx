@@ -34,7 +34,6 @@ function textOf(html: string): string {
     .replace(/&#x27;/g, "'")
 }
 
-// Why: repo convention — React only suppresses its act() warning when this global is set.
 globalThis.IS_REACT_ACT_ENVIRONMENT = true
 
 function dialog(
@@ -68,11 +67,9 @@ describe('NativeChatUpgradeTipDialog', () => {
     expect(text).toContain(
       'New chats with supported agents now open in the upgraded chat view. To move between chat and CLI, open Agent Session History in the right sidebar:'
     )
+    expect(text).toContain('Resume in New Chat opens a supported CLI conversation in native chat.')
     expect(text).toContain(
-      'Resume in New Native Chat opens a supported CLI conversation in native chat.'
-    )
-    expect(text).toContain(
-      'Resume in New CLI copies a Claude or Codex chat into a new CLI session. The original chat stays as it is.'
+      'Resume in New Terminal copies a Claude or Codex chat into a new CLI session. The original chat stays as it is.'
     )
     expect(text).toContain('Manage Chat UI in Settings → Experimental.')
     expect(text).toContain('Got It')
@@ -99,8 +96,7 @@ describe('NativeChatUpgradeTipDialog', () => {
     expect(text).not.toContain('Turn on chat mode')
     expect(html).not.toContain('role="switch"')
     expect(html).toContain('27rem')
-    // The way back to the terminal stays in the tip.
-    expect(text).toContain('Resume in New CLI copies a Claude or Codex chat')
+    expect(text).toContain('Resume in New Terminal copies a Claude or Codex chat')
   })
 
   it('dismisses with Leave Off and runs the primary action only with Enable Now', () => {
@@ -112,11 +108,9 @@ describe('NativeChatUpgradeTipDialog', () => {
     const buttons = container.querySelectorAll<HTMLButtonElement>('footer button')
     expect(buttons).toHaveLength(2)
     expect(buttons[0]?.textContent).toBe('Leave Off')
-    // Leave Off is plain text, not a Button primitive.
     expect(buttons[0]?.hasAttribute('data-variant')).toBe(false)
     expect(buttons[1]?.textContent).toBe('Enable Now')
     expect(buttons[1]?.getAttribute('data-variant')).toBe('default')
-    // Enable Now takes the row width Leave Off leaves.
     expect(buttons[1]?.classList.contains('flex-1')).toBe(true)
     expect(buttons[0]?.classList.contains('flex-1')).toBe(false)
     act(() => buttons[0]?.click())
@@ -140,7 +134,7 @@ describe('NativeChatUpgradeTipDialog', () => {
   it('pictures both real menu actions, one at a time', () => {
     const html = renderToStaticMarkup(<NativeChatUpgradeFeatureTipVisual />)
     expect(html).toContain('Agent Session History')
-    expect(html).toMatch(/data-highlighted="true"[^>]*>.*Resume in New CLI/)
-    expect(html).not.toContain('Resume in New Native Chat')
+    expect(html).toMatch(/data-highlighted="true"[^>]*>.*Resume in New Terminal/)
+    expect(html).not.toContain('Resume in New Chat')
   })
 })

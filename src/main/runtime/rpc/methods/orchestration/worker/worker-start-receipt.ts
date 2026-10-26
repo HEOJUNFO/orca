@@ -2,7 +2,7 @@ import type { OrchestrationDb } from '../../../../orchestration/db'
 import { isUnknownWorkerStartOutcome, type WorkerSetupReceipt } from './worker-topology'
 import type { OrchestrationWorkerLaunchReceipt } from './worker-launch-preferences'
 import type { WorkerStartModeReceipt } from '../../orchestration-worker-start-mode'
-import { isStructuredWorkerHandle } from '../../../../structured-worker-identity'
+import { isStructuredWorkerHandle } from '../../../../../../shared/structured-worker-handle'
 
 export function failWorkerStartWithReceipt(args: {
   db: OrchestrationDb
@@ -20,9 +20,7 @@ export function failWorkerStartWithReceipt(args: {
   const worker = unknown
     ? args.db.markWorkerStartUnknown(args.dispatchId, args.failedStage, reason)
     : args.db.failWorkerStart(args.dispatchId, args.failedStage, reason)
-  // Only name cleanup this start actually left behind: a terminal it created and still owns. A
-  // structured session is discarded by the teardown, a pane the user typed into is theirs, and an
-  // unknown outcome is not settled — none of the three has anything for `worker-release` to close.
+  // Offer cleanup only for this start's created, still-owned terminal; structured teardown, user takeover and unsettled unknown outcomes need none here.
   const residual = unknown ? undefined : args.db.getWorkerTerminalResourceByOwner(args.dispatchId)
   const releasable =
     residual?.ownership_state === 'owned' && !isStructuredWorkerHandle(residual.terminal_handle)

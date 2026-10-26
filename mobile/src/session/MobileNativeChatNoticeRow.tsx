@@ -1,4 +1,4 @@
-import { StyleSheet, View } from 'react-native'
+import { StyleSheet, Text, View } from 'react-native'
 import { AlertCircle, AlertTriangle, Info } from 'lucide-react-native'
 import { AGENT_SESSION_HOST_STATUS_COPY } from '../../../src/shared/agent-session-host-status-rows'
 import {
@@ -8,8 +8,8 @@ import {
   type NativeChatNoticeTone
 } from '../../../src/shared/native-chat-notice'
 import { isTextBlock, type NativeChatBlock } from '../../../src/shared/native-chat-types'
+import { usageLimitLineText } from '../../../src/shared/agent-session-usage-limit-words'
 import { MobileMarkdown } from '../components/MobileMarkdown'
-import { MobileSelectableText as Text } from '../components/MobileSelectableText'
 import { INLINE_TEXT_SELECTION } from '../components/inline-text-selection'
 import { colors, radii, spacing, typography } from '../theme/mobile-theme'
 import { MONO_SIZE, TEXT_SIZE, scaledType } from './mobile-native-chat-message-styles'
@@ -20,8 +20,7 @@ const TONE_COLOR: Record<NativeChatNoticeTone, string> = {
   notice: colors.textMuted
 }
 
-/** A row the agent did not write in its own words, drawn as desktop's `NativeChatNoticeRow` and
- *  its faint system asides are, so it never reads as the agent speaking. */
+// Render system notices separately so they cannot read as the agent’s own prose.
 export function MobileNativeChatNoticeRow({
   blocks,
   fontScale,
@@ -31,11 +30,9 @@ export function MobileNativeChatNoticeRow({
   blocks: readonly NativeChatBlock[]
   fontScale: number
   onOpenFile?: (relativePath: string) => void
-  /** Android only: a long press on a plan's link opens the row's actions sheet. */
   onLongPress?: () => void
 }): React.JSX.Element | null {
   const notice = nativeChatNoticeBlock(blocks)
-  // A system row with no notice of its own is an aside, a size under the agent's prose.
   const aside = [styles.faint, scaledType(typography.bodySize, fontScale)]
   if (!notice) {
     const text = blocks
@@ -98,6 +95,7 @@ export function MobileNativeChatNoticeRow({
         </Text>
       )
     case 'line': {
+      const lineText = usageLimitLineText(notice)
       const textStyle = [
         styles.line,
         scaledType(TEXT_SIZE, fontScale),
@@ -106,7 +104,7 @@ export function MobileNativeChatNoticeRow({
       if (!look.tone) {
         return (
           <Text selectable={INLINE_TEXT_SELECTION} style={textStyle}>
-            {notice.text}
+            {lineText}
           </Text>
         )
       }
@@ -121,7 +119,7 @@ export function MobileNativeChatNoticeRow({
             style={styles.toneIcon}
           />
           <Text selectable={INLINE_TEXT_SELECTION} style={[...textStyle, styles.toneText]}>
-            {notice.text}
+            {lineText}
           </Text>
         </View>
       )

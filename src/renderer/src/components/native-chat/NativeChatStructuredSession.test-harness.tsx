@@ -63,8 +63,7 @@ export function seededEntry(
     state,
     queuedAt: clientMessageId === 'op-head' ? 1 : 2,
     lastAttemptAt: null,
-    // Already force-retried once, so the automatic probe leaves the head alone
-    // and only the user's Retry moves it.
+    // An earlier forced retry disables the automatic probe; only explicit Retry should move this head.
     retryAfterUnknownSubmittedAt: -1
   }
 }
@@ -98,11 +97,7 @@ const DEFAULT_FILE_LINK_CONTEXT: NativeChatFileLinkContext = {
 const initialMessageListProps: StructuredSessionMessageListProps | null = null
 const initialApprovalCardProps: NativeChatApprovalCardProps | null = null
 
-/**
- * Shared mock state and `vi.mock` factories for the NativeChatStructuredSession test files.
- * Load it through `await vi.hoisted(async () => (await import(...)).createStructuredSessionMocks())`
- * so the factories can close over `mocks` before the mocked modules resolve.
- */
+/** Create through vi.hoisted(async () => ...) so mock factories close over state before mocked imports resolve. */
 export function createStructuredSessionMocks() {
   const mocks = {
     call: vi.fn<(...args: never[]) => unknown>(),
@@ -129,6 +124,7 @@ export function createStructuredSessionMocks() {
       }
       isWorking?: boolean
       isStopping?: boolean
+      unavailableHint?: string
       afterStop?: 'queue' | 'send'
       steerQueued?: () => boolean
       onStop?: () => void
@@ -189,6 +185,7 @@ export function createStructuredSessionMocks() {
         }) => {
           mocks.controllerProps = props
           return {
+            contextClear: { clearing: false, clears: 0 },
             journalItems: mocks.journalItems,
             messages: mocks.messages ?? [
               {
@@ -248,6 +245,8 @@ export function createStructuredSessionMocks() {
               steer: mocks.queuedSteer,
               remove: mocks.queuedRemove,
               edit: mocks.queuedEdit,
+              pending: () => null,
+              queuePending: null,
               steerNewest: mocks.queuedSteerNewest
             },
             threadGoal: mocks.threadGoal,

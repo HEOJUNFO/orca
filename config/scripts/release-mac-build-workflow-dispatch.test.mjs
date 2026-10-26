@@ -1,7 +1,6 @@
 import { describe, expect, it, vi } from 'vitest'
 
 import {
-  dispatchReleaseMacBuildWorkflow,
   executeReleaseMacBuildMode,
   expectedReleaseMacBuildRunTitle,
   readReleaseMacBuildWorkflowOptions,
@@ -22,13 +21,15 @@ const baseOptions = {
 
 describe('release mac build workflow dispatch', () => {
   it('passes the shared JavaScript commit only when the parent produced a bundle', async () => {
-    const request = vi.fn(async () => ({}))
-    const api = { owner: 'stablyai', repo: 'orca', request }
-    await dispatchReleaseMacBuildWorkflow(api, {
-      ...baseOptions,
-      javascriptSourceSha: 'a'.repeat(40)
-    })
-    expect(request.mock.calls[0][2].inputs).toEqual({
+    const { fetch, requests } = createGitHubFetch([
+      jsonResponse(200, { workflow_run_id: 123 }),
+      jsonResponse(200, { id: 123, status: 'completed', conclusion: 'success' })
+    ])
+    await runReleaseMacBuildWorkflow(
+      { ...baseOptions, javascriptSourceSha: 'a'.repeat(40) },
+      { fetch, now: () => Date.parse('2026-06-30T12:00:00Z'), sleep: vi.fn() }
+    )
+    expect(requests[0].body.inputs).toEqual({
       release_run_id: '777',
       tag: 'v1.2.3-rc.4',
       javascript_source_sha: 'a'.repeat(40)
@@ -194,6 +195,43 @@ const splitRun = {
 }
 
 describe('release mac build split dispatch and verification', () => {
+  it('waits for the exact dispatched run metadata to become consistent', async () => {
+    const { fetch, requests } = createGitHubFetch([
+      jsonResponse(200, { workflow_run_id: 123 }),
+      jsonResponse(200, { ...splitRun, display_title: 'Release macOS Build', run_attempt: 0 }),
+      jsonResponse(200, splitRun)
+    ])
+    const sleep = vi.fn()
+    const appendOutput = vi.fn()
+    await expect(
+      executeReleaseMacBuildMode('dispatch', splitEnvironment, { fetch, sleep, appendOutput })
+    ).resolves.toMatchObject({ id: 123 })
+    expect(requests.map((request) => request.method)).toEqual(['POST', 'GET', 'GET'])
+    expect(requests.slice(1).map((request) => request.path)).toEqual([
+      '/repos/stablyai/orca/actions/runs/123',
+      '/repos/stablyai/orca/actions/runs/123'
+    ])
+    expect(sleep).toHaveBeenCalledWith(5_000)
+    expect(appendOutput).toHaveBeenCalledOnce()
+  })
+
+  it('rejects persistently mismatched metadata without redispatching or recording outputs', async () => {
+    const { fetch, requests } = createGitHubFetch([
+      jsonResponse(200, { workflow_run_id: 123 }),
+      ...Array.from({ length: 7 }, () =>
+        jsonResponse(200, { ...splitRun, display_title: 'Another release' })
+      )
+    ])
+    const sleep = vi.fn()
+    const appendOutput = vi.fn()
+    await expect(
+      executeReleaseMacBuildMode('dispatch', splitEnvironment, { fetch, sleep, appendOutput })
+    ).rejects.toThrow(/does not match/)
+    expect(requests.filter((request) => request.method === 'POST')).toHaveLength(1)
+    expect(sleep).toHaveBeenCalledTimes(6)
+    expect(appendOutput).not.toHaveBeenCalled()
+  })
+
   it('returns a live run identity without holding a runner while macOS builds', async () => {
     const live = { ...splitRun, status: 'in_progress', conclusion: null }
     const { fetch, requests } = createGitHubFetch([

@@ -20,6 +20,7 @@ export type WorkspaceHydrationPatch = Pick<
   | 'lastVisitedAtByWorktreeId'
   | 'defaultTerminalTabsAppliedByWorktreeId'
   | 'closedTerminalTabTombstonesByTabId'
+  | 'pairedTerminalTabCloseIntentsByEnvironment'
   | 'automaticAgentResumeClaimsByTabId'
   | 'sleepingAgentSessionsByPaneKey'
   | 'pendingReconnectWorktreeIds'
@@ -33,8 +34,7 @@ export type WorkspaceHydrationPatch = Pick<
   | 'terminalLayoutsByTabId'
   | 'localOnlyScrollbackByTabId'
 > &
-  // Why partial: only a cold read carries the contested-host shadow; a scoped re-hydration must
-  // leave the store's copy alone rather than replace it with an empty one.
+  // Only cold reads carry contested-host shadows; scoped hydration must preserve the store’s copy.
   Partial<Pick<AppState, 'contestedHostWorkspaceSessions' | 'contestedPrimaryHostBySessionKey'>>
 
 export function replaceHydratedRecordKeys<T>(
@@ -115,8 +115,7 @@ export function targetScopedWorkspaceHydrationPatch(
       .flatMap((workspaceKey) => (state.tabsByWorktree[workspaceKey] ?? []).map((tab) => tab.id))
       .filter((tabId) => !retainedTargetTabIds.has(tabId))
   )
-  // The reprieve is session-scoped, so a target snapshot that retires or
-  // replaces a row must not leave its old id protected in a later orphan sweep.
+  // Session-scoped PTY-loss reprieve must not protect a retired/replaced row in later orphan sweeps.
   const nextUnverifiedPtyLossTabIds = omitUnverifiedPtyLossTabIds(
     state.unverifiedPtyLossTabIds,
     deletedTargetTabIds
@@ -174,9 +173,9 @@ export function targetScopedWorkspaceHydrationPatch(
       ),
       ...state.defaultTerminalTabsAppliedByWorktreeId
     },
-    // Why passed through whole: hydration already fell back to live store state, and the map is
-    // keyed by tab id rather than by workspace key so replaceHydratedRecordKeys has nothing to match.
+    // Already fell back to live state; tab-keyed tombstones cannot use workspace-key replacement.
     closedTerminalTabTombstonesByTabId: hydrated.closedTerminalTabTombstonesByTabId,
+    pairedTerminalTabCloseIntentsByEnvironment: hydrated.pairedTerminalTabCloseIntentsByEnvironment,
     automaticAgentResumeClaimsByTabId: replaceHydratedRecordKeys(
       state.automaticAgentResumeClaimsByTabId,
       hydrated.automaticAgentResumeClaimsByTabId,

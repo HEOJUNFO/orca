@@ -96,6 +96,10 @@ export abstract class OrcaRuntimeWithPreservedBranchCleanup extends OrcaRuntimeW
 
   protected readonly onTerminalAgentStatus!: HostBindings['onTerminalAgentStatus'] | null
 
+  protected readonly onTerminalProgramStatusFacet!:
+    | HostBindings['onTerminalProgramStatusFacet']
+    | null
+
   protected readonly onTerminalSideEffects!: HostBindings['onTerminalSideEffects'] | null
 
   protected readonly onClaudeTerminalEvidence!: HostBindings['onClaudeTerminalEvidence'] | null
@@ -118,7 +122,6 @@ export abstract class OrcaRuntimeWithPreservedBranchCleanup extends OrcaRuntimeW
     | HostBindings['getAgentProviderSessionRowsForPane']
     | null
 
-  /** See run-terminal-client-use.ts. */
   readTerminalClientUse(ptyId: string): 'used' | 'unused' | 'unknown' {
     return readRunTerminalClientUse(this, ptyId)
   }
@@ -127,17 +130,15 @@ export abstract class OrcaRuntimeWithPreservedBranchCleanup extends OrcaRuntimeW
     return confirmRunTerminalShellAlone(this.ptyController, ptyId)
   }
 
-  /** The PTY a terminal handle drives now; a restarted pane answers with its new PTY. */
   getTerminalPtyIdForHandle(handle: string): string | null {
     return this.getLivePtyForHandle(handle)?.pty.ptyId ?? null
   }
 
-  /** Every provider-session row this host holds, resume-identity-only rows included. */
+  /** Includes resume-identity-only provider rows. */
   getAgentProviderSessionRows(): AgentStatusIpcPayload[] {
     return this.getAgentProviderSessionSnapshotFn?.() ?? []
   }
 
-  /** Agent status rows this host holds for a pane, from hooks, OSC and titles alike. */
   getAgentStatusRowsForPane(paneKey: string): AgentStatusIpcPayload[] {
     return this.getAgentProviderSessionRowsForPaneFn?.(paneKey) ?? []
   }
@@ -292,53 +293,50 @@ export abstract class OrcaRuntimeWithPreservedBranchCleanup extends OrcaRuntimeW
 
   protected readonly projectGroups = new RuntimeProjectGroupController({
     getStore: () => this.store,
-    resolveRepo: (selector) => this.resolveRepoSelector(selector),
+    resolveRepo: (...args) => this.managedWorktreeQueries.resolveRepoForConnection(...args),
     notifyReposChanged: () => this.notifyReposChanged(),
     resolveFolderConnectionId: (workspace) => this.resolveFolderWorkspaceConnectionId(workspace),
-    teardownFolderWorkspacePtys: (worktreeId, connectionId) =>
+    teardownFolderWorkspacePtys: (...target) =>
       teardownFolderWorkspacePtys(
         {
           runtime: this,
           getLocalProvider: () => this.getLocalProvider(),
           onPtyStopped: this.onPtyStopped
         },
-        worktreeId,
-        connectionId
+        ...target
       ),
     cleanupRemovedFolderWorkspaceState: (worktreeId) => {
       if (this.store) {
         this.removeWorktreeMetadataAndHistory(this.store, worktreeId)
       }
-      // Why every host after the local-only hub: this store mints folder ids, so none is shared.
+      // Folder ids are minted by this store and shared with no other host.
       this.dropAgentStatusForRemovedWorktreeFn?.(worktreeId, ALL_EXECUTION_HOSTS_SCOPE)
-    }
+    },
+    emitWorktreeLifecycle: (event) => this.worktreeLifecycleEvents.emit(event)
   })
 
-  protected readonly nestedRepoImport = new RuntimeNestedRepoImport({
+  private readonly repositoryCatalogDeps = {
     getStore: () => this.store,
     invalidateResolvedWorktrees: () => this.invalidateResolvedWorktreeCache(),
-    invalidateWorktreeScan: (repoId) => this.invalidateWorktreeScanCacheForRepo(repoId),
+    invalidateWorktreeScan: (repoId: string) => this.invalidateWorktreeScanCacheForRepo(repoId),
     notifyReposChanged: () => this.notifyReposChanged()
-  })
+  }
 
-  protected readonly repositoryRegistrations = new RuntimeRepositoryRegistrationController({
-    getStore: () => this.store,
-    invalidateResolvedWorktrees: () => this.invalidateResolvedWorktreeCache(),
-    invalidateWorktreeScan: (repoId) => this.invalidateWorktreeScanCacheForRepo(repoId),
-    notifyReposChanged: () => this.notifyReposChanged()
-  })
+  protected readonly nestedRepoImport = new RuntimeNestedRepoImport(this.repositoryCatalogDeps)
 
-  protected readonly repositoryClones = new RuntimeRepositoryCloneController({
-    getStore: () => this.store,
-    invalidateResolvedWorktrees: () => this.invalidateResolvedWorktreeCache(),
-    invalidateWorktreeScan: (repoId) => this.invalidateWorktreeScanCacheForRepo(repoId),
-    notifyReposChanged: () => this.notifyReposChanged()
-  })
+  protected readonly repositoryRegistrations = new RuntimeRepositoryRegistrationController(
+    this.repositoryCatalogDeps
+  )
+
+  protected readonly repositoryClones = new RuntimeRepositoryCloneController(
+    this.repositoryCatalogDeps
+  )
 
   protected readonly repositorySettings = new RuntimeRepositorySettingsController({
     getStore: () => this.store,
     resolveRepo: (selector) => this.resolveRepoSelector(selector),
     forgetTerminalTopology: (repoId) => this.terminalTopologyRevisionByRepoId.delete(repoId),
+    stopProjectTerminals: (repo, options) => this.stopTerminalsForProject(repo, options),
     invalidateResolvedWorktrees: () => this.invalidateResolvedWorktreeCache(),
     invalidateWorktreeScan: (repoId) => this.invalidateWorktreeScanCacheForRepo(repoId),
     notifyReposChanged: () => this.notifyReposChanged()
@@ -364,7 +362,8 @@ export abstract class OrcaRuntimeWithPreservedBranchCleanup extends OrcaRuntimeW
     getStore: () => this.store,
     resolveFolderConnectionId: (workspace) => this.resolveFolderWorkspaceConnectionId(workspace),
     hasRuntimeOwnedPtyCandidate: (session, worktreeId, tabs) =>
-      this.workspaceSessionWorktreeHasRuntimeOwnedPtyCandidate(session, worktreeId, tabs)
+      this.workspaceSessionWorktreeHasRuntimeOwnedPtyCandidate(session, worktreeId, tabs),
+    getCachedWorktrees: () => this.resolvedWorktrees.peek()?.worktrees ?? null
   })
 
   protected readonly aiVault = new RuntimeAiVaultCommands(() => this.prepareAiVaultSessionResumeFn)

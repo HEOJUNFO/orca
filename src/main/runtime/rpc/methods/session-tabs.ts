@@ -1,7 +1,7 @@
 import { terminalImageViewerSupported } from '../../terminal-image-viewer-env'
 import { resolveRuntimeNavigationTarget } from '../../../../shared/runtime-navigation'
 import { getExplicitWorktreeIdSelector } from '../../runtime-worktree-selection'
-import { worktreeIdComparisonKey, worktreeIdsEqual } from '../../../../shared/worktree/id'
+import { worktreeIdentityKey, worktreeIdsEqual } from '../../../../shared/worktree/id'
 import { defineMethod, defineStreamingMethod } from '../core'
 import {
   CreateTerminalTab,
@@ -22,6 +22,7 @@ import { assertLegacyAiVaultResumeCommandAllowed } from '../../../ai-vault/struc
 import { SessionTabsUnsubscribeAllParams } from '../../../../shared/rpc-contract/session-tabs-params'
 import { SESSION_TABS_SPLIT_GROUP_PLACEMENT_RUNTIME_CAPABILITY } from '../../../../shared/protocol-version'
 import { createSessionTabsTabDeltaEncoder } from '../../../../shared/session-tabs-tab-delta'
+import { ORCA_SIDEBAR_INPUTS_IS_MAIN } from '../../../../shared/sidebar-inputs-switch'
 
 export const SESSION_TAB_METHODS = [
   defineMethod({
@@ -76,6 +77,9 @@ export const SESSION_TAB_METHODS = [
         ...(params.agentPrompt !== undefined ? { agentPrompt: params.agentPrompt } : {}),
         ...(params.launchConfig ? { launchConfig: params.launchConfig } : {}),
         ...(params.launchToken ? { launchToken: params.launchToken } : {}),
+        ...(params.resumeProviderSession
+          ? { resumeProviderSession: params.resumeProviderSession }
+          : {}),
         ...(params.launchAgent ? { launchAgent: params.launchAgent } : {}),
         ...(params.viewMode ? { viewMode: params.viewMode } : {}),
         activate: params.activate,
@@ -94,8 +98,7 @@ export const SESSION_TAB_METHODS = [
                 ) === true
             }
           : {}),
-        // Why: a dead client connection must cancel the surface wait instead
-        // of running down the timeout and rolling back a live tab (#7718).
+        // Cancel surface waits on disconnect rather than timing out and rolling back a live tab (#7718).
         signal
       })
     }
@@ -120,11 +123,15 @@ export const SESSION_TAB_METHODS = [
         }
       }
       const register = (worktreeId: string): void => {
-        // Why: clients may unsubscribe using the resolved spelling learned from the snapshot.
-        const cleanupPrefix = `session.tabs:${connectionId ?? 'local'}:${worktreeIdComparisonKey(worktreeId) ?? worktreeId}`
-        // Why: shared-control can carry multiple subscribers for one worktree on
-        // one socket; include the RPC id so one subscriber cannot evict another.
+        // Accept unsubscribe under the resolved spelling learned from snapshots.
+        const cleanupPrefix = `session.tabs:${connectionId ?? 'local'}:${worktreeIdentityKey(worktreeId)}`
+        // Include RPC id: multiple same-worktree streams can share one socket without evicting each other.
         subscriptionId = requestId ? `${cleanupPrefix}:${requestId}` : cleanupPrefix
+        // Switch point: a phone holding the workspace's session open is looking at it.
+        const closePhoneSession =
+          ORCA_SIDEBAR_INPUTS_IS_MAIN && clientKind === 'mobile'
+            ? runtime.sidebarFacts?.readAndHoldPhoneSession(worktreeId)
+            : undefined
         runtime.registerSubscriptionCleanup(
           subscriptionId,
           () => {
@@ -132,6 +139,7 @@ export const SESSION_TAB_METHODS = [
               return
             }
             released = true
+            closePhoneSession?.()
             signal?.removeEventListener('abort', release)
             stopListening()
             if (endOnRelease) {
@@ -146,8 +154,7 @@ export const SESSION_TAB_METHODS = [
           signal?.addEventListener('abort', release, { once: true })
         }
       }
-      // Why: register before any await so an unsubscribe or socket close during setup
-      // finds the stream; only an `id:` selector (every phone and web client) names it up front.
+      // Register before awaits so unsubscribe finds setup; id: selectors provide identity immediately.
       const explicitWorktreeId = getExplicitWorktreeIdSelector(params.worktree)
       if (explicitWorktreeId) {
         register(explicitWorktreeId)
@@ -184,7 +191,7 @@ export const SESSION_TAB_METHODS = [
             snapshot.worktree !== subscribedWorktree &&
             worktreeIdsEqual(snapshot.worktree, subscribedWorktree)
           ) {
-            // Why: a subscription can arrive before the host publishes its stored spelling.
+            // Subscribe can precede publication of the host's stored spelling.
             try {
               subscribedWorktree =
                 runtime.getExplicitSessionWorktreeIdSelector(`id:${initial.worktree}`) ??
@@ -195,7 +202,7 @@ export const SESSION_TAB_METHODS = [
             }
           }
           if (snapshot.worktree === subscribedWorktree) {
-            // Why: clients file frames by `worktree`; a spelling switch mid-stream splits the tabs.
+            // Keep one stream spelling because clients index frames by worktree.
             const streamSnapshot =
               snapshot.worktree === initial.worktree
                 ? snapshot
@@ -233,13 +240,13 @@ export const SESSION_TAB_METHODS = [
         getExplicitWorktreeIdSelector(params.worktree) ??
         (await runtime.listMobileSessionTabs(params.worktree, pairedDeviceId)).worktree
       const connection = connectionId ?? 'local'
-      const cleanupPrefix = `session.tabs:${connection}:${worktreeIdComparisonKey(worktreeId) ?? worktreeId}`
+      const cleanupPrefix = `session.tabs:${connection}:${worktreeIdentityKey(worktreeId)}`
       if (params.subscriptionId) {
         runtime.cleanupSubscription(`${cleanupPrefix}:${params.subscriptionId}`)
         return { unsubscribed: true }
       }
       runtime.cleanupSubscription(cleanupPrefix)
-      // Why: subscribes register on arrival, so spare any that arrived after this unsubscribe.
+      // Spare subscribes registered after this unsubscribe arrived.
       runtime.cleanupSubscriptionsByPrefix(`${cleanupPrefix}:`, subscriptionRegistrationVersion)
       return { unsubscribed: true }
     }
